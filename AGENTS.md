@@ -4,7 +4,7 @@ Instructions for AI coding assistants working in this repository (Claude Code, C
 
 ## What this project is
 
-`xkcdPlugin`: a Logitech/Loupedeck hardware plugin (MX Creative Console, Loupedeck CT/Live) that brings xkcd to the device, built on the Logi Actions SDK. C#/.NET 10.
+`xkcdPlugin`: a Logitech/Loupedeck hardware plugin (MX Creative Console, Loupedeck CT/Live) that shows the current xkcd comic split across the device's keys, with navigation keys beside it. It's built on the Logi Actions SDK in C#/.NET 10. The primary target is the MX Creative Keypad; see `docs/ai/product.md`.
 
 The repo is at the **template stage**. `src/Actions/CounterCommand.cs` and `src/Actions/CounterAdjustment.cs` are SDK template examples, not product code. **Delete both in the same change that adds the first real action**. Don't extend them or copy their style: they break this repo's own rules (a field initialized to its default, comments that repeat the code).
 
@@ -14,6 +14,7 @@ Read these before making changes:
 
 | File | Read this for |
 |------|----------------|
+| [`docs/ai/product.md`](docs/ai/product.md) | What the plugin does (a comic split across the keypad), target devices, layout, v1 scope, **risks to test on hardware first** |
 | [`docs/ai/structure.md`](docs/ai/structure.md) | Repo layout, the layering to grow into, architectural patterns |
 | [`docs/ai/tech.md`](docs/ai/tech.md) | Stack, what the build enforces, build/test/package commands |
 | [`docs/ai/guidelines.md`](docs/ai/guidelines.md) | Code style, service/command layer patterns, testing patterns. **Read before writing code** |
