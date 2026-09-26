@@ -38,7 +38,7 @@ Keep the renderers thin. Every *decision* (which text, how it wraps onto lines, 
 ```csharp
 protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
 {
-    var comic = XkcdPlugin.Instance?.CurrentComic;
+    var comic = xkcdPlugin.Instance?.CurrentComic;
     if (comic == null)
     {
         return ButtonTextRenderer.RenderText("xkcd", imageSize, BitmapColor.Black, BitmapColor.White);
@@ -59,10 +59,10 @@ The helpers pass the resource name to `PluginResources.ReadImage`, which resolve
 
 ```csharp
 ButtonImageHelper.Icon("Random.svg");                       // correct
-ButtonImageHelper.Icon("Loupedeck.XkcdPlugin.Random.svg");  // wrong - and breaks if the assembly is renamed
+ButtonImageHelper.Icon("Loupedeck.xkcdPlugin.Random.svg");  // wrong - and breaks if the assembly is renamed
 ```
 
-Icons live in `src/Resources/Icons/`, each with its own `<EmbeddedResource>` entry in `src/XkcdPlugin.csproj`. Name status icon sets `<CommandName><State>.svg`.
+Icons live in `src/Resources/Icons/`, each with its own `<EmbeddedResource>` entry in `src/xkcdPlugin.csproj`. Name status icon sets `<CommandName><State>.svg`.
 
 ## Accessibility
 

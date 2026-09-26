@@ -33,12 +33,12 @@ _client.GetComicAsync(number)
 ActionImageChanged()
 ```
 
-Static members are qualified with the type name: `PluginLog.Info(...)`, `XkcdPlugin.Instance`.
+Static members are qualified with the type name: `PluginLog.Info(...)`, `xkcdPlugin.Instance`.
 
 ### Private Fields: Underscore Prefix, No Redundant Initializers
 
 ```csharp
-private readonly IXkcdClient _client;
+private readonly IxkcdClient _client;
 private readonly IPluginLog _log;
 private String _title = String.Empty;
 private Int32 _currentNumber;          // not "= 0" - that is already the default
@@ -70,7 +70,7 @@ if (comic == null)
 ### `using` Directives Inside Namespace
 
 ```csharp
-namespace Loupedeck.XkcdPlugin
+namespace Loupedeck.xkcdPlugin
 {
     using System;
     using System.Net.Http;
@@ -80,6 +80,25 @@ namespace Loupedeck.XkcdPlugin
 ### Allman Brace Style
 
 Opening brace always on its own line, for types, members and blocks alike.
+
+### The xkcd Name: Always Lowercase
+
+"xkcd" is always written in lowercase: in user-facing text, file names, package names **and code identifiers**. This is a deliberate exception to PascalCase:
+
+```csharp
+// CORRECT
+namespace Loupedeck.xkcdPlugin
+public class xkcdPlugin : Plugin
+public interface IxkcdClient
+public class xkcdComic
+var client = new xkcdClient(httpClient);
+
+// WRONG
+public class XkcdPlugin : Plugin
+public interface IXkcdClient
+```
+
+Only the "xkcd" part stays lowercase; the rest of the identifier follows the normal rules (`IxkcdClient`, `_xkcdClient`, `LoadxkcdComic` is fine but prefer `LoadComic`). `src/.editorconfig`'s PascalCase naming rules are `suggestion` severity, so these names don't produce build warnings. Don't raise those rules to `warning` without first adding an exception for this.
 
 ### Comments
 
@@ -118,7 +137,7 @@ public void RefreshLatest()
 Query methods return safe defaults on failure; they never throw into the SDK:
 
 ```csharp
-public async Task<XkcdComic> GetComicAsync(Int32 number)
+public async Task<xkcdComic> GetComicAsync(Int32 number)
 {
     if (number < 1)
     {
@@ -171,7 +190,7 @@ public class LatestComicCommand : PluginDynamicCommand
 }
 ```
 
-When commands need events from the plugin (see "Notification Interface Pattern" below), they also self-register: `XkcdPlugin.Instance?.RegisterCommand(this);`. Add a static `Instance` to a command only when another class actually needs to call it.
+When commands need events from the plugin (see "Notification Interface Pattern" below), they also self-register: `xkcdPlugin.Instance?.RegisterCommand(this);`. Add a static `Instance` to a command only when another class actually needs to call it.
 
 ### Null Guard in RunCommand
 
@@ -185,7 +204,7 @@ protected override void RunCommand(String actionParameter)
         return;
     }
 
-    XkcdPlugin.Instance?.OpenComic(actionParameter);
+    xkcdPlugin.Instance?.OpenComic(actionParameter);
 }
 ```
 
@@ -196,7 +215,7 @@ protected override void RunCommand(String actionParameter)
 ```csharp
 protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
 {
-    var comic = XkcdPlugin.Instance?.CurrentComic;
+    var comic = xkcdPlugin.Instance?.CurrentComic;
     return comic == null
         ? ButtonTextRenderer.RenderText("xkcd\nloading…", imageSize)
         : ButtonTextRenderer.RenderText(comic.Title, imageSize);
@@ -264,13 +283,13 @@ See `test-coverage.md` for policy, targets and patterns. Test class shape:
 ```csharp
 public class ComicServiceTests
 {
-    private readonly Mock<IXkcdClient> _mockClient;
+    private readonly Mock<IxkcdClient> _mockClient;
     private readonly Mock<IPluginLog> _mockLog;
     private readonly ComicService _service;
 
     public ComicServiceTests()
     {
-        this._mockClient = new Mock<IXkcdClient>();
+        this._mockClient = new Mock<IxkcdClient>();
         this._mockLog = new Mock<IPluginLog>();
         this._service = new ComicService(this._mockClient.Object, this._mockLog.Object);
     }

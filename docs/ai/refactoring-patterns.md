@@ -1,6 +1,6 @@
 # Refactoring Patterns
 
-When and how to split a growing Logi Actions SDK plugin. None of this applies yet: use it once `XkcdPlugin.cs` or a service shows the warning signs below.
+When and how to split a growing Logi Actions SDK plugin. None of this applies yet: use it once `xkcdPlugin.cs` or a service shows the warning signs below.
 
 ## God Class Refactoring
 
@@ -97,7 +97,7 @@ public class ItemsDynamicFolder : PluginDynamicFolder, IPluginCommand, IItemAwar
     public ItemsDynamicFolder()
     {
         Instance = this;
-        XkcdPlugin.Instance?.RegisterCommand(this);
+        xkcdPlugin.Instance?.RegisterCommand(this);
     }
 
     public void OnConnected() { }
@@ -146,11 +146,11 @@ A facade class provides a simplified interface:
 ```csharp
 public class ComicFacade
 {
-    private readonly IXkcdClient _client;
+    private readonly IxkcdClient _client;
     private readonly ComicCache _cache;
     private readonly IPluginLog _log;
 
-    public XkcdComic Current => this._cache.Current;
+    public xkcdComic Current => this._cache.Current;
 
     public async Task ShowComicAsync(Int32 number)
     {
@@ -184,7 +184,7 @@ Open for extension, closed for modification. Applied to: adding new commands wit
 
 ### 3. Dependency Inversion Principle (DIP)
 
-Depend on abstractions, not concretions. Applied to: commands depending on notification interfaces; services depending on an interface (`IXkcdClient`) rather than a concrete client.
+Depend on abstractions, not concretions. Applied to: commands depending on notification interfaces; services depending on an interface (`IxkcdClient`) rather than a concrete client.
 
 ### 4. Don't Repeat Yourself (DRY)
 

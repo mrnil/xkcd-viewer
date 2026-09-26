@@ -18,21 +18,21 @@
     {
       "label": "Package Plugin",
       "type": "shell",
-      "command": "logiplugintool pack ./bin/Release ./Xkcd.lplug4",
+      "command": "logiplugintool pack ./bin/Release ./xkcd.lplug4",
       "group": "none",
       "problemMatcher": []
     },
     {
       "label": "Install Plugin",
       "type": "shell",
-      "command": "logiplugintool install ./Xkcd.lplug4",
+      "command": "logiplugintool install ./xkcd.lplug4",
       "group": "none",
       "problemMatcher": []
     },
     {
       "label": "Uninstall Plugin",
       "type": "shell",
-      "command": "logiplugintool uninstall Xkcd",
+      "command": "logiplugintool uninstall xkcd",
       "group": "none",
       "problemMatcher": []
     }

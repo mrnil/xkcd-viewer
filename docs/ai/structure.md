@@ -12,22 +12,22 @@ xkcdPlugin/
 │   │   ├── PluginLog.cs              # SDK-provided static logging facade
 │   │   └── PluginResources.cs        # Embedded resource access helper (filename-only lookup)
 │   ├── package/metadata/             # LoupedeckPackage.yaml (manifest) + Icon256x256.png
-│   ├── XkcdPlugin.cs                 # Main plugin class (Plugin subclass)
-│   ├── XkcdApplication.cs            # ClientApplication subclass (unused: this is a universal plugin)
-│   ├── XkcdPlugin.csproj
-│   ├── XkcdPlugin.csproj.user        # Visual Studio F5 target (LogiPluginService.exe); git-ignored
+│   ├── xkcdPlugin.cs                 # Main plugin class (Plugin subclass)
+│   ├── xkcdApplication.cs            # ClientApplication subclass (unused: this is a universal plugin)
+│   ├── xkcdPlugin.csproj
+│   ├── xkcdPlugin.csproj.user        # Visual Studio F5 target (LogiPluginService.exe); git-ignored
 │   ├── Directory.Build.props         # LangVersion + obj/ location - see note below
 │   └── .editorconfig                 # Enforces the code style in docs/ai/guidelines.md
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config + build/pack tasks
-├── XkcdPlugin.sln
+├── xkcdPlugin.sln
 ├── AGENTS.md / CLAUDE.md
 └── .gitignore
 ```
 
-There is no `tests/` project yet. Create `tests/XkcdPlugin.Tests/` (xUnit + Moq, see `test-coverage.md`) together with the first piece of business logic, and add it to the `.sln`.
+There is no `tests/` project yet. Create `tests/xkcdPlugin.Tests/` (xUnit + Moq, see `test-coverage.md`) together with the first piece of business logic, and add it to the `.sln`.
 
-**Naming**: the folder is `xkcdPlugin`, but the project, assembly, `.sln` and namespace are all `XkcdPlugin` / `Loupedeck.XkcdPlugin`, and the package name (`LoupedeckPackage.yaml` `name:`, `.csproj` `PluginShortName`) is `Xkcd`. Those two package names must match: the post-build reload URL (`loupedeck:plugin/Xkcd/reload`) and `logiplugintool uninstall Xkcd` both use them.
+**Naming**: "xkcd" is always lowercase, including in code (see `guidelines.md` → "The xkcd Name"). The folder, project, assembly, `.sln` and plugin class are `xkcdPlugin`, the namespace is `Loupedeck.xkcdPlugin`, and the package name (`LoupedeckPackage.yaml` `name:`, `.csproj` `PluginShortName`) is `xkcd`. Those two package names must match: the post-build reload URL (`loupedeck:plugin/xkcd/reload`) and `logiplugintool uninstall xkcd` both use them.
 
 **`src/Directory.Build.props` gotcha**: `BaseIntermediateOutputPath` is computed from `$(MSBuildThisFileDirectory)`, **never** `$(SolutionDir)`. `SolutionDir` is only defined when building through the `.sln`; building the bare `.csproj` leaves it empty, which sends `obj/` to a different folder and leaves stray generated files. The next `.sln` build then fails with `CS0579` (duplicate assembly attributes). `BaseOutputPath` lives only in the `.csproj`.
 
@@ -66,17 +66,17 @@ Group commands by SDK base class: `PluginDynamicCommand` (buttons), `PluginDynam
 ```text
 Loupedeck SDK
   └── Actions layer (commands / adjustments / folders)
-        ↓ via XkcdPlugin.Instance
-XkcdPlugin (constructs and owns the services; thin orchestration)
+        ↓ via xkcdPlugin.Instance
+xkcdPlugin (constructs and owns the services; thin orchestration)
         ↓
-Services (IXkcdClient → HttpClient → https://xkcd.com)
+Services (IxkcdClient → HttpClient → https://xkcd.com)
 ```
 
 Dependencies point one way: Actions → Plugin → Services. Services never reference SDK types; that's what makes them testable.
 
 ### 2. Singleton Instance
 
-`XkcdPlugin` doesn't have one yet. Add `public static XkcdPlugin Instance { get; private set; }`, set in the constructor, once the first action needs a service. Actions then reach services through `XkcdPlugin.Instance?.…`. Always null-propagate: actions can be constructed before the plugin is fully initialized.
+`xkcdPlugin` doesn't have one yet. Add `public static xkcdPlugin Instance { get; private set; }`, set in the constructor, once the first action needs a service. Actions then reach services through `xkcdPlugin.Instance?.…`. Always null-propagate: actions can be constructed before the plugin is fully initialized.
 
 ### 3. Command Registry / Self-Registration (introduce when needed)
 
@@ -107,7 +107,7 @@ bin/
 obj/                  ← intermediate files (repo root, see Directory.Build.props)
 ```
 
-Post-build writes `%LocalAppData%\Logi\LogiPluginService\Plugins\XkcdPlugin.link` (pointing at `bin/<Configuration>/`) and triggers `loupedeck:plugin/Xkcd/reload`. `dotnet clean` deletes the link.
+Post-build writes `%LocalAppData%\Logi\LogiPluginService\Plugins\xkcdPlugin.link` (pointing at `bin/<Configuration>/`) and triggers `loupedeck:plugin/xkcd/reload`. `dotnet clean` deletes the link.
 
 ## Package Format
 

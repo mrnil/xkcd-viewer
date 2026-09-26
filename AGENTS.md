@@ -4,7 +4,7 @@ Instructions for AI coding assistants working in this repository (Claude Code, C
 
 ## What this project is
 
-`XkcdPlugin`: a Logitech/Loupedeck hardware plugin (MX Creative Console, Loupedeck CT/Live) that brings xkcd to the device, built on the Logi Actions SDK. C#/.NET 10.
+`xkcdPlugin`: a Logitech/Loupedeck hardware plugin (MX Creative Console, Loupedeck CT/Live) that brings xkcd to the device, built on the Logi Actions SDK. C#/.NET 10.
 
 The repo is at the **template stage**. `src/Actions/CounterCommand.cs` and `src/Actions/CounterAdjustment.cs` are SDK template examples, not product code. **Delete both in the same change that adds the first real action**. Don't extend them or copy their style: they break this repo's own rules (a field initialized to its default, comments that repeat the code).
 
@@ -43,6 +43,7 @@ Comic data comes from xkcd's public JSON endpoints (`https://xkcd.com/info.0.jso
 ## Non-negotiables
 
 - Follow `docs/ai/guidelines.md` for code style. `src/.editorconfig` requires BCL type names (`String`, not `string`), `var` where the type is apparent, `this.` qualification, `_camelCase` private fields and Allman braces. The build reports most of these (`EnforceCodeStyleInBuild`) and must stay at **zero warnings**. It does **not** check BCL type names or field naming, so check those yourself (see `docs/ai/tech.md`).
+- "xkcd" is **always lowercase**, in prose, file names, package names and code identifiers alike (`xkcdPlugin`, `IxkcdClient`), never `Xkcd` or `XKCD`. See `docs/ai/guidelines.md` → "The xkcd Name".
 - All new business logic needs tests (see `docs/ai/test-coverage.md`). SDK glue in `src/Actions/` is exempt; the pure logic inside it is not.
 - Commits follow Conventional Commits and explain **why**, not just what (see `docs/ai/commit-conventions.md`).
 - Every `.md` file you write or edit uses consistent Markdown: a blank line before and after headings and fenced code blocks, no bare URLs, and ordered lists that actually increment.

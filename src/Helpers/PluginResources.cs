@@ -1,4 +1,4 @@
-namespace Loupedeck.XkcdPlugin
+namespace Loupedeck.xkcdPlugin
 {
     using System;
     using System.IO;
@@ -19,8 +19,8 @@ namespace Loupedeck.XkcdPlugin
         }
 
         // Retrieves the names of all the resource files in the specified folder.
-        // The parameter `folderName` must be specified as a full path, for example, `Loupedeck.XkcdPlugin.Resources`.
-        // Returns the full names of the resource files, for example, `Loupedeck.XkcdPlugin.Resources.Resource.txt`.
+        // The parameter `folderName` must be specified as a full path, for example, `Loupedeck.xkcdPlugin.Resources`.
+        // Returns the full names of the resource files, for example, `Loupedeck.xkcdPlugin.Resources.Resource.txt`.
         public static String[] GetFilesInFolder(String folderName) => PluginResources._assembly.GetFilesInFolder(folderName);
 
         // Finds the first resource file with the specified file name.

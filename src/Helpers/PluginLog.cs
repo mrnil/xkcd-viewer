@@ -1,4 +1,4 @@
-namespace Loupedeck.XkcdPlugin
+namespace Loupedeck.xkcdPlugin
 {
     using System;
 

@@ -1,13 +1,13 @@
 # Test Coverage & Architecture Policy
 
-Applies to `tests/XkcdPlugin.Tests/` (xUnit + Moq). That project doesn't exist yet. Create it with the first piece of business logic (see `tech.md` for the `PluginApi` reference gotcha).
+Applies to `tests/xkcdPlugin.Tests/` (xUnit + Moq). That project doesn't exist yet. Create it with the first piece of business logic (see `tech.md` for the `PluginApi` reference gotcha).
 
 ## Overall Approach
 
 TDD with xUnit + Moq. Write tests before or alongside the implementation.
 
 - **Framework**: xUnit
-- **Mocking**: Moq. Mock the interfaces around external dependencies (e.g. `IXkcdClient`) and the logger (`IPluginLog`)
+- **Mocking**: Moq. Mock the interfaces around external dependencies (e.g. `IxkcdClient`) and the logger (`IPluginLog`)
 - **Pattern**: Arrange-Act-Assert
 - **Naming**: `MethodName_Condition_ExpectedBehaviour`
 
@@ -25,7 +25,7 @@ TDD with xUnit + Moq. Write tests before or alongside the implementation.
 Classes in `src/Actions/` inherit from SDK base classes (`PluginDynamicCommand`, `PluginDynamicAdjustment`, `PluginDynamicFolder`, `ActionEditorCommand`). They:
 
 - Need the Logi Plugin Service runtime to behave properly
-- Reach the plugin through `XkcdPlugin.Instance`, which ties them to the plugin lifecycle
+- Reach the plugin through `xkcdPlugin.Instance`, which ties them to the plugin lifecycle
 - Draw with `BitmapBuilder`, embedded resources and `PluginImageSize`
 - Can't be unit tested meaningfully without mocking the whole framework
 
@@ -40,7 +40,7 @@ This is an accepted tradeoff, not a gap to close. Test only constructor wiring (
 public async Task GetComicAsync_WhenClientReturnsComic_ReturnsIt()
 {
     // Arrange
-    this._mockClient.Setup(x => x.GetComicAsync(353)).ReturnsAsync(new XkcdComic { Num = 353, Title = "Python" });
+    this._mockClient.Setup(x => x.GetComicAsync(353)).ReturnsAsync(new xkcdComic { Num = 353, Title = "Python" });
 
     // Act
     var result = await this._service.GetComicAsync(353);
@@ -60,16 +60,16 @@ For every service method, test:
 
 ### Testing an HTTP Client Wrapper
 
-The class that calls `https://xkcd.com` directly needs a fake `HttpMessageHandler`, not a mock of itself. Mocking `IXkcdClient` tests the *caller*, and never runs the client's own URL building, status handling or JSON mapping.
+The class that calls `https://xkcd.com` directly needs a fake `HttpMessageHandler`, not a mock of itself. Mocking `IxkcdClient` tests the *caller*, and never runs the client's own URL building, status handling or JSON mapping.
 
-1. Give the client a second, `internal` constructor that takes an `HttpClient`. Production code uses the public constructor with a single shared static `HttpClient`. Expose the internal constructor to tests with `[assembly: InternalsVisibleTo("XkcdPlugin.Tests")]` (e.g. in `src/Helpers/AssemblyInfo.cs`) instead of making it public.
+1. Give the client a second, `internal` constructor that takes an `HttpClient`. Production code uses the public constructor with a single shared static `HttpClient`. Expose the internal constructor to tests with `[assembly: InternalsVisibleTo("xkcdPlugin.Tests")]` (e.g. in `src/Helpers/AssemblyInfo.cs`) instead of making it public.
 2. Write a small `StubHttpMessageHandler` that records every `HttpRequestMessage` and returns a response supplied by the test.
 3. Assert on the recorded request (URL) and the parsed result. Cover what a mock can't: the exact URL for "latest" vs a numbered comic, 404 handling, malformed or missing JSON fields, and that the wire JSON maps onto the model.
 
 ```csharp
 var handler = new StubHttpMessageHandler(request =>
     new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
-var client = new XkcdClient(new HttpClient(handler));
+var client = new xkcdClient(new HttpClient(handler));
 
 var comic = await client.GetComicAsync(353);
 
@@ -96,7 +96,7 @@ Keep realistic JSON fixtures, captured from the live API, in the test project in
 ```bash
 dotnet test
 dotnet test --collect:"XPlat Code Coverage"
-dotnet test --filter "FullyQualifiedName~XkcdClientTests"
+dotnet test --filter "FullyQualifiedName~xkcdClientTests"
 ```
 
 ## CI Note

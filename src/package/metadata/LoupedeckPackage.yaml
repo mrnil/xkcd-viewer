@@ -6,16 +6,16 @@
 type: plugin4
 
 # Name that identifies the plugin.
-name: Xkcd
+name: xkcd
 
 # Plugin name that is shown to the user.
-displayName: Xkcd
+displayName: xkcd
 
 # Short description of the plugin.
 description: Add a short description of the plugin here.
 
 # Name of the plugin library file.
-pluginFileName: XkcdPlugin.dll
+pluginFileName: xkcdPlugin.dll
 
 # Plugin version.
 version: 1.0

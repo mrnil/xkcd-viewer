@@ -51,7 +51,7 @@ public class OpenComicCommand : ActionEditorCommand
             return false;
         }
 
-        XkcdPlugin.Instance?.OpenComic(number);
+        xkcdPlugin.Instance?.OpenComic(number);
         return true;
     }
 }

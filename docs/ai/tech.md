@@ -8,12 +8,12 @@
 | Target Framework | .NET 10.0 (`net10.0`). The installed `PluginApi.dll` (6.4.1.3246+) is built against .NET 10 and a net8.0 project fails to resolve it (`CS1705`) |
 | Nullable Reference Types | Disabled |
 | Implicit Usings | Enabled |
-| Root Namespace | `Loupedeck.XkcdPlugin` |
+| Root Namespace | `Loupedeck.xkcdPlugin` |
 | Plugin type | Universal (`HasNoApplication => true`, `UsesApplicationApiOnly => true`) |
 
 ## Key Dependencies
 
-### Plugin Project (`src/XkcdPlugin.csproj`)
+### Plugin Project (`src/xkcdPlugin.csproj`)
 
 | Package | Version | Purpose |
 |---------|---------|---------|
@@ -21,7 +21,7 @@
 
 No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 10 and are enough for xkcd's JSON API, so don't add a third-party HTTP or JSON library without a reason. Keep this table current.
 
-### Test Project (planned: `tests/XkcdPlugin.Tests/XkcdPlugin.Tests.csproj`)
+### Test Project (planned: `tests/xkcdPlugin.Tests/xkcdPlugin.Tests.csproj`)
 
 Doesn't exist yet. Create it with xUnit + Moq when the first business logic lands (see `test-coverage.md`). It needs its **own** `<Reference Include="PluginApi">` pointing at the same `PluginApiDir` as the main project. A plain file `<Reference>` doesn't flow through a `ProjectReference` at compile time, so the build breaks as soon as test code touches a `PluginApi` type (e.g. `CheckNullArgument`).
 
@@ -30,7 +30,7 @@ Doesn't exist yet. Create it with xUnit + Moq when the first business logic land
 - **Windows**: `C:\Program Files\Logi\LogiPluginService\PluginApi.dll`
 - **macOS**: `/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/PluginApi.dll`
 
-`src/XkcdPlugin.csproj` resolves this through `PluginApiDir`. A Logi Options+ update can bump the `PluginApi` version and its target framework: if the build suddenly fails with `CS1705`, that is why.
+`src/xkcdPlugin.csproj` resolves this through `PluginApiDir`. A Logi Options+ update can bump the `PluginApi` version and its target framework: if the build suddenly fails with `CS1705`, that is why.
 
 ## Code Style: EditorConfig Enforced Rules
 
@@ -49,7 +49,7 @@ Doesn't exist yet. Create it with xUnit + Moq when the first business logic land
 
 See `guidelines.md` for examples.
 
-**How it is enforced.** `EnforceCodeStyleInBuild` is on in `src/XkcdPlugin.csproj`, so `dotnet build` reports the rules as warnings. The build has **zero warnings**; treat any new one as a defect to fix, not noise. They stay warnings, not errors, so a style slip never blocks the hot-reload build. The build does **not** check:
+**How it is enforced.** `EnforceCodeStyleInBuild` is on in `src/xkcdPlugin.csproj`, so `dotnet build` reports the rules as warnings. The build has **zero warnings**; treat any new one as a defect to fix, not noise. They stay warnings, not errors, so a style slip never blocks the hot-reload build. The build does **not** check:
 
 - **BCL type names**: `int` and `string` aren't flagged even with an explicit `IDE0049` severity. Check these yourself and in review.
 - **`_camelCase` private fields (`SX1309`)**: the project references no analyzer that implements it.
@@ -62,13 +62,13 @@ When a rule would make the code worse, first try to restructure so the code sati
 
 ```bash
 # Development build (hot-reloads into Logi Plugin Service via the .link file)
-dotnet build XkcdPlugin.sln
+dotnet build xkcdPlugin.sln
 
 # Release build (for packaging)
-dotnet build XkcdPlugin.sln -c Release
+dotnet build xkcdPlugin.sln -c Release
 
 # Clean (also deletes the .link file)
-dotnet clean XkcdPlugin.sln
+dotnet clean xkcdPlugin.sln
 ```
 
 VS Code: the `.vscode/tasks.json` tasks run the same commands, and the "Attach to Logi Plugin Service" launch config debugs the running plugin.
@@ -76,7 +76,7 @@ VS Code: the `.vscode/tasks.json` tasks run the same commands, and the "Attach t
 ## Tests
 
 ```bash
-dotnet test   # once tests/XkcdPlugin.Tests exists
+dotnet test   # once tests/xkcdPlugin.Tests exists
 ```
 
 See `test-coverage.md`.
@@ -84,9 +84,9 @@ See `test-coverage.md`.
 ## Packaging and Release
 
 ```bash
-LogiPluginTool pack ./bin/Release ./Xkcd-v{VERSION}.lplug4
-LogiPluginTool verify ./Xkcd-v{VERSION}.lplug4
-LogiPluginTool metadata ./Xkcd-v{VERSION}.lplug4
+LogiPluginTool pack ./bin/Release ./xkcd-v{VERSION}.lplug4
+LogiPluginTool verify ./xkcd-v{VERSION}.lplug4
+LogiPluginTool metadata ./xkcd-v{VERSION}.lplug4
 ```
 
 **LogiPluginTool locations on this machine:**
@@ -100,7 +100,7 @@ LogiPluginTool metadata ./Xkcd-v{VERSION}.lplug4
 Update the version in both places for every release:
 
 1. `src/package/metadata/LoupedeckPackage.yaml`: `version:`
-2. `src/XkcdPlugin.csproj`: `<Version>` (add it on the first release; it isn't there yet)
+2. `src/xkcdPlugin.csproj`: `<Version>` (add it on the first release; it isn't there yet)
 
 ## CI/CD
 
