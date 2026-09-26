@@ -5,12 +5,9 @@ namespace Loupedeck.xkcdPlugin
     using System.Linq;
 
     // THROWAWAY hardware spike (branch spike/keypad-grid, never merged).
-    // Round 2 questions:
-    //   1. What DeviceType does the service pass to GetButtonPressActionNames on each device?
-    //   2. With a per-device grid (columns + whether the SDK Back key takes a grid slot), padded with blank
-    //      keys, does the 3x2 comic block land in one piece on every device?
-    //   3. Does an empty display name remove the caption the SDK draws under a folder key's image?
-    //      (Comic tiles and pads return ""; the two control keys keep a caption for comparison.)
+    // Round 3 questions (rounds 1-2 answered: key order, detection, captions, seamless slicing):
+    //   1. With the CT profile corrected (Back takes a grid slot), is the comic block centred-left with no second page?
+    //   2. Gap and Crop slicing (press "mode") and tearing on a full redraw (press "redraw").
     // Watch the plugin log for lines starting "[spike]".
     public class GridSpikeFolder : PluginDynamicFolder
     {
@@ -27,12 +24,13 @@ namespace Loupedeck.xkcdPlugin
             new BitmapColor(20, 80, 40),
         };
 
-        // Observed on hardware in round 1. Anything else falls back to the keypad's 3x3.
+        // Observed on hardware. With ButtonArea navigation the SDK Back key takes grid slot 0 on all three
+        // (round 2; round 1's None moved it to the CT's side strip). Anything else falls back to the keypad's 3x3.
         private static readonly Dictionary<DeviceType, GridProfile> _profiles = new Dictionary<DeviceType, GridProfile>
         {
             [DeviceType.Loupedeck70] = new GridProfile("MX Creative Keypad", 3, true),
             [DeviceType.Loupedeck50] = new GridProfile("Loupedeck Live S", 5, true),
-            [DeviceType.Loupedeck20] = new GridProfile("Loupedeck CT", 4, false),
+            [DeviceType.Loupedeck20] = new GridProfile("Loupedeck CT", 4, true),
         };
 
         private static readonly GridProfile _fallback = new GridProfile("unknown (3x3 fallback)", 3, true);
@@ -59,7 +57,7 @@ namespace Loupedeck.xkcdPlugin
 
         public override Boolean Load()
         {
-            PluginLog.Info("[spike] Loaded (round 2: device detection + caption test)");
+            PluginLog.Info("[spike] Loaded (round 3: CT profile fixed, no captions)");
             return true;
         }
 
@@ -85,8 +83,9 @@ namespace Loupedeck.xkcdPlugin
             return slots.Select(this.CreateCommandName).ToList();
         }
 
-        public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize)
-            => actionParameter == ModeKey || actionParameter == RedrawKey ? actionParameter : String.Empty;
+        // Round 2: an empty display name removes the caption the SDK draws under the image. Every key draws its
+        // own text instead.
+        public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) => String.Empty;
 
         public override void RunCommand(String actionParameter)
         {
