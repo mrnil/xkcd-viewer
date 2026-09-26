@@ -4,16 +4,21 @@ namespace Loupedeck.xkcdPlugin
     using System.Collections.Generic;
     using System.Linq;
 
-    // THROWAWAY hardware spike (branch spike/keypad-grid, never merged) - answers the open questions in
-    // docs/ai/product.md on a real keypad: does Navigation = None free key 0, does our own Back key work,
-    // what order do the nine keys fill, what tile size is passed, how do seams look, does a full redraw tear.
+    // THROWAWAY hardware spike (branch spike/keypad-grid, never merged).
+    // Round 2 questions:
+    //   1. What DeviceType does the service pass to GetButtonPressActionNames on each device?
+    //   2. With a per-device grid (columns + whether the SDK Back key takes a grid slot), padded with blank
+    //      keys, does the 3x2 comic block land in one piece on every device?
+    //   3. Does an empty display name remove the caption the SDK draws under a folder key's image?
+    //      (Comic tiles and pads return ""; the two control keys keep a caption for comparison.)
     // Watch the plugin log for lines starting "[spike]".
     public class GridSpikeFolder : PluginDynamicFolder
     {
-        private const Int32 ComicTileCount = 6;
-        private const Int32 Columns = 3;
-        private const String ModeKey = "6";
-        private const String RedrawKey = "8";
+        private const Int32 Rows = 3;
+        private const Int32 ComicColumns = 3;
+        private const String ModeKey = "mode";
+        private const String RedrawKey = "redraw";
+        private const String PadPrefix = "pad";
 
         private static readonly BitmapColor[] _backgrounds =
         {
@@ -22,9 +27,20 @@ namespace Loupedeck.xkcdPlugin
             new BitmapColor(20, 80, 40),
         };
 
+        // Observed on hardware in round 1. Anything else falls back to the keypad's 3x3.
+        private static readonly Dictionary<DeviceType, GridProfile> _profiles = new Dictionary<DeviceType, GridProfile>
+        {
+            [DeviceType.Loupedeck70] = new GridProfile("MX Creative Keypad", 3, true),
+            [DeviceType.Loupedeck50] = new GridProfile("Loupedeck Live S", 5, true),
+            [DeviceType.Loupedeck20] = new GridProfile("Loupedeck CT", 4, false),
+        };
+
+        private static readonly GridProfile _fallback = new GridProfile("unknown (3x3 fallback)", 3, true);
+
         private readonly Object _lock = new Object();
         private readonly Dictionary<String, BitmapImage> _sources = new Dictionary<String, BitmapImage>();
         private readonly HashSet<PluginImageSize> _loggedSizes = new HashSet<PluginImageSize>();
+        private readonly HashSet<String> _knownNames = new HashSet<String>();
         private SliceMode _mode;
         private Int32 _generation;
 
@@ -43,27 +59,34 @@ namespace Loupedeck.xkcdPlugin
 
         public override Boolean Load()
         {
-            PluginLog.Info($"[spike] Loaded: NavigateUpActionName='{PluginDynamicFolder.NavigateUpActionName}'");
+            PluginLog.Info("[spike] Loaded (round 2: device detection + caption test)");
             return true;
         }
 
-        // The Navigation property is obsolete ("override GetNavigationArea instead"). The device type is
-        // ignored on purpose: the plugin always assumes a 3x3 grid (docs/ai/product.md).
-        public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType _) => PluginDynamicFolderNavigation.None;
+        // Round 1 showed None does not remove the SDK Back key, so round 2 keeps the default and designs around it.
+        public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType _) => PluginDynamicFolderNavigation.ButtonArea;
 
         public override IEnumerable<String> GetButtonPressActionNames(DeviceType deviceType)
         {
-            var names = new List<String>();
-            for (var index = 0; index < 9; index++)
+            var profile = _profiles.TryGetValue(deviceType, out var known) ? known : _fallback;
+            var slots = BuildSlots(profile);
+
+            lock (this._lock)
             {
-                names.Add(index == 7
-                    ? PluginDynamicFolder.NavigateUpActionName
-                    : this.CreateCommandName(index.ToString()));
+                foreach (var slot in slots)
+                {
+                    this._knownNames.Add(slot);
+                }
             }
 
-            PluginLog.Info($"[spike] Button names: {String.Join(" | ", names)}");
-            return names;
+            PluginLog.Info($"[spike] GetButtonPressActionNames: DeviceType={deviceType} (0x{(UInt32)deviceType:X}) -> {profile.Name}, "
+                + $"{profile.Columns} columns, Back in grid: {profile.BackTakesGridSlot}. Slots: {String.Join(" ", slots)}");
+
+            return slots.Select(this.CreateCommandName).ToList();
         }
+
+        public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize)
+            => actionParameter == ModeKey || actionParameter == RedrawKey ? actionParameter : String.Empty;
 
         public override void RunCommand(String actionParameter)
         {
@@ -91,25 +114,62 @@ namespace Loupedeck.xkcdPlugin
 
         public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
         {
-            if (!Int32.TryParse(actionParameter, out var index))
-            {
-                return null;
-            }
-
             try
             {
                 lock (this._lock)
                 {
                     var (width, height) = this.GetTileSize(imageSize);
-                    return index < ComicTileCount
-                        ? this.DrawComicTile(index, imageSize, width, height)
-                        : this.DrawControl(actionParameter, imageSize);
+                    return Int32.TryParse(actionParameter, out var tile)
+                        ? this.DrawComicTile(tile, imageSize, width, height)
+                        : actionParameter.StartsWith(PadPrefix, StringComparison.Ordinal)
+                            ? DrawPad(imageSize)
+                            : this.DrawControl(actionParameter, imageSize);
                 }
             }
             catch (Exception ex)
             {
                 PluginLog.Error(ex, $"[spike] Drawing key '{actionParameter}' at {imageSize} failed");
                 return null;
+            }
+        }
+
+        // Row 0: [SDK Back, if it takes a grid slot] mode redraw, padded to the width.
+        // Rows 1-2: the 3x2 comic block, centred, padded either side.
+        private static List<String> BuildSlots(GridProfile profile)
+        {
+            var slots = new List<String>();
+            var padCount = 0;
+            String Pad() => $"{PadPrefix}{padCount++}";
+
+            var firstRowOwn = profile.Columns - (profile.BackTakesGridSlot ? 1 : 0);
+            slots.Add(ModeKey);
+            slots.Add(RedrawKey);
+            for (var i = 2; i < firstRowOwn; i++)
+            {
+                slots.Add(Pad());
+            }
+
+            var left = (profile.Columns - ComicColumns) / 2;
+            for (var row = 0; row < Rows - 1; row++)
+            {
+                for (var column = 0; column < profile.Columns; column++)
+                {
+                    var comicColumn = column - left;
+                    slots.Add(comicColumn >= 0 && comicColumn < ComicColumns
+                        ? (row * ComicColumns + comicColumn).ToString()
+                        : Pad());
+                }
+            }
+
+            return slots;
+        }
+
+        private static BitmapImage DrawPad(PluginImageSize imageSize)
+        {
+            using (var builder = new BitmapBuilder(imageSize))
+            {
+                builder.Clear(BitmapColor.Black);
+                return builder.ToImage();
             }
         }
 
@@ -130,8 +190,8 @@ namespace Loupedeck.xkcdPlugin
         {
             var gap = this._mode == SliceMode.OffsetWithGap ? Math.Max(2, width / 8) : 0;
             var source = this.GetSource(imageSize, width, height, gap);
-            var x = index % Columns * (width + gap);
-            var y = index / Columns * (height + gap);
+            var x = index % ComicColumns * (width + gap);
+            var y = index / ComicColumns * (height + gap);
 
             BitmapImage slice;
             if (this._mode == SliceMode.CropNoGap)
@@ -163,8 +223,8 @@ namespace Loupedeck.xkcdPlugin
         private BitmapImage DrawControl(String actionParameter, PluginImageSize imageSize)
         {
             var text = actionParameter == ModeKey
-                ? $"6\nmode\n{this._mode}"
-                : $"8\nredraw\n#{this._generation}";
+                ? $"mode\n{this._mode}"
+                : $"redraw\n#{this._generation}";
 
             using (var builder = new BitmapBuilder(imageSize))
             {
@@ -184,7 +244,7 @@ namespace Loupedeck.xkcdPlugin
                 return cached;
             }
 
-            var sourceWidth = Columns * width + 2 * gap;
+            var sourceWidth = ComicColumns * width + 2 * gap;
             var sourceHeight = 2 * height + gap;
 
             using (var builder = new BitmapBuilder(sourceWidth, sourceHeight))
@@ -215,11 +275,33 @@ namespace Loupedeck.xkcdPlugin
 
         private void RedrawAll()
         {
-            PluginLog.Info($"[spike] Redrawing all keys (mode {this._mode}, generation {this._generation})");
-            foreach (var index in Enumerable.Range(0, 9).Where(i => i != 7))
+            String[] names;
+            lock (this._lock)
             {
-                this.CommandImageChanged(index.ToString());
+                names = this._knownNames.ToArray();
             }
+
+            PluginLog.Info($"[spike] Redrawing {names.Length} keys (mode {this._mode}, generation {this._generation})");
+            foreach (var name in names)
+            {
+                this.CommandImageChanged(name);
+            }
+        }
+
+        private sealed class GridProfile
+        {
+            public GridProfile(String name, Int32 columns, Boolean backTakesGridSlot)
+            {
+                this.Name = name;
+                this.Columns = columns;
+                this.BackTakesGridSlot = backTakesGridSlot;
+            }
+
+            public String Name { get; }
+
+            public Int32 Columns { get; }
+
+            public Boolean BackTakesGridSlot { get; }
         }
     }
 }
