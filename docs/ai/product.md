@@ -21,7 +21,7 @@ MX Creative Keypad (3×3)        Loupedeck Live S (5×3)              Loupedeck 
 
 - **Back**: inserted by the SDK. We don't return it.
 - **Prev / Next**: the previous and next comic.
-- **Comic tiles `c0`–`c5`**: pressing any of them opens the comic in the browser (`https://xkcd.com/{num}/`). This is proposed; revisit if accidental presses are a problem.
+- **Comic tiles `c0`–`c5`**: pressing **any** of them opens the current comic in the browser (`https://xkcd.com/{num}/`). Decided 2026-09-27: there's no dedicated "Open" key.
 - **`--`**: blank padding keys that keep the 3×2 block in one piece on wider grids. They show the device's default empty-key grey, not a drawn colour, which is fine.
 - **Dial** (where the device has one): fast scrolling through comics. Later.
 
@@ -96,7 +96,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 ## Still open
 
 1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file). Before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
-2. **Accidental presses** on comic tiles opening the browser: see how it feels in use.
+2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
 
 ## v1 scope
 
