@@ -2,71 +2,112 @@
 
 ## What this is
 
-A Logi Actions SDK plugin that shows the current xkcd comic **across the keys** of the device: one comic split over a block of tiles, with navigation keys beside it. As far as we know, no existing plugin does this.
+A Logi Actions SDK plugin that shows the current xkcd comic **across the keys** of the device: one comic split over a 3×2 block of keys, with navigation keys above it. As far as we know, no existing plugin does this.
 
 It's an at-a-glance view. xkcd is text-heavy, and speech bubbles and labels will usually be unreadable at key size, so reading a comic properly means opening it in the browser, which is one key press away.
 
-## The grid: always 3×3
-
-**The plugin can't detect which device it's running on, so it always assumes a 3×3 grid of keys**, on every device. There's no device-specific layout and no runtime detection: `GetButtonPressActionNames` always returns the same nine names. Ignore its `DeviceType` parameter (and the one on `GetNavigationArea`, etc.), and never branch on it.
-
-Design and test on the **MX Creative Keypad**, which is exactly 3×3.
+Everything under "Hardware facts" was **confirmed on real devices** (MX Creative Keypad, Loupedeck Live S, Loupedeck CT) with a throwaway spike on branch `spike/keypad-grid`, 2026-09-26/27. That branch's `src/Actions/GridSpikeFolder.cs` is a working reference for every mechanism below. Don't merge it; build the real folder fresh, with tests.
 
 ## Layout
 
-The comic fills the top two rows, a 3:2 landscape area that suits most comics. The bottom row holds the controls:
+The SDK always puts its own Back key in the top-left grid slot (see "Navigation"), so the controls go on the top row and the comic gets the two rows below:
 
 ```text
-[ comic ][ comic ][ comic ]
-[ comic ][ comic ][ comic ]
-[ Prev  ][ Open  ][ Next  ]
+MX Creative Keypad (3×3)        Loupedeck Live S (5×3)              Loupedeck CT (4×3)
+[Back][Prev][Next]              [Back][Prev][Next][ -- ][ -- ]      [Back][Prev][Next][ -- ]
+[ c0 ][ c1 ][ c2 ]              [ -- ][ c0 ][ c1 ][ c2 ][ -- ]      [ c0 ][ c1 ][ c2 ][ -- ]
+[ c3 ][ c4 ][ c5 ]              [ -- ][ c3 ][ c4 ][ c5 ][ -- ]      [ c3 ][ c4 ][ c5 ][ -- ]
 ```
 
+- **Back**: inserted by the SDK. We don't return it.
 - **Prev / Next**: the previous and next comic.
-- **Middle key**: open the comic in the browser (`https://xkcd.com/{num}/`). Candidates for a long press or a later alternative: show the alt text, or go back out of the folder.
-- **Dial** (where the device has one): fast scrolling through comics.
+- **Comic tiles `c0`–`c5`**: pressing any of them opens the comic in the browser (`https://xkcd.com/{num}/`). This is proposed; revisit if accidental presses are a problem.
+- **`--`**: blank padding keys that keep the 3×2 block in one piece on wider grids. They show the device's default empty-key grey, not a drawn colour, which is fine.
+- **Dial** (where the device has one): fast scrolling through comics. Later.
 
-## How it works
+## Hardware facts
 
-A `PluginDynamicFolder` is a workspace whose keys the plugin fully controls. Verified against PluginApi 6.4.1.3246 by reflection:
+### Detecting the device
 
-1. **Keys**: override `GetButtonPressActionNames(DeviceType deviceType)` to return one name per key, built with `this.CreateCommandName("0")` … `this.CreateCommandName("8")`. `RunCommand(String actionParameter)` and `GetCommandImage(String actionParameter, PluginImageSize imageSize)` then get `"0"`…`"8"`. On a folder these overrides are `public`. Mapping a key index to its row and column (`index / 3`, `index % 3`), and the row to "comic tile" or "control", is pure logic with the 3×3 grid as a constant. Put it in a tested helper.
-2. **Image slicing**: download the comic once (`BitmapImage.FromArray(bytes)`), scale it to fit the six-tile comic area, and cut out one tile per key. `BitmapBuilder` supports this: `new BitmapBuilder(imageSize)`, then `DrawImage(image, x, y, width, height)` with a negative offset to place the right part of the scaled comic in the tile (or `Crop(x, y, w, h)`), then `ToImage()`. **Cache the six tiles per comic and size**; never re-slice inside `GetCommandImage`.
-3. **Redraw on change**: a folder has **no** `ActionImageChanged`. Call `this.CommandImageChanged(actionParameter)` once for each key (all nine when the comic changes). `ButtonActionNamesChanged()` is only for when the *set* of keys changes.
-4. **Navigation**: override `public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType _)` (values `None`, `ButtonArea`, `EncoderArea`). The `Navigation` property is **obsolete**: the compiler warns "override GetNavigationArea instead". **Known: on a dynamic folder, key 0 (top-left) is the SDK's Back key** under the default navigation, so by default comic tile 0 is lost. Returning `PluginDynamicFolderNavigation.None` should give the plugin all nine keys, but then Home is the only built-in way out. `PluginDynamicFolder.NavigateUpActionName` (a **static** property, value `$@Generic___@DynamicFolderGoUp`) can be returned from `GetButtonPressActionNames` to put our own Back key wherever we choose (e.g. the middle bottom key).
-5. **Dial**: a folder's encoders are defined the same way, with `GetEncoderRotateActionNames(DeviceType)` and `ApplyAdjustment(String actionParameter, Int32 diff)`.
+There is **no API for the number of slots on a page**, but the SDK passes the actual device to `GetButtonPressActionNames(DeviceType deviceType)`. `DeviceTypeAliases` maps each device to its own `DeviceType` bit:
 
-The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.com/{num}/info.0.json`. See `secure-coding.md` → "This Plugin" for how to treat those responses.
+| Device | `DeviceType` | Alias | Grid | SDK Back key |
+|---|---|---|---|---|
+| MX Creative Keypad | `Loupedeck70` (0x10000) | `MxCreativeKeypad` | 3 × 3 | grid slot 0 |
+| Loupedeck Live S | `Loupedeck50` (0x800) | `LoupedeckLiveS` | 5 × 3 | grid slot 0 |
+| Loupedeck CT | `Loupedeck20` (0x100) | `LoupedeckCt` | 4 × 3 | grid slot 0 |
+| **Anything else** | | | **assume 3 × 3** | assume grid slot 0 |
 
-## Risks and open questions: test these first, on hardware
+Confirmed on hardware for the three listed devices. Other aliases exist (`LoupedeckLive` = `Loupedeck30`, `RazerStreamController` = `Loupedeck40`, `RazerStreamControllerX` = `Loupedeck60`, `MxCreativeDialpad` = `Loupedeck71`), but their grids haven't been observed, so they use the 3×3 fallback until someone tests one. Log the `DeviceType` whenever the fallback is used.
 
-Build a throwaway spike that answers these before building the real feature:
+The per-device table and the slot list it produces (controls, padding, comic tiles) are pure logic. Put them in a tested helper, with `DeviceType` mapped to a plain grid description at the SDK boundary.
 
-1. **Navigation**: key 0 is the Back key by default (known). Still to confirm: does returning `None` from `GetNavigationArea` free key 0 for a comic tile, and does our own `NavigateUpActionName` key on the bottom row work as a way out? If not, the layout has to give up tile 0 (e.g. comic on the bottom two rows, keys 3–8, with Prev and Next on keys 1 and 2 beside Back).
-2. **Key order**: the SDK doesn't say which key an action name lands on. Confirm that the nine returned names fill the grid left to right, top to bottom.
-3. **Tile size**: `PluginImageSize` comes in several sizes (`Width60`, `Width90`, `Width116`, and pixel variants). This isn't device detection: each `GetCommandImage` call is told the size to draw at. Slice for the size given, never an assumed one, and log what the keypad passes.
-4. **Bezels**: the physical gaps between keys break up the picture. Try both a seamless slice and one that skips a strip at each seam (so the picture reads as if seen through a grille), and compare on the device. A sibling project that drew a 3×3 block across keys found that text hidden behind a gap is lost, so avoid placing anything that must stay readable across a seam.
-5. **Redraw**: confirm that `CommandImageChanged` for all nine keys updates the whole block cleanly, without visible tearing between tiles.
-6. **Manifest**: `supportedDevices` currently lists only `LoupedeckCtFamily`, and the SDK documents no value for the MX Creative Keypad. Find out what's needed for the plugin to appear on the keypad (`LogiPluginTool verify`, SDK docs, or Logi) before the first release.
+### Key order and paging
+
+The names returned by `GetButtonPressActionNames` fill the grid **left to right, top to bottom**, at the device's real width, **after** the SDK's Back key. Return exactly `columns × 3 − 1` names. One more and the SDK silently starts a second page, which the user reaches with the keypad's `<` `>` buttons.
+
+### Navigation
+
+Override `GetNavigationArea(DeviceType _)` and return `PluginDynamicFolderNavigation.ButtonArea`. The `Navigation` property is **obsolete** (compiler warning CS0618).
+
+- **`ButtonArea`**: the SDK Back key takes **grid slot 0 on all three devices**.
+- **`None`** doesn't remove the Back key, even though the docs say navigation is then "fully done by the plugin developer". It stays in slot 0 on the keypad and Live S. On the CT it moves to the left side strip, which is the one difference, and it makes the layout vary by navigation mode. Don't use `None`.
+- `PluginDynamicFolder.NavigateUpActionName` (static, value `$@Generic___@DynamicFolderGoUp`) adds a *second* Back key. We don't need it.
+
+### Captions: return an empty display name
+
+By default, a folder key shows our image **shrunk into the top two-thirds, with the display name drawn as a caption underneath**. Folders have no `IsWidget`. The fix: **`GetCommandDisplayName` returns `String.Empty`** for every key, and the image then fills the whole key. Every key draws its own text into its image.
+
+### Slicing: Crop, no gap
+
+Tile sizes seen: `Width116` = **116 × 116 px** and `Width90` = **80 × 80 px**. Always slice for the `imageSize` that `GetCommandImage` is given.
+
+Three slicing methods were compared on the devices. **Crop with no gap looks best**:
+
+```csharp
+using (var builder = new BitmapBuilder(sourceWidth, sourceHeight))   // source = the whole 3×2 area
+{
+    builder.DrawImage(source, 0, 0);
+    builder.Crop(column * tileWidth, row * tileHeight, tileWidth, tileHeight);
+    tile = builder.ToImage();
+}
+```
+
+A negative-offset `DrawImage` gives the same geometry. Skipping a strip at each seam (a "grille") looked worse. The picture reads as continuous across the physical gaps on all three devices, but **text crossing a seam loses letters**, so never draw anything that must stay readable across a seam.
+
+Build the scaled source once per comic and tile size, and cache the six tiles. `BitmapBuilder` is `IDisposable`.
+
+### Redraw
+
+`CommandImageChanged(actionParameter)` for each key updates **all tiles at the same moment**, with no visible tearing. A folder has no `ActionImageChanged`. `ButtonActionNamesChanged()` is only for when the set of keys changes.
+
+## Data
+
+The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.com/{num}/info.0.json`. Download the image with `BitmapImage.FromArray(bytes)`. See `secure-coding.md` → "This Plugin" for how to treat those responses.
 
 ## Comic shapes
 
-Most comics are landscape and fit the 3:2 area well. For the rest:
+The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 - **Tall or square comics**: fit into the area and letterbox (black bars). Wasted space is acceptable.
-- **Very large or very tall comics** (e.g. multi-panel epics, interactive comics): even the thumbnail is meaningless. Show the title and number across the tiles instead, with "Open" still working.
-- The decision "which of these is it" is pure logic on the image's width and height. Put it in a tested helper (`structure.md` pattern 5).
+- **Very large or very tall comics** (e.g. multi-panel epics, interactive comics): even the thumbnail is meaningless. Show the title and number across the tiles instead, with "open in browser" still working.
+- Deciding which case applies is pure logic on the image's width and height. Put it in a tested helper (`structure.md` pattern 5).
+
+## Still open
+
+1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file). Before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
+2. **Accidental presses** on comic tiles opening the browser: see how it feels in use.
 
 ## v1 scope
 
-- The folder with the 6-tile comic and the Prev / Open / Next row
-- Latest comic on open; Prev/Next by number (skipping comic 404, which doesn't exist)
+- The folder with the 3×2 comic block and the Prev / Next row, laid out per device as above
+- Latest comic on open; Prev/Next by number (skipping comic 404, which doesn't exist); a comic tile press opens it in the browser
 - Comics and sliced tiles cached in memory; the latest comic number checked at most every few minutes
 - A sensible placeholder while loading and when offline
 
 ## Later (not committed)
 
-- Alt text on a key (long press on the middle key, or a separate view)
-- A random-comic key
+- Use the spare top-row keys on wider grids (random comic, alt text)
+- Alt text view
 - Favourites
 - A dial for fast scrolling where one is available

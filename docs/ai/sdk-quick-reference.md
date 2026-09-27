@@ -271,6 +271,14 @@ An `ActionEditorCommand` with `IsWidget = true` and a `GetCommandImage` override
 
 **Consequence**: build any action that needs a custom image on `PluginDynamicCommand` (or a folder), not `ActionEditorCommand`. Don't re-debug the rendering code if you hit this.
 
+### Dynamic folders (confirmed on MX Creative Keypad, Live S and CT for this plugin)
+
+- **Folder key images get a caption.** The SDK shrinks the image and draws the display name under it. Folders have no `IsWidget`: return `String.Empty` from `GetCommandDisplayName` and the image fills the key.
+- **The SDK Back key can't be removed.** With `ButtonArea` it takes grid slot 0 on all three devices. With `None` it stays in slot 0 on the keypad and Live S, and moves to the side strip on the CT. `Navigation` is obsolete: override `GetNavigationArea` instead.
+- **Names fill left to right, top to bottom, at the device's real width**, after the Back key. Any extra spill onto an automatic second page.
+- **The device is known**: `GetButtonPressActionNames(DeviceType)` receives the real device. See the `DeviceType` table in `product.md`.
+- **`CommandImageChanged` per key redraws a whole block at once**, with no visible tearing.
+
 ### A user-set caption overrides the dynamic display name
 
 Once a user types a caption for a button in the Loupedeck/Options+ UI, that text permanently replaces the value from `GetCommandDisplayName`, and there's no known way to reset it. Anything the user must always see (state, the comic number) should be drawn into the image, not left only in the display name.
