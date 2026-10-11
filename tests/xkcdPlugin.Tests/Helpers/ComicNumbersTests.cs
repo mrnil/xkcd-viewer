@@ -58,5 +58,36 @@ namespace Loupedeck.xkcdPlugin.Tests
         {
             Assert.Equal(404, ComicNumbers.Next(403, 404));
         }
+
+        [Theory]
+        [InlineData("353", 353)]
+        [InlineData("1", 1)]
+        [InlineData("404", 404)]
+        public void ParseSaved_ComicNumber_ReturnsIt(String saved, Int32 expected)
+        {
+            Assert.Equal(expected, ComicNumbers.ParseSaved(saved));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("0")]
+        [InlineData("-3")]
+        [InlineData("+3")]
+        [InlineData(" 3")]
+        [InlineData("3.0")]
+        [InlineData("1,000")]
+        [InlineData("99999999999")]
+        [InlineData("latest")]
+        public void ParseSaved_NotAComicNumber_ReturnsNull(String saved)
+        {
+            Assert.Null(ComicNumbers.ParseSaved(saved));
+        }
+
+        [Fact]
+        public void FormatSaved_RoundTripsThroughParseSaved()
+        {
+            Assert.Equal(3309, ComicNumbers.ParseSaved(ComicNumbers.FormatSaved(3309)));
+        }
     }
 }

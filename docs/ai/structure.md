@@ -6,17 +6,21 @@
 xkcdPlugin/
 ├── src/                              # Plugin source code
 │   ├── Actions/                      # Loupedeck SDK command/adjustment/folder classes
-│   │   ├── CounterCommand.cs         # SDK template example - delete with the first real action
-│   │   └── CounterAdjustment.cs      # SDK template example - delete with the first real action
+│   │   └── ComicFolder.cs            # The xkcd folder: layout, key images, presses. Users place it by this name
 │   ├── Helpers/
+│   │   ├── BrowserLauncher.cs        # Opens a comic page (only https://xkcd.com/{num}/) in the default browser
 │   │   ├── ComicFit.cs               # Comic image → letterboxed picture or title card, and where it goes
 │   │   ├── ComicNumbers.cs           # Prev/Next comic numbers (stays within 1..latest)
 │   │   ├── DeviceGrid.cs             # DeviceType → grid columns, as observed on hardware; 3 for anything else
 │   │   ├── FolderLayout.cs           # The folder's keys (Prev, Next, padding, comic tiles) and their action names
+│   │   ├── KeyContent.cs             # What each key shows, decided from the ComicView
+│   │   ├── KeyRenderer.cs            # Draws keys with BitmapBuilder (SDK-bound, thin; decisions live in tested helpers)
+│   │   ├── LruCache.cs               # Generic count-limited LRU; the folder caches comic areas in it
 │   │   ├── PluginLog.cs              # SDK-provided static logging facade
 │   │   ├── PluginLogAdapter.cs       # IPluginLog over PluginLog, for injecting into services
 │   │   ├── PluginResources.cs        # Embedded resource access helper (filename-only lookup)
-│   │   └── PluginTimings.cs          # Timeouts and intervals: HTTP timeout, failed-load retry delay
+│   │   ├── PluginTimings.cs          # Timeouts and intervals: HTTP timeout, failed-load retry delay
+│   │   └── TitleCardLayout.cs        # Splits "#num" and the title across the six tiles, no word crossing a seam
 │   ├── Models/
 │   │   ├── ComicView.cs              # What the folder draws: current comic, Loading/Ready/Failed, image, Prev/Next possible
 │   │   └── xkcdComic.cs              # A validated comic: number, display-ready title, image URL or null, page URL
@@ -36,6 +40,7 @@ xkcdPlugin/
 │   └── Directory.Build.props         # LangVersion + obj/ location - see note below
 ├── tests/
 │   └── xkcdPlugin.Tests/             # xUnit + Moq; mirrors src/ folders (Helpers/ → Helpers/*Tests.cs)
+│       ├── Actions/                  # Constructor smoke tests only (SDK glue is exempt)
 │       ├── Fixtures/                 # Real info.0.json responses captured from the API (see its README.md)
 │       ├── ManualTimeProvider.cs     # A clock tests move by hand
 │       ├── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
@@ -97,7 +102,7 @@ Dependencies point one way: Actions → Plugin → Services. Services never refe
 
 ### 2. Singleton Instance
 
-`xkcdPlugin` doesn't have one yet. Add `public static xkcdPlugin Instance { get; private set; }`, set in the constructor, once the first action needs a service. Actions then reach services through `xkcdPlugin.Instance?.…`. Always null-propagate: actions can be constructed before the plugin is fully initialized.
+`xkcdPlugin.Instance` is set in the plugin's constructor; the services (`Comics`, `ServiceLog`) are created in `Load()`. Actions reach them through `xkcdPlugin.Instance?.Comics`. Always null-propagate: actions can be constructed before the plugin is fully initialized.
 
 ### 3. Command Registry / Self-Registration (introduce when needed)
 

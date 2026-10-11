@@ -22,7 +22,7 @@ MX Creative Keypad (3×3)        Loupedeck Live S (5×3)              Loupedeck 
 - **Back**: inserted by the SDK. We don't return it.
 - **Prev / Next**: the previous and next comic.
 - **Comic tiles `c0`–`c5`**: pressing **any** of them opens the current comic in the browser (`https://xkcd.com/{num}/`). Decided 2026-09-27: there's no dedicated "Open" key.
-- **`--`**: blank padding keys that keep the 3×2 block in one piece on wider grids. They show the device's default empty-key grey, not a drawn colour, which is fine.
+- **`--`**: blank padding keys that keep the 3×2 block in one piece on wider grids. They show the device's default empty-key grey, not a drawn colour, which is fine. (`GetCommandImage` returns null for them.)
 - **Dial** (where the device has one): fast scrolling through comics. Later.
 
 ## Hardware facts
@@ -75,7 +75,7 @@ using (var builder = new BitmapBuilder(sourceWidth, sourceHeight))   // source =
 
 A negative-offset `DrawImage` gives the same geometry. Skipping a strip at each seam (a "grille") looked worse. The picture reads as continuous across the physical gaps on all three devices, but **text crossing a seam loses letters**, so never draw anything that must stay readable across a seam.
 
-Build the scaled source once per comic and tile size, and cache the six tiles. `BitmapBuilder` is `IDisposable`.
+Build the scaled source once per comic and tile size. `ComicFolder` caches that whole area privately (7 comics, matching the image cache) and cuts a fresh tile from it on each draw with the negative-offset `DrawImage`. It doesn't cache the tiles themselves: `BitmapImage` is `IDisposable` and the SDK docs don't say who owns an image once it has been returned, so no image handed to the SDK is ever reused or disposed by the plugin.
 
 ### Redraw
 
@@ -103,6 +103,26 @@ What real responses showed (captured as test fixtures in `tests/xkcdPlugin.Tests
 - **The latest comic is fetched once per session.** It's where Next stops, and the starting comic on a first run. If that fetch fails, the last-viewed comic still shows, and Next asks for the latest again (after the 30 s wait) instead of moving.
 
 The cut tiles are cached by the folder itself (step 3), because they're SDK `BitmapImage`s.
+
+## The folder (step 3)
+
+Decided 2026-10-11:
+
+- **Getting there:** the user places the **xkcd** folder action on any key. That key shows a plain lowercase "xkcd" wordmark, drawn as text until a real logo image is supplied. A comic thumbnail on it was ruled out: the owner has later plans it wouldn't suit. Pressing it opens the folder, which starts the service (`Activate()`), at the last comic viewed.
+- **Prev / Next:** a chevron, with no comic number. Dimmed when there's nowhere to go.
+- **Comic tiles:** one sixth of the comic each. While loading, the top-middle tile says "loading…" (yellow) and the bottom-middle one the comic number. When offline, it says "offline" (grey). Text never crosses a seam.
+- **Title card** (no image, or a shape `ComicFit` rejects): "#num" on tile 0, and the title word-wrapped across tiles 1–5 by `TitleCardLayout` (3 lines of 9 characters per tile, long words hyphenated, an ellipsis if it overflows). Black on white, like xkcd.
+- **A tile press** opens `https://xkcd.com/{num}/`, built from the number, so it works even while the comic is loading or offline. `BrowserLauncher` refuses any other URL. The SDK has no API for opening a URL, so it uses the OS (`open` on macOS, shell execute on Windows).
+- **Last viewed** is saved as the plugin setting `LastViewedComic`, locally only, whenever the comic changes.
+
+### Hardware test checklist
+
+- The layout on each device (keypad 3×3, Live S 5×3, CT 4×3), and the folder key's wordmark
+- Prev/Next feel instant; the chevrons dim at the first and latest comics
+- Real comics in tiles: ordinary strips, tall ones (#1732), huge ones (#657), interactive ones (#1663 → title card), and #404. This tunes the `ComicFit` thresholds and `TitleCardLayout`'s 9×3 text size
+- Loading and offline placeholders (disconnect the network)
+- The last-viewed comic survives a plugin restart
+- A tile press opens the right page
 
 ## Comic shapes
 

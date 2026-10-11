@@ -2,34 +2,56 @@ namespace Loupedeck.xkcdPlugin
 {
     using System;
 
-    // This class contains the plugin-level logic of the Loupedeck plugin.
-
+    // Owns the services and remembers the last comic viewed across sessions. Kept thin: everything it does is
+    // wiring that needs the plugin runtime.
     public class xkcdPlugin : Plugin
     {
-        // Gets a value indicating whether this is an API-only plugin.
-        public override Boolean UsesApplicationApiOnly => true;
+        private const String LastViewedComicSetting = "LastViewedComic";
 
-        // Gets a value indicating whether this is a Universal plugin or an Application plugin.
-        public override Boolean HasNoApplication => true;
+        private Int32? _savedNum;
 
-        // Initializes a new instance of the plugin class.
         public xkcdPlugin()
         {
-            // Initialize the plugin log.
             PluginLog.Init(this.Log);
-
-            // Initialize the plugin resources.
             PluginResources.Init(this.Assembly);
+            xkcdPlugin.Instance = this;
         }
 
-        // This method is called when the plugin is loaded.
+        // Actions can be constructed before Load runs, so they must null-check this and Comics.
+        public static xkcdPlugin Instance { get; private set; }
+
+        public override Boolean UsesApplicationApiOnly => true;
+
+        public override Boolean HasNoApplication => true;
+
+        // For services, which take IPluginLog so tests can check what they log.
+        public IPluginLog ServiceLog { get; } = new PluginLogAdapter();
+
+        public ComicService Comics { get; private set; }
+
         public override void Load()
         {
+            this._savedNum = this.TryGetPluginSetting(LastViewedComicSetting, out var saved) ? ComicNumbers.ParseSaved(saved) : null;
+            this.Comics = new ComicService(new xkcdClient(this.ServiceLog), this.ServiceLog, this._savedNum);
+            this.Comics.Changed += this.OnComicChanged;
+            PluginLog.Info($"Loaded; starting at comic {(this._savedNum.HasValue ? ComicNumbers.FormatSaved(this._savedNum.Value) : "latest")}");
         }
 
-        // This method is called when the plugin is unloaded.
         public override void Unload()
         {
+            this.Comics?.Changed -= this.OnComicChanged;
+        }
+
+        // Saved locally only: which comic was open isn't worth backing up to the cloud.
+        private void OnComicChanged(Object sender, EventArgs e)
+        {
+            if (this.Comics.View.Num is not Int32 num || num == this._savedNum)
+            {
+                return;
+            }
+
+            this._savedNum = num;
+            this.SetPluginSetting(LastViewedComicSetting, ComicNumbers.FormatSaved(num), false);
         }
     }
 }

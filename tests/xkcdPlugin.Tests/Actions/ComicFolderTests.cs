@@ -1,0 +1,17 @@
+namespace Loupedeck.xkcdPlugin.Tests
+{
+    using Xunit;
+
+    // SDK glue is exempt from coverage (docs/ai/test-coverage.md); this only checks the wiring users see.
+    public class ComicFolderTests
+    {
+        [Fact]
+        public void Constructor_SetsTheNameUsersSee()
+        {
+            var folder = new ComicFolder();
+
+            Assert.Equal("xkcd", folder.DisplayName);
+            Assert.Equal("xkcd", folder.GroupName);
+        }
+    }
+}
