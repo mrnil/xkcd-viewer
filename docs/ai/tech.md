@@ -28,9 +28,8 @@ No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 1
 | `xunit` | 2.9.3 | Test framework |
 | `xunit.runner.visualstudio` | 3.1.4 | Test adapter for `dotnet test` and IDEs |
 | `Microsoft.NET.Test.Sdk` | 17.14.1 | Test host |
+| `Moq` | 4.20.72 | Mocks (`IPluginLog` so far) |
 | `coverlet.collector` | 6.0.4 | `dotnet test --collect:"XPlat Code Coverage"` |
-
-Add Moq along with the first test that needs a mock (the first service); nothing mocks anything yet.
 
 The project has its **own** `<Reference Include="PluginApi">` pointing at the same `PluginApiDir` as the main project. A plain file `<Reference>` doesn't flow through a `ProjectReference` at compile time, so without it the build breaks as soon as test code touches a `PluginApi` type (e.g. `DeviceType`). It also sets `EnforceCodeStyleInBuild`.
 

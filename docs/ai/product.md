@@ -83,7 +83,14 @@ Build the scaled source once per comic and tile size, and cache the six tiles. `
 
 ## Data
 
-The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.com/{num}/info.0.json`. Download the image with `BitmapImage.FromArray(bytes)`. See `secure-coding.md` → "This Plugin" for how to treat those responses.
+The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.com/{num}/info.0.json`, through `IxkcdClient` (`src/Services/`). Decode the image bytes with `BitmapImage.FromArray(bytes)`. See `secure-coding.md` → "This Plugin" for how to treat those responses.
+
+What real responses showed (captured as test fixtures in `tests/xkcdPlugin.Tests/Fixtures/`):
+
+- `num` is a JSON number. `month`, `day` and `year` are strings. Nothing uses the dates yet.
+- `title` can hold HTML tags (#472) and entities (#259). `safe_title` is clean but can lose characters (#259's "Clichd"). So the title shown is `title` with tags stripped and entities decoded, falling back to `safe_title`, then to `#num`.
+- Interactive comics (#1608, #1663) have `img` set to `https://imgs.xkcd.com/comics/` with no file name. They load with no image and get the title card.
+- Comic 404 answers HTTP 404 with an HTML page.
 
 ## Comic shapes
 

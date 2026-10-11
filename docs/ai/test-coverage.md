@@ -1,6 +1,6 @@
 # Test Coverage & Architecture Policy
 
-Applies to `tests/xkcdPlugin.Tests/` (xUnit, plus Moq once the first service needs it; see `tech.md`). Test files mirror the `src/` folders: `src/Helpers/ComicFit.cs` is tested in `tests/xkcdPlugin.Tests/Helpers/ComicFitTests.cs`.
+Applies to `tests/xkcdPlugin.Tests/` (xUnit + Moq; see `tech.md`). Test files mirror the `src/` folders: `src/Helpers/ComicFit.cs` is tested in `tests/xkcdPlugin.Tests/Helpers/ComicFitTests.cs`.
 
 ## Overall Approach
 
@@ -62,7 +62,7 @@ For every service method, test:
 
 The class that calls `https://xkcd.com` directly needs a fake `HttpMessageHandler`, not a mock of itself. Mocking `IxkcdClient` tests the *caller*, and never runs the client's own URL building, status handling or JSON mapping.
 
-1. Give the client a second, `internal` constructor that takes an `HttpClient`. Production code uses the public constructor with a single shared static `HttpClient`. Expose the internal constructor to tests with `[assembly: InternalsVisibleTo("xkcdPlugin.Tests")]` (e.g. in `src/Helpers/AssemblyInfo.cs`) instead of making it public.
+1. Give the client a second, `internal` constructor that takes an `HttpClient`. Production code uses the public constructor with a single shared static `HttpClient`. `src/xkcdPlugin.csproj` exposes internals to the test project with `<InternalsVisibleTo Include="xkcdPlugin.Tests" />`, so internal members don't have to be made public for testing. `xkcdClient` is the worked example.
 2. Write a small `StubHttpMessageHandler` that records every `HttpRequestMessage` and returns a response supplied by the test.
 3. Assert on the recorded request (URL) and the parsed result. Cover what a mock can't: the exact URL for "latest" vs a numbered comic, 404 handling, malformed or missing JSON fields, and that the wire JSON maps onto the model.
 

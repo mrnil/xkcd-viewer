@@ -14,7 +14,17 @@ xkcdPlugin/
 │   │   ├── DeviceGrid.cs             # DeviceType → grid columns, as observed on hardware; 3 for anything else
 │   │   ├── FolderLayout.cs           # The folder's keys (Prev, Next, padding, comic tiles) and their action names
 │   │   ├── PluginLog.cs              # SDK-provided static logging facade
-│   │   └── PluginResources.cs        # Embedded resource access helper (filename-only lookup)
+│   │   ├── PluginLogAdapter.cs       # IPluginLog over PluginLog, for injecting into services
+│   │   ├── PluginResources.cs        # Embedded resource access helper (filename-only lookup)
+│   │   └── PluginTimings.cs          # Timeouts and intervals (HTTP timeout so far)
+│   ├── Models/
+│   │   └── xkcdComic.cs              # A validated comic: number, display-ready title, image URL or null, page URL
+│   ├── Services/
+│   │   ├── ComicJson.cs              # info.0.json → xkcdComic; normalizes the title, drops disallowed images
+│   │   ├── IPluginLog.cs             # Logging interface services depend on
+│   │   ├── IxkcdClient.cs            # The xkcd API: latest, by number, image bytes. Null on any failure
+│   │   ├── xkcdClient.cs             # HttpClient implementation: no redirects, timeout, size caps
+│   │   └── xkcdUrls.cs               # Every URL requested or opened is built or checked here
 │   ├── package/metadata/             # LoupedeckPackage.yaml (manifest) + Icon256x256.png
 │   ├── xkcdPlugin.cs                 # Main plugin class (Plugin subclass)
 │   ├── xkcdApplication.cs            # ClientApplication subclass (unused: this is a universal plugin)
@@ -22,7 +32,9 @@ xkcdPlugin/
 │   ├── xkcdPlugin.csproj.user        # Visual Studio F5 target (LogiPluginService.exe); git-ignored
 │   └── Directory.Build.props         # LangVersion + obj/ location - see note below
 ├── tests/
-│   └── xkcdPlugin.Tests/             # xUnit; mirrors src/ folders (Helpers/ → Helpers/*Tests.cs)
+│   └── xkcdPlugin.Tests/             # xUnit + Moq; mirrors src/ folders (Helpers/ → Helpers/*Tests.cs)
+│       ├── Fixtures/                 # Real info.0.json responses captured from the API (see its README.md)
+│       └── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config + build/pack tasks
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
