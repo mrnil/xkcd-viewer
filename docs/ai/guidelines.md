@@ -98,7 +98,7 @@ public class XkcdPlugin : Plugin
 public interface IXkcdClient
 ```
 
-Only the "xkcd" part stays lowercase; the rest of the identifier follows the normal rules (`IxkcdClient`, `_xkcdClient`, `LoadxkcdComic` is fine but prefer `LoadComic`). `src/.editorconfig`'s PascalCase naming rules are `suggestion` severity, so these names don't produce build warnings. Don't raise those rules to `warning` without first adding an exception for this.
+Only the "xkcd" part stays lowercase; the rest of the identifier follows the normal rules (`IxkcdClient`, `_xkcdClient`, `LoadxkcdComic` is fine but prefer `LoadComic`). `.editorconfig`'s PascalCase naming rules are `suggestion` severity, so these names don't produce build warnings. Don't raise those rules to `warning` without first adding an exception for this.
 
 ### Comments
 

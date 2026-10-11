@@ -40,7 +40,7 @@ There is **no API for the number of slots on a page**, but the SDK passes the ac
 
 Confirmed on hardware for the three listed devices. Other aliases exist (`LoupedeckLive` = `Loupedeck30`, `RazerStreamController` = `Loupedeck40`, `RazerStreamControllerX` = `Loupedeck60`, `MxCreativeDialpad` = `Loupedeck71`), but their grids haven't been observed, so they use the 3×3 fallback until someone tests one. Log the `DeviceType` whenever the fallback is used.
 
-The per-device table and the slot list it produces (controls, padding, comic tiles) are pure logic. Put them in a tested helper, with `DeviceType` mapped to a plain grid description at the SDK boundary.
+The per-device table is `src/Helpers/DeviceGrid.cs` (`IsKnown` tells the folder when to log the fallback). The slot list it produces (controls, padding, comic tiles) and the action names are `src/Helpers/FolderLayout.cs`, which takes only a column count.
 
 ### Key order and paging
 
@@ -91,7 +91,8 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 - **Tall or square comics**: fit into the area and letterbox (black bars). Wasted space is acceptable.
 - **Very large or very tall comics** (e.g. multi-panel epics, interactive comics): even the thumbnail is meaningless. Show the title and number across the tiles instead, with "open in browser" still working.
-- Deciding which case applies is pure logic on the image's width and height. Put it in a tested helper (`structure.md` pattern 5).
+- Deciding which case applies is `src/Helpers/ComicFit.cs`, from the image's width and height. A comic gets the title card if it would be shrunk below **0.2×** to fit, or if its shape would cover less than **a quarter** of the area (taller than about 3:8, or wider than 6:1). Both thresholds are first guesses: check them on hardware against real comics and adjust.
+- A comic smaller than the area is scaled up to fit it.
 
 ## Still open
 

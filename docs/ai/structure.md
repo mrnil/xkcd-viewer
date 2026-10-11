@@ -9,6 +9,10 @@ xkcdPlugin/
 │   │   ├── CounterCommand.cs         # SDK template example - delete with the first real action
 │   │   └── CounterAdjustment.cs      # SDK template example - delete with the first real action
 │   ├── Helpers/
+│   │   ├── ComicFit.cs               # Comic image → letterboxed picture or title card, and where it goes
+│   │   ├── ComicNumbers.cs           # Prev/Next comic numbers (skips 404, stays within 1..latest)
+│   │   ├── DeviceGrid.cs             # DeviceType → grid columns, as observed on hardware; 3 for anything else
+│   │   ├── FolderLayout.cs           # The folder's keys (Prev, Next, padding, comic tiles) and their action names
 │   │   ├── PluginLog.cs              # SDK-provided static logging facade
 │   │   └── PluginResources.cs        # Embedded resource access helper (filename-only lookup)
 │   ├── package/metadata/             # LoupedeckPackage.yaml (manifest) + Icon256x256.png
@@ -16,16 +20,16 @@ xkcdPlugin/
 │   ├── xkcdApplication.cs            # ClientApplication subclass (unused: this is a universal plugin)
 │   ├── xkcdPlugin.csproj
 │   ├── xkcdPlugin.csproj.user        # Visual Studio F5 target (LogiPluginService.exe); git-ignored
-│   ├── Directory.Build.props         # LangVersion + obj/ location - see note below
-│   └── .editorconfig                 # Enforces the code style in docs/ai/guidelines.md
+│   └── Directory.Build.props         # LangVersion + obj/ location - see note below
+├── tests/
+│   └── xkcdPlugin.Tests/             # xUnit; mirrors src/ folders (Helpers/ → Helpers/*Tests.cs)
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config + build/pack tasks
+├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
 ├── xkcdPlugin.sln
 ├── AGENTS.md / CLAUDE.md
 └── .gitignore
 ```
-
-There is no `tests/` project yet. Create `tests/xkcdPlugin.Tests/` (xUnit + Moq, see `test-coverage.md`) together with the first piece of business logic, and add it to the `.sln`.
 
 **Naming**: "xkcd" is always lowercase, including in code (see `guidelines.md` → "The xkcd Name"). The folder, project, assembly, `.sln` and plugin class are `xkcdPlugin`, the namespace is `Loupedeck.xkcdPlugin`, and the package name (`LoupedeckPackage.yaml` `name:`, `.csproj` `PluginShortName`) is `xkcd`. Those two package names must match: the post-build reload URL (`loupedeck:plugin/xkcd/reload`) and `logiplugintool uninstall xkcd` both use them.
 

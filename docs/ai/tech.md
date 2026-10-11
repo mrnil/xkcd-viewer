@@ -21,9 +21,18 @@
 
 No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 10 and are enough for xkcd's JSON API, so don't add a third-party HTTP or JSON library without a reason. Keep this table current.
 
-### Test Project (planned: `tests/xkcdPlugin.Tests/xkcdPlugin.Tests.csproj`)
+### Test Project (`tests/xkcdPlugin.Tests/xkcdPlugin.Tests.csproj`)
 
-Doesn't exist yet. Create it with xUnit + Moq when the first business logic lands (see `test-coverage.md`). It needs its **own** `<Reference Include="PluginApi">` pointing at the same `PluginApiDir` as the main project. A plain file `<Reference>` doesn't flow through a `ProjectReference` at compile time, so the build breaks as soon as test code touches a `PluginApi` type (e.g. `CheckNullArgument`).
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `xunit` | 2.9.3 | Test framework |
+| `xunit.runner.visualstudio` | 3.1.4 | Test adapter for `dotnet test` and IDEs |
+| `Microsoft.NET.Test.Sdk` | 17.14.1 | Test host |
+| `coverlet.collector` | 6.0.4 | `dotnet test --collect:"XPlat Code Coverage"` |
+
+Add Moq along with the first test that needs a mock (the first service); nothing mocks anything yet.
+
+The project has its **own** `<Reference Include="PluginApi">` pointing at the same `PluginApiDir` as the main project. A plain file `<Reference>` doesn't flow through a `ProjectReference` at compile time, so without it the build breaks as soon as test code touches a `PluginApi` type (e.g. `DeviceType`). It also sets `EnforceCodeStyleInBuild`.
 
 ## SDK Plugin API Location
 
@@ -34,7 +43,7 @@ Doesn't exist yet. Create it with xUnit + Moq when the first business logic land
 
 ## Code Style: EditorConfig Enforced Rules
 
-`src/.editorconfig` sets these rules (as warnings):
+`.editorconfig`, at the repo root so it covers both `src/` and `tests/`, sets these rules (as warnings):
 
 - **`this.` qualification required** for fields, methods, properties and events
 - **`var` preferred**: `csharp_style_var_for_built_in_types` and `csharp_style_var_when_type_is_apparent` are `warning`; `csharp_style_var_elsewhere` is `silent`
@@ -49,12 +58,11 @@ Doesn't exist yet. Create it with xUnit + Moq when the first business logic land
 
 See `guidelines.md` for examples.
 
-**How it is enforced.** `EnforceCodeStyleInBuild` is on in `src/xkcdPlugin.csproj`, so `dotnet build` reports the rules as warnings. The build has **zero warnings**; treat any new one as a defect to fix, not noise. They stay warnings, not errors, so a style slip never blocks the hot-reload build. The build does **not** check:
+**How it is enforced.** `EnforceCodeStyleInBuild` is on in both `.csproj` files, so `dotnet build` reports the rules as warnings. The build has **zero warnings**; treat any new one as a defect to fix, not noise. They stay warnings, not errors, so a style slip never blocks the hot-reload build. The build does **not** check:
 
 - **BCL type names**: `int` and `string` aren't flagged even with an explicit `IDE0049` severity. Check these yourself and in review.
 - **`_camelCase` private fields (`SX1309`)**: the project references no analyzer that implements it.
 - **CRLF line endings**: nothing checks them.
-- **Anything under `tests/`**: `.editorconfig` lives in `src/` and doesn't reach a sibling test project. Give it its own, or move `.editorconfig` to the repo root, when the test project is created.
 
 When a rule would make the code worse, first try to restructure so the code satisfies it and still reads well. If that fails, suppress that one diagnostic at that one place, with a comment saying why. Never lower a rule's severity project-wide to silence a warning.
 
@@ -76,7 +84,7 @@ VS Code: the `.vscode/tasks.json` tasks run the same commands, and the "Attach t
 ## Tests
 
 ```bash
-dotnet test   # once tests/xkcdPlugin.Tests exists
+dotnet test
 ```
 
 See `test-coverage.md`.

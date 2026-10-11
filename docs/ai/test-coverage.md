@@ -1,6 +1,6 @@
 # Test Coverage & Architecture Policy
 
-Applies to `tests/xkcdPlugin.Tests/` (xUnit + Moq). That project doesn't exist yet. Create it with the first piece of business logic (see `tech.md` for the `PluginApi` reference gotcha).
+Applies to `tests/xkcdPlugin.Tests/` (xUnit, plus Moq once the first service needs it; see `tech.md`). Test files mirror the `src/` folders: `src/Helpers/ComicFit.cs` is tested in `tests/xkcdPlugin.Tests/Helpers/ComicFitTests.cs`.
 
 ## Overall Approach
 

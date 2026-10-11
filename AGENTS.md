@@ -43,7 +43,7 @@ Comic data comes from xkcd's public JSON endpoints (`https://xkcd.com/info.0.jso
 
 ## Non-negotiables
 
-- Follow `docs/ai/guidelines.md` for code style. `src/.editorconfig` requires BCL type names (`String`, not `string`), `var` where the type is apparent, `this.` qualification, `_camelCase` private fields and Allman braces. The build reports most of these (`EnforceCodeStyleInBuild`) and must stay at **zero warnings**. It does **not** check BCL type names or field naming, so check those yourself (see `docs/ai/tech.md`).
+- Follow `docs/ai/guidelines.md` for code style. The repo-root `.editorconfig` requires BCL type names (`String`, not `string`), `var` where the type is apparent, `this.` qualification, `_camelCase` private fields and Allman braces. The build reports most of these (`EnforceCodeStyleInBuild`) and must stay at **zero warnings**. It does **not** check BCL type names or field naming, so check those yourself (see `docs/ai/tech.md`).
 - "xkcd" is **always lowercase**, in prose, file names, package names and code identifiers alike (`xkcdPlugin`, `IxkcdClient`), never `Xkcd` or `XKCD`. See `docs/ai/guidelines.md` → "The xkcd Name".
 - All new business logic needs tests (see `docs/ai/test-coverage.md`). SDK glue in `src/Actions/` is exempt; the pure logic inside it is not.
 - Commits follow Conventional Commits and explain **why**, not just what (see `docs/ai/commit-conventions.md`).
