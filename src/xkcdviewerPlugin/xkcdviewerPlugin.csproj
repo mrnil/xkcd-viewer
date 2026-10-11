@@ -29,6 +29,7 @@
        whatever size each key asks for. -->
   <ItemGroup>
     <EmbeddedResource Include="..\..\art\xkcdviewerlogo.svg" LogicalName="Loupedeck.xkcdviewerPlugin.Resources.Images.xkcdviewerlogo.svg" />
+    <EmbeddedResource Include="..\..\art\xkcdviewerlogo-closed.svg" LogicalName="Loupedeck.xkcdviewerPlugin.Resources.Images.xkcdviewerlogo-closed.svg" />
   </ItemGroup>
 
   <Target Name="CopyPackage" AfterTargets="PostBuildEvent">

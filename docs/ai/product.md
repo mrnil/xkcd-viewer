@@ -144,7 +144,7 @@ A green key is a **green background** behind the black logo, not a frame (owner,
 
 **Where it shows** (owner, 2026-10-11, since the folder keys can't change):
 
-- **A new "New Comic" command key** in the xkcd viewer group, placed by the user wherever they like. It's a `PluginDynamicCommand`, so `ActionImageChanged()` can redraw it: normally the plain logo; when a comic is found it flashes between that and the green-background logo with a "new" banner for 30 s, then stays green until nothing is unread. **With nothing unread, pressing it opens the latest comic in a browser tab** (owner, 2026-10-11). **While something is unread, pressing it opens the first unread comic in a browser tab** (owner, 2026-10-11). That doesn't count as shown, so the key stays green until the comic appears on the keypad.
+- **A new "New Comic" command key** in the xkcd viewer group, placed by the user wherever they like. It's a `PluginDynamicCommand`, so `ActionImageChanged()` can redraw it. With nothing unread it shows the logo with its **eyes closed** (`art/xkcdviewerlogo-closed.svg`; owner, 2026-10-11); when a comic is found it flashes between that and the **open-eyed** logo on green with a "new" banner for 30 s, then stays green until nothing is unread. **With nothing unread, pressing it opens the latest comic in a browser tab** (owner, 2026-10-11). **While something is unread, pressing it opens the first unread comic in a browser tab** (owner, 2026-10-11). That doesn't count as shown, so the key stays green until the comic appears on the keypad.
 - **The Next chevron** inside the folders, as above.
 - The folder keys themselves stay as they are.
 
@@ -173,7 +173,7 @@ The rest of this section describes the Comic Browser; the other two differ only 
 
 ### Hardware test checklist
 
-- The new-comic signal: the New Comic key (plain logo; on a new comic it flashes green with "new" for 30 s, then stays green; a press opens the first unread comic, or the latest when nothing is unread), and the Comic Browser's Next chevron (green while something is unread; a tap goes to the first unread comic, a hold to the newest). A real check first runs on the next release day; the log says when ("Next check for a new comic at ...")
+- The new-comic signal: the New Comic key (closed eyes; on a new comic it flashes green with "new" for 30 s, then stays green; a press opens the first unread comic, or the latest when nothing is unread), and the Comic Browser's Next chevron (green while something is unread; a tap goes to the first unread comic, a hold to the newest). A real check first runs on the next release day; the log says when ("Next check for a new comic at ...")
 - The layout on each device (keypad 3×3, Live S 5×3, CT 4×3), and the folder key's logo (legible at 80 px?)
 - Prev/Next feel instant; the chevrons dim at the first and latest comics
 - Real comics in tiles: ordinary strips, tall ones (#1732), huge ones (#657), interactive ones (#1663 → title card), and #404. This tunes the `ComicFit` thresholds and `TitleCardLayout`'s 9×3 text size

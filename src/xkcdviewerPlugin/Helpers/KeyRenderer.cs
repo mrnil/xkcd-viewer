@@ -33,6 +33,9 @@ namespace Loupedeck.xkcdviewerPlugin
         // The logo's SVG source, read from the embedded resource on first use.
         private static readonly Lazy<String> _logoSvg = new Lazy<String>(() => PluginResources.ReadTextFile("xkcdviewerlogo.svg"));
 
+        // The same logo with its eyes closed (art/xkcdviewerlogo-closed.svg), for the New Comic key with nothing new.
+        private static readonly Lazy<String> _closedEyesLogoSvg = new Lazy<String>(() => PluginResources.ReadTextFile("xkcdviewerlogo-closed.svg"));
+
         // The key that opens a folder: the xkcdviewer logo (art/xkcdviewerlogo.svg), drawn from the SVG at exactly the
         // size it's shown at, so it's sharp at every key size. A white margin of a tenth of the key all round keeps it
         // clear of the edge on every device. A label ("latest", "random") goes on a diagonal banner across the logo
@@ -41,8 +44,9 @@ namespace Loupedeck.xkcdviewerPlugin
         // VectorImage.ToBitmap renders an SVG at a given size. BitmapImage.FromSvg isn't used: drawn scaled into a
         // BitmapBuilder it came out blank (tested 2026-10-11), because it reports no size of its own.
         //
-        // green draws the key on the new-comic green instead of white paper, for the New Comic key.
-        public static BitmapImage Logo(PluginImageSize imageSize, String label = null, Boolean green = false)
+        // green draws the key on the new-comic green instead of white paper, and eyesClosed the closed-eyes logo: the
+        // New Comic key's two looks.
+        public static BitmapImage Logo(PluginImageSize imageSize, String label = null, Boolean green = false, Boolean eyesClosed = false)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
@@ -51,7 +55,7 @@ namespace Loupedeck.xkcdviewerPlugin
                 {
                     var margin = builder.Width / 10;
                     var size = Math.Min(builder.Width, builder.Height) - 2 * margin;
-                    using (var logo = RenderSvg(_logoSvg.Value, size, size))
+                    using (var logo = RenderSvg(eyesClosed ? _closedEyesLogoSvg.Value : _logoSvg.Value, size, size))
                     {
                         builder.DrawImage(logo, (builder.Width - size) / 2, (builder.Height - size) / 2);
                     }
