@@ -1,0 +1,40 @@
+MIT License
+
+Copyright (c) 2026 mr_nil
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------------------------------------------------------------------
+
+xkcd content
+
+The MIT License above covers this project's own work only. It does not cover
+xkcd comics or their text, which are by Randall Munroe (https://xkcd.com/) and
+licensed under the Creative Commons Attribution-NonCommercial 2.5 License
+(https://creativecommons.org/licenses/by-nc/2.5/). See https://xkcd.com/license.html.
+
+The plugin contains no comic images. It downloads them from xkcd's servers when
+it runs, and pressing a comic opens that comic's page on xkcd.com. The test
+fixtures in tests/xkcdviewerPlugin.Tests/Fixtures/ are unedited xkcd API
+responses and hold comic titles, alt text and transcripts: they are xkcd
+content under CC BY-NC 2.5, included for testing only.
+
+"xkcd" is used only to say which comic the plugin shows. This is an unofficial
+fan project, not affiliated with or endorsed by xkcd or Randall Munroe. The
+logo in art/ is this project's own drawing, not xkcd's logo.

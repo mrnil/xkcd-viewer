@@ -91,3 +91,7 @@ docs/ai/                       Design notes, decisions, hardware findings and co
 
 - Comics by Randall Munroe at [xkcd.com](https://xkcd.com/), licensed under [CC BY-NC 2.5](https://creativecommons.org/licenses/by-nc/2.5/). The plugin shows them from xkcd's own servers and always links back to the comic's page.
 - The xkcd viewer logo (`art/xkcdviewerlogo.svg`) is the plugin owner's own drawing, not xkcd's logo.
+
+## Licence
+
+The plugin is released under the [MIT License](LICENSE). That covers this project's own code, docs and artwork only. The comics, and the comic text in the test fixtures, are Randall Munroe's work under [CC BY-NC 2.5](https://creativecommons.org/licenses/by-nc/2.5/) (see [xkcd.com/license.html](https://xkcd.com/license.html)), so any use of them, including in a fork of this plugin, must stay non-commercial and credit xkcd.

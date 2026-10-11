@@ -21,10 +21,10 @@ pluginFileName: xkcdviewerPlugin.dll
 version: 1.0
 
 # Author of the plugin. The author can be a company or an individual developer.
-author: 
+author: mr_nil
 
 # Copyright information.
-copyright: Copyright © 2026 . All rights reserved.
+copyright: Copyright © 2026 mr_nil. MIT License. xkcd comics © Randall Munroe, CC BY-NC 2.5.
 
 
 # ==================================================================================================
