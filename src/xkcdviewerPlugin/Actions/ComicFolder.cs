@@ -73,7 +73,66 @@ namespace Loupedeck.xkcdviewerPlugin
         // An empty name stops the SDK shrinking the image to fit a caption underneath (hardware spike).
         public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) => String.Empty;
 
-        public override BitmapImage GetButtonImage(PluginImageSize imageSize) => KeyRenderer.Logo(imageSize, this._keyLabel);
+        // SPIKE (throwaway): can the folder's own key be redrawn after load? A timer flips _spikeGreen every second
+        // and asks the plugin service to redraw this folder's key; a green frame shows whether it worked.
+        private static Boolean _spikeGreen;
+        private System.Threading.Timer _spikeTimer;
+        private Int32 _spikeTicks;
+
+        // Only the Comic Browser runs the timer; one re-list redraws all three folder keys.
+        public override Boolean Load()
+        {
+            if (this is not LatestComicFolder && this is not RandomComicFolder)
+            {
+                this._spikeTimer = new System.Threading.Timer(_ => this.SpikeTick(), null, 10000, 1000);
+            }
+
+            return base.Load();
+        }
+
+        // 30 s flashing green / normal once a second, then solid green, then the timer stops.
+        private void SpikeTick()
+        {
+            try
+            {
+                this._spikeTicks++;
+                if (this._spikeTicks > 31)
+                {
+                    this._spikeTimer?.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    return;
+                }
+
+                _spikeGreen = this._spikeTicks > 30 || !_spikeGreen;
+                var started = DateTime.UtcNow;
+                xkcdviewerPlugin.Instance?.SpikeActionsChanged();
+                PluginLog.Info($"SPIKE tick {this._spikeTicks} green={_spikeGreen} re-list took {(DateTime.UtcNow - started).TotalMilliseconds:F0} ms");
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error(ex, "SPIKE tick failed");
+            }
+        }
+
+        public override BitmapImage GetButtonImage(PluginImageSize imageSize)
+        {
+            PluginLog.Info($"SPIKE GetButtonImage '{this.DisplayName}' {imageSize} green={_spikeGreen}");
+            using (var logo = KeyRenderer.Logo(imageSize, this._keyLabel))
+            using (var builder = new BitmapBuilder(imageSize))
+            {
+                builder.DrawImage(logo, 0, 0);
+                if (_spikeGreen)
+                {
+                    var green = new BitmapColor(0, 170, 0);
+                    var edge = builder.Width / 8;
+                    builder.FillRectangle(0, 0, builder.Width, edge, green);
+                    builder.FillRectangle(0, builder.Height - edge, builder.Width, edge, green);
+                    builder.FillRectangle(0, 0, edge, builder.Height, green);
+                    builder.FillRectangle(builder.Width - edge, 0, edge, builder.Height, green);
+                }
+
+                return builder.ToImage();
+            }
+        }
 
         public override Boolean Activate()
         {
@@ -107,6 +166,7 @@ namespace Loupedeck.xkcdviewerPlugin
         public override Boolean Unload()
         {
             this.Unsubscribe();
+            this._spikeTimer?.Dispose();
             lock (this._areaLock)
             {
                 this._areas.Clear();

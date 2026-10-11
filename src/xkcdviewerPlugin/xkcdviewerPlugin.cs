@@ -20,6 +20,9 @@ namespace Loupedeck.xkcdviewerPlugin
         // Actions can be constructed before Load runs, so they must null-check this and Comics.
         public static xkcdviewerPlugin Instance { get; private set; }
 
+        // SPIKE (throwaway): lets ComicFolder test whether re-listing actions redraws the folder key.
+        public void SpikeActionsChanged() => this.PluginActionsChanged(true, false);
+
         public override Boolean UsesApplicationApiOnly => true;
 
         public override Boolean HasNoApplication => true;
