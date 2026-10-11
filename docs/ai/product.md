@@ -56,7 +56,7 @@ Override `GetNavigationArea(DeviceType _)` and return `PluginDynamicFolderNaviga
 
 ### Captions: return an empty display name
 
-By default, a folder key shows our image **shrunk into the top two-thirds, with the display name drawn as a caption underneath**. Folders have no `IsWidget`. The fix: **`GetCommandDisplayName` returns `String.Empty`** for every key, and the image then fills the whole key. Every key draws its own text into its image.
+By default, a folder key shows our image **shrunk into the top two-thirds, with the display name drawn as a caption underneath**. Folders have no `IsWidget`. The fix: **`GetCommandDisplayName` returns `String.Empty`** for every key, and the image then fills the whole key. Every key draws its own text into its image. The key that **opens** the folder is the same: **`GetButtonDisplayName` returns `String.Empty`**, and its caption goes (confirmed on the keypad 2026-10-11). `DisplayName` still names the action in Options+.
 
 ### Action group: always set one
 
@@ -134,15 +134,15 @@ Decided 2026-10-11 (not built yet; whether the folder key can be redrawn is bein
 - **Unread:** there's an unread comic while the newest comic published is newer than the **newest comic shown**, which is saved in the plugin settings. On a first run nothing is unread: the latest at that moment counts as shown.
 - **Shown** means it appeared on the keypad, as its picture or as its title card, by any route: Next, Latest Comic, a hold on Next, or Random Comic happening to land on it. Opening it in the browser doesn't count, and nor does seeing its number while it's loading or offline.
 - **When a new comic is found** (by polling, or by the check at load finding one newer than the newest shown): the **Comic Browser** and **Latest Comic** folder keys flash between their normal look and green for **30 s**, then stay green until nothing is unread. Random Comic is unchanged. A key turned green at load after a restart, with nothing newly found, is solid green, not flashing.
-- **"new" label:** a green key also shows "new", so the signal doesn't rely on colour alone. On Latest Comic it replaces the "latest" label in the strip under the logo.
+- **"new" label:** a green key also shows "new", so the signal doesn't rely on colour alone. On Latest Comic it replaces the "latest" banner across the logo.
 - **Green:** xkcd.com itself has no green; its accents are blue-greys (`#96A8C8`, `#6E7B91`). Provisionally `#15B01A`, "green" in xkcd's colour-name survey; the owner to confirm.
 - **Opening a green folder:** both Comic Browser and Latest Comic open at the **first unread comic**, the one after the newest shown, even if several are unread (Latest Comic then deliberately doesn't open at the newest). Once nothing is unread they open as usual.
 - **Inside the folder:** while something is unread, the Next chevron flashes green (30 s) then stays green, like the folder keys. **Tapping** a green Next skips the normal step and goes to the first unread comic. **Holding** it still jumps to the very newest comic.
-- **Redrawing the folder key:** the SDK has no documented call for it. `Plugin.OnActionImageChanged` with the folder's `CommandName` or `Name` didn't re-invoke `GetButtonImage`; telling the service the plugin's actions changed (`PluginActionsChanged(true, false)`, protected on `Plugin`) did, within about 150 ms (2026-10-11, branch `spike/folder-key-flash`). Whether that looks right on the device, once a second for 30 s, is still to be seen.
+- **Redrawing the folder key:** the SDK has no documented call for it. `Plugin.OnActionImageChanged` with the folder's `CommandName` or `Name` didn't re-invoke `GetButtonImage`; telling the service the plugin's actions changed (`PluginActionsChanged(true, false)`, protected on `Plugin`) did, within about 150 ms (2026-10-11, branch `spike/folder-key-flash`). **But the keypad never showed the new image**: each re-list showed a white warning triangle on all three folder keys for about half a second, then the unchanged logo (seen on the keypad 2026-10-11). So, as far as we know, **a folder key's image can't change after it's first drawn**, and the folder keys can't flash or turn green. The signal needs another design; see below.
 
 A green key is a **green background** behind the black logo, not a frame (owner, 2026-10-11). The logo SVG has a transparent background, so it draws straight onto the green (checked off-device).
 
-Still to decide: whether "new" on the Comic Browser key goes in a label strip like Latest's, and what to do if the flash test fails on the device (solid green only, or a separate "new comic" key).
+Still to decide, now that the folder keys can't change: where the signal goes instead (for example a separate "new comic" command key, which can be redrawn, or only the green Next chevron inside the folder), and whether "new" on the Comic Browser key would be a banner like Latest's.
 
 ## The folders
 
@@ -154,7 +154,7 @@ Three folder actions, all in the **xkcd viewer** group and all the same folder u
 | **Latest Comic** | `LatestComicFolder` | The newest comic published (asks xkcd each time) | Prev / Next |
 | **Random Comic** | `RandomComicFolder` | A random comic, new each time it opens | One "show another" key, where Next is; Prev's key is blank |
 
-The Latest and Random keys show the logo, shrunk, with "latest" or "random" written in a strip under it, so the three can be told apart. Whatever a folder shows becomes the last comic viewed, so the Comic Browser picks up where Latest or Random left off. The two new folders subclass `ComicFolder` rather than sharing an abstract base, because the SDK docs don't say whether abstract action classes are skipped.
+Every folder key shows the logo at the same size, with a white margin of a tenth of the key all round. The Latest and Random keys add a diagonal banner across it, "latest" or "random" in white on xkcd's blue-grey (`LogoBanner`; chosen by the owner 2026-10-11 from previews), so the three can be told apart. Whatever a folder shows becomes the last comic viewed, so the Comic Browser picks up where Latest or Random left off. The two new folders subclass `ComicFolder` rather than sharing an abstract base, because the SDK docs don't say whether abstract action classes are skipped.
 
 The rest of this section describes the Comic Browser; the other two differ only as in the table.
 
@@ -174,7 +174,7 @@ The rest of this section describes the Comic Browser; the other two differ only 
 - The last-viewed comic survives a plugin restart
 - A tile press opens the right page
 - Latest Comic opens at the newest comic; Random Comic opens at a different comic each time, and its one "show another" key changes it (quickly, as the next one is preloaded)
-- The "latest" / "random" labels on the folder keys are legible at 80 px and clear of the drawing, and "show another" fits its key
+- The "latest" / "random" banners on the folder keys are legible at 80 px, and "show another" fits its key
 - Prev / Next: a tap steps exactly one comic (not two: if the SDK also calls `RunCommand`, a press could count twice); holding 2 s jumps to #1 / the newest while still held; letting go after the jump doesn't step. On the Live S / CT touch keys, check that a tap still steps, and whether a hold arrives at all
 
 ## Comic shapes
@@ -190,9 +190,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install, so before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
-3. **The new-comic signal**: mostly decided (see "The new-comic signal"); waiting on the device test of redrawing the folder key, and the few points listed at the end of that section.
-4. **Folder key captions** (owner, 2026-10-11): the placed folder keys (Comic Browser, Latest, Random) should show no display-name caption, so the logo and its "latest" / "random" label are clearer. The keys *inside* the folder already return `String.Empty` from `GetCommandDisplayName`; the folder key itself is drawn by `GetButtonImage`, and how to hide its caption is not yet known. Check the SDK docs (`llms.txt`) and the device before changing it.
-5. **SVG logo on the device**: the folder keys now draw the logo from its SVG (done 2026-10-11). Check its stroke weight at 80 px on the keypad; the SVG's strokes render slightly thinner than the old pre-made PNGs did.
+3. **The new-comic signal**: the rules are decided (see "The new-comic signal"), but the folder keys turned out not to be redrawable, so where the signal shows needs a new design.
 
 ## v1 scope
 

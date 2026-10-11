@@ -27,29 +27,24 @@ namespace Loupedeck.xkcdviewerPlugin
         private static readonly Lazy<String> _logoSvg = new Lazy<String>(() => PluginResources.ReadTextFile("xkcdviewerlogo.svg"));
 
         // The key that opens a folder: the xkcdviewer logo (art/xkcdviewerlogo.svg), drawn from the SVG at exactly the
-        // size it's shown at, so it's sharp at every key size. A label ("latest", "random") goes in a strip along the
-        // bottom, so the three folder keys can be told apart; the logo is then shrunk into the space above the strip.
+        // size it's shown at, so it's sharp at every key size. A white margin of a tenth of the key all round keeps it
+        // clear of the edge on every device. A label ("latest", "random") goes on a diagonal banner across the logo
+        // (LogoBanner), so the three folder keys can be told apart while the logo stays the same size on all of them.
         //
-        // VectorImage.ToBitmap renders the SVG at a given size. BitmapImage.FromSvg isn't used: drawn scaled into a
+        // VectorImage.ToBitmap renders an SVG at a given size. BitmapImage.FromSvg isn't used: drawn scaled into a
         // BitmapBuilder it came out blank (tested 2026-10-11), because it reports no size of its own.
         public static BitmapImage Logo(PluginImageSize imageSize, String label = null)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
                 builder.Clear(_paper);
-                var labelTop = builder.Height * 4 / 5;
                 try
                 {
-                    var size = String.IsNullOrEmpty(label) ? Math.Min(builder.Width, builder.Height) : Math.Min(builder.Width, labelTop);
-                    var vector = new VectorImage();
-                    if (!vector.Load(_logoSvg.Value))
+                    var margin = builder.Width / 10;
+                    var size = Math.Min(builder.Width, builder.Height) - 2 * margin;
+                    using (var logo = RenderSvg(_logoSvg.Value, size, size))
                     {
-                        throw new InvalidOperationException("The logo SVG didn't load");
-                    }
-
-                    using (var logo = vector.ToBitmap(size, size))
-                    {
-                        builder.DrawImage(logo, (builder.Width - size) / 2, 0);
+                        builder.DrawImage(logo, (builder.Width - size) / 2, (builder.Height - size) / 2);
                     }
                 }
                 catch (Exception ex)
@@ -60,11 +55,28 @@ namespace Loupedeck.xkcdviewerPlugin
 
                 if (!String.IsNullOrEmpty(label))
                 {
-                    builder.DrawText(label, 0, labelTop, builder.Width, builder.Height - labelTop, _ink, builder.Height / 7);
+                    try
+                    {
+                        using (var banner = RenderSvg(LogoBanner.Svg(label), builder.Width, builder.Height))
+                        {
+                            builder.DrawImage(banner, 0, 0);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginLog.Error(ex, $"Failed to draw the '{label}' banner - showing the label as plain text instead");
+                        builder.DrawText(label, 0, builder.Height * 4 / 5, builder.Width, builder.Height / 5, _ink, builder.Height / 7);
+                    }
                 }
 
                 return builder.ToImage();
             }
+        }
+
+        private static BitmapImage RenderSvg(String svg, Int32 width, Int32 height)
+        {
+            var vector = new VectorImage();
+            return vector.Load(svg) ? vector.ToBitmap(width, height) : throw new InvalidOperationException("The SVG didn't load");
         }
 
         // A padding key, or any key that has nothing to show. Plain black, like an unlit key.

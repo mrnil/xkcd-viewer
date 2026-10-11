@@ -73,6 +73,10 @@ namespace Loupedeck.xkcdviewerPlugin
         // An empty name stops the SDK shrinking the image to fit a caption underneath (hardware spike).
         public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) => String.Empty;
 
+        // The same for the key that opens the folder: without this, the SDK draws DisplayName ("Comic Browser") under
+        // the logo and squeezes it. DisplayName itself stays, as the action's name in Options+.
+        public override String GetButtonDisplayName(PluginImageSize imageSize) => String.Empty;
+
         public override BitmapImage GetButtonImage(PluginImageSize imageSize) => KeyRenderer.Logo(imageSize, this._keyLabel);
 
         public override Boolean Activate()

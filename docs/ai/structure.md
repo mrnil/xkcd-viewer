@@ -19,6 +19,7 @@ xkcdviewerPlugin/
 │       │   ├── KeyContent.cs         # What each key shows, decided from the ComicView
 │       │   ├── KeyHold.cs            # Tells a tap on Prev / Next from a 2 s hold (pure state; the folder runs the delay)
 │       │   ├── KeyRenderer.cs        # Draws keys with BitmapBuilder (SDK-bound, thin; decisions live in tested helpers)
+│       │   ├── LogoBanner.cs         # The diagonal "latest" / "random" banner across the folder key logo, as SVG
 │       │   ├── LruCache.cs           # Generic count-limited LRU; the folder caches comic areas in it
 │       │   ├── PluginLog.cs          # SDK-provided static logging facade
 │       │   ├── PluginLogAdapter.cs   # IPluginLog over PluginLog, for injecting into services
