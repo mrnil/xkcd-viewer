@@ -94,4 +94,4 @@ docs/ai/                       Design notes, decisions, hardware findings and co
 
 ## Licence
 
-The plugin is released under the [MIT License](LICENSE). That covers this project's own code, docs and artwork only. The comics, and the comic text in the test fixtures, are Randall Munroe's work under [CC BY-NC 2.5](https://creativecommons.org/licenses/by-nc/2.5/) (see [xkcd.com/license.html](https://xkcd.com/license.html)), so any use of them, including in a fork of this plugin, must stay non-commercial and credit xkcd.
+The plugin is released under the [MIT License](LICENSE), and using it is covered by the [end user licence agreement](EULA.md), which also says what the plugin sends and stores. That covers this project's own code, docs and artwork only. The comics, and the comic text in the test fixtures, are Randall Munroe's work under [CC BY-NC 2.5](https://creativecommons.org/licenses/by-nc/2.5/) (see [xkcd.com/license.html](https://xkcd.com/license.html)), so any use of them, including in a fork of this plugin, must stay non-commercial and credit xkcd.

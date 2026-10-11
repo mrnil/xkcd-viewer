@@ -8,6 +8,7 @@ How to create and publish a new release of the xkcd viewer plugin.
 - All tests passing
 - Documentation updated (README, CHANGELOG)
 - `LoupedeckPackage.yaml` has a real `description`, `author` and `copyright` (the template placeholders must not ship)
+- `EULA.md` still describes what the plugin sends and stores (section 3), and its date is current if it changed. Logitech's Marketplace Approval Guidelines require a Developer EULA with every product
 
 ## Release Steps
 
@@ -75,6 +76,8 @@ git push origin v{VERSION}
 
 Create a GitHub release from the tag and attach the `.lplug4`.
 
+When submitting to the Logitech Marketplace, provide `EULA.md` as the Developer EULA (link it from the listing, or supply it wherever the submission asks for one), and put the xkcd attribution and "unofficial" disclaimer from the README in the listing description.
+
 ## LogiPluginTool Commands Reference
 
 | Command | Purpose |
@@ -99,6 +102,7 @@ Semantic Versioning: **major** for breaking changes, **minor** for backward-comp
 - [ ] Git tag created and pushed
 - [ ] `.lplug4` packed, verified, metadata checked, test-installed
 - [ ] GitHub release created with the `.lplug4` attached
+- [ ] `EULA.md` checked against the plugin's network and storage behaviour, and supplied with the Marketplace submission
 
 ## Troubleshooting
 

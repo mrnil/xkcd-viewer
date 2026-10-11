@@ -66,6 +66,7 @@ xkcdviewerPlugin/
 ├── xkcdviewerPlugin.sln
 ├── README.md                         # For people: what the plugin does, devices, building, credits
 ├── LICENSE                           # MIT for the project's own work; notes that xkcd content is CC BY-NC 2.5
+├── EULA.md                           # Developer EULA for the Marketplace: licence, xkcd terms, what's sent and stored
 ├── AGENTS.md / CLAUDE.md             # For AI assistants: where to start, non-negotiables
 └── .gitignore
 ```
