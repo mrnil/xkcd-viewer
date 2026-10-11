@@ -244,6 +244,10 @@ license: MIT
 licenseUrl: https://opensource.org/licenses/MIT
 supportPageUrl: https://github.com/mrnil/xkcd-viewer/issues
 homePageUrl: https://github.com/mrnil/xkcd-viewer
+keywords:                        # Marketplace search words; describe the plugin, no brands or author names
+    - xkcd
+    - comic
+    - ...
 ```
 
 Don't add keys from memory. Check the SDK docs' distribution/manifest pages first, and run `LogiPluginTool verify` afterwards.
