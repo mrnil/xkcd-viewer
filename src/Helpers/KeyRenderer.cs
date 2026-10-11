@@ -23,13 +23,26 @@ namespace Loupedeck.xkcdPlugin
             }
         }
 
-        // The key that opens the folder: the lowercase xkcd wordmark.
+        // The key that opens the folder: the xkcd logo, pre-scaled by art/make-icons.ps1 to the two key sizes seen on
+        // hardware so it's never resampled on the device at those sizes. Any other size scales the nearest one.
         public static BitmapImage Logo(PluginImageSize imageSize)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
                 builder.Clear(_paper);
-                builder.DrawText("xkcd", _ink, builder.Height / 3);
+                try
+                {
+                    using (var logo = PluginResources.ReadImage(builder.Width <= 80 ? "FolderButton80.png" : "FolderButton116.png"))
+                    {
+                        builder.DrawImage(logo, 0, 0, builder.Width, builder.Height);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    PluginLog.Error(ex, "Failed to draw the folder logo - showing the wordmark instead");
+                    builder.DrawText("xkcd", _ink, builder.Height / 3);
+                }
+
                 return builder.ToImage();
             }
         }

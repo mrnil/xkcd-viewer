@@ -108,7 +108,7 @@ The cut tiles are cached by the folder itself (step 3), because they're SDK `Bit
 
 Decided 2026-10-11:
 
-- **Getting there:** the user places the **xkcd** folder action on any key. That key shows a plain lowercase "xkcd" wordmark, drawn as text until a real logo image is supplied. A comic thumbnail on it was ruled out: the owner has later plans it wouldn't suit. Pressing it opens the folder, which starts the service (`Activate()`), at the last comic viewed.
+- **Getting there:** the user places the **xkcd** folder action on any key. That key shows the plain xkcd logo (supplied by the owner, `art/xkcdviewer-logo.jpg`) on white, pre-scaled to the 116 px and 80 px key sizes by `art/make-icons.ps1`; other sizes scale the nearest one. The package icon is the same logo on a white rounded tile, because the line art alone vanishes on Options+'s black background. A comic thumbnail on it was ruled out: the owner has later plans it wouldn't suit. Pressing it opens the folder, which starts the service (`Activate()`), at the last comic viewed.
 - **Prev / Next:** a chevron, with no comic number. Dimmed when there's nowhere to go.
 - **Comic tiles:** one sixth of the comic each. While loading, the top-middle tile says "loading…" (yellow) and the bottom-middle one the comic number. When offline, it says "offline" (grey). Text never crosses a seam.
 - **Title card** (no image, or a shape `ComicFit` rejects): "#num" on tile 0, and the title word-wrapped across tiles 1–5 by `TitleCardLayout` (3 lines of 9 characters per tile, long words hyphenated, an ellipsis if it overflows). Black on white, like xkcd.
@@ -117,7 +117,7 @@ Decided 2026-10-11:
 
 ### Hardware test checklist
 
-- The layout on each device (keypad 3×3, Live S 5×3, CT 4×3), and the folder key's wordmark
+- The layout on each device (keypad 3×3, Live S 5×3, CT 4×3), and the folder key's logo (legible at 80 px?)
 - Prev/Next feel instant; the chevrons dim at the first and latest comics
 - Real comics in tiles: ordinary strips, tall ones (#1732), huge ones (#657), interactive ones (#1663 → title card), and #404. This tunes the `ComicFit` thresholds and `TitleCardLayout`'s 9×3 text size
 - Loading and offline placeholders (disconnect the network)

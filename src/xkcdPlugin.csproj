@@ -36,6 +36,12 @@
     <InternalsVisibleTo Include="xkcdPlugin.Tests" />
   </ItemGroup>
 
+  <!-- Generated from art/xkcdviewer-logo.jpg by art/make-icons.ps1; regenerate rather than edit. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Images\FolderButton116.png" />
+    <EmbeddedResource Include="Resources\Images\FolderButton80.png" />
+  </ItemGroup>
+
   <Target Name="CopyPackage" AfterTargets="PostBuildEvent">
     <Message Text="📦 Copying package files..." Importance="High" />
     <ItemGroup>

@@ -32,7 +32,8 @@ xkcdPlugin/
 │   │   ├── IxkcdClient.cs            # The xkcd API: latest, by number, image bytes. Null on any failure
 │   │   ├── xkcdClient.cs             # HttpClient implementation: no redirects, timeout, size caps
 │   │   └── xkcdUrls.cs               # Every URL requested or opened is built or checked here
-│   ├── package/metadata/             # LoupedeckPackage.yaml (manifest) + Icon256x256.png
+│   ├── package/metadata/             # LoupedeckPackage.yaml (manifest) + Icon256x256.png (generated, see art/)
+│   ├── Resources/Images/             # FolderButton116.png / FolderButton80.png: the folder key's logo (generated, see art/)
 │   ├── xkcdPlugin.cs                 # Main plugin class (Plugin subclass)
 │   ├── xkcdApplication.cs            # ClientApplication subclass (unused: this is a universal plugin)
 │   ├── xkcdPlugin.csproj
@@ -45,6 +46,9 @@ xkcdPlugin/
 │       ├── ManualTimeProvider.cs     # A clock tests move by hand
 │       ├── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
 │       └── TestWait.cs               # Bounded wait for a background condition, instead of sleeping
+├── art/
+│   ├── xkcdviewer-logo.jpg             # Source logo (512x512, black line art on transparency)
+│   └── make-icons.ps1                # Regenerates the package icon and folder key images from it; edit this, not the PNGs
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config + build/pack tasks
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
