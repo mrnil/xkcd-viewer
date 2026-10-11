@@ -23,8 +23,8 @@ namespace Loupedeck.xkcdviewerPlugin
 
         public ComicFolder()
         {
-            this.DisplayName = "xkcd";
-            this.GroupName = "xkcd";
+            this.DisplayName = "Comic Browser";
+            this.GroupName = "xkcd viewer";
         }
 
         public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType _) => PluginDynamicFolderNavigation.ButtonArea;

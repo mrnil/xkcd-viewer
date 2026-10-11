@@ -10,8 +10,8 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
         {
             var folder = new ComicFolder();
 
-            Assert.Equal("xkcd", folder.DisplayName);
-            Assert.Equal("xkcd", folder.GroupName);
+            Assert.Equal("Comic Browser", folder.DisplayName);
+            Assert.Equal("xkcd viewer", folder.GroupName);
         }
     }
 }
