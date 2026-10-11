@@ -11,7 +11,7 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
             var folder = new ComicFolder();
 
             Assert.Equal("Comic Browser", folder.DisplayName);
-            Assert.True(String.IsNullOrEmpty(folder.GroupName));
+            Assert.Equal("xkcd viewer", folder.GroupName);
         }
     }
 }

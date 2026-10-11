@@ -58,6 +58,10 @@ Override `GetNavigationArea(DeviceType _)` and return `PluginDynamicFolderNaviga
 
 By default, a folder key shows our image **shrunk into the top two-thirds, with the display name drawn as a caption underneath**. Folders have no `IsWidget`. The fix: **`GetCommandDisplayName` returns `String.Empty`** for every key, and the image then fills the whole key. Every key draws its own text into its image.
 
+### Action group: always set one
+
+A dynamic folder with no `GroupName` is listed in Options+ under a generic **"Control Center"** group, not directly under the plugin (tried 2026-10-11). `PluginApi.dll` has no setting to change that; the fallback comes from the Logi software. So `ComicFolder` keeps `GroupName = "xkcd viewer"`, even with only one or two actions.
+
 ### Slicing: Crop, no gap
 
 Tile sizes seen: `Width116` = **116 × 116 px** and `Width90` = **80 × 80 px**. Always slice for the `imageSize` that `GetCommandImage` is given.
@@ -108,7 +112,7 @@ The cut tiles are cached by the folder itself (step 3), because they're SDK `Bit
 
 Decided 2026-10-11:
 
-- **Getting there:** the user places the **Comic Browser** folder action (named 2026-10-11; no action group since 2026-10-11, as one or two actions don't need one) on any key. That key shows the owner's own xkcdviewer logo (a pencil drawing, `art/xkcdviewer-logo.jpg`; it replaced the official xkcd logo on 2026-10-11, for licensing) on white, pre-scaled to the 116 px and 80 px key sizes by `art/make-icons.ps1`; other sizes scale the nearest one. The package icon is the same logo on a white rounded tile, because the line art alone vanishes on Options+'s black background. A comic thumbnail on it was ruled out: the owner has later plans it wouldn't suit. Pressing it opens the folder, which starts the service (`Activate()`), at the last comic viewed.
+- **Getting there:** the user places the **Comic Browser** folder action (in the **xkcd viewer** group in Options+; named 2026-10-11) on any key. That key shows the owner's own xkcdviewer logo (a pencil drawing, `art/xkcdviewer-logo.jpg`; it replaced the official xkcd logo on 2026-10-11, for licensing) on white, pre-scaled to the 116 px and 80 px key sizes by `art/make-icons.ps1`; other sizes scale the nearest one. The package icon is the same logo on a white rounded tile, because the line art alone vanishes on Options+'s black background. A comic thumbnail on it was ruled out: the owner has later plans it wouldn't suit. Pressing it opens the folder, which starts the service (`Activate()`), at the last comic viewed.
 - **Prev / Next:** a chevron, with no comic number. Dimmed when there's nowhere to go.
 - **Comic tiles:** one sixth of the comic each. While loading, the top-middle tile says "loading…" (yellow) and the bottom-middle one the comic number. When offline, it says "offline" (grey). Text never crosses a seam.
 - **Title card** (no image, or a shape `ComicFit` rejects): "#num" on tile 0, and the title word-wrapped across tiles 1–5 by `TitleCardLayout` (3 lines of 9 characters per tile, long words hyphenated, an ellipsis if it overflows). Black on white, like xkcd.
@@ -123,7 +127,6 @@ Decided 2026-10-11:
 - Loading and offline placeholders (disconnect the network)
 - The last-viewed comic survives a plugin restart
 - A tile press opens the right page
-- With no `GroupName`, Comic Browser is listed directly under the plugin in Options+, not under an empty or "Other" group
 
 ## Comic shapes
 
