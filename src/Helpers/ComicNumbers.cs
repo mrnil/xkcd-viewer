@@ -8,35 +8,13 @@ namespace Loupedeck.xkcdPlugin
     {
         public const Int32 First = 1;
 
-        // xkcd skipped this number on purpose: https://xkcd.com/404/ is a joke "not found" page with no comic.
-        public const Int32 Missing = 404;
+        // Comic 404 is a joke: its only content is xkcd answering HTTP 404. It's a comic like any other for
+        // Prev / Next; xkcdClient is the one place that treats it specially.
+        public const Int32 NotFound = 404;
 
-        public static Int32 Previous(Int32 current)
-        {
-            if (current <= First)
-            {
-                return First;
-            }
+        public static Int32 Previous(Int32 current) => current <= First ? First : current - 1;
 
-            var previous = current - 1;
-            return previous == Missing ? previous - 1 : previous;
-        }
-
-        public static Int32 Next(Int32 current, Int32 latest)
-        {
-            // Checked before adding, so a latest number of Int32.MaxValue from a bad response can't overflow.
-            if (current >= latest)
-            {
-                return current;
-            }
-
-            var next = current + 1;
-            if (next == Missing)
-            {
-                next++;
-            }
-
-            return next > latest ? current : next;
-        }
+        // Checked before adding, so a latest number of Int32.MaxValue from a bad response can't overflow.
+        public static Int32 Next(Int32 current, Int32 latest) => current >= latest ? current : current + 1;
     }
 }

@@ -21,6 +21,10 @@ namespace Loupedeck.xkcdPlugin
 
         private static readonly HttpClient _sharedHttpClient = CreateHttpClient();
 
+        // Comic 404 is xkcd's joke: https://xkcd.com/404/info.0.json answers HTTP 404, and that answer is the comic.
+        // It has no JSON and no image, so it gets the title card, and its page still opens in the browser.
+        private static readonly xkcdComic _comic404 = new xkcdComic(ComicNumbers.NotFound, "404 Not Found", null);
+
         private readonly HttpClient _httpClient;
         private readonly IPluginLog _log;
 
@@ -40,7 +44,7 @@ namespace Loupedeck.xkcdPlugin
 
         public Task<xkcdComic> GetComicAsync(Int32 num, CancellationToken cancellationToken = default)
         {
-            if (num < ComicNumbers.First || num == ComicNumbers.Missing)
+            if (num < ComicNumbers.First)
             {
                 this._log.Warning($"Cannot get comic {num} - there is no such comic");
                 return Task.FromResult<xkcdComic>(null);
@@ -57,7 +61,8 @@ namespace Loupedeck.xkcdPlugin
                 return null;
             }
 
-            return await this.GetBodyAsync(imageUrl, $"image {imageUrl}", MaxImageBytes, IsImage, cancellationToken);
+            var (body, _) = await this.GetBodyAsync(imageUrl, $"image {imageUrl}", MaxImageBytes, IsImage, false, cancellationToken);
+            return body;
         }
 
         private static Boolean IsImage(HttpContentHeaders headers) =>
@@ -106,7 +111,14 @@ namespace Loupedeck.xkcdPlugin
 
         private async Task<xkcdComic> GetComicJsonAsync(Uri url, String entity, Int32? expectedNum, CancellationToken cancellationToken)
         {
-            var body = await this.GetBodyAsync(url, entity, MaxJsonBytes, null, cancellationToken);
+            var isComic404 = expectedNum == ComicNumbers.NotFound;
+            var (body, notFound) = await this.GetBodyAsync(url, entity, MaxJsonBytes, null, isComic404, cancellationToken);
+            if (notFound)
+            {
+                this._log.Info($"Loaded {entity} - xkcd's joke answer of HTTP 404 is the comic");
+                return _comic404;
+            }
+
             if (body == null)
             {
                 return null;
@@ -127,8 +139,15 @@ namespace Loupedeck.xkcdPlugin
             return comic;
         }
 
-        private async Task<Byte[]> GetBodyAsync(
-            Uri url, String entity, Int32 maxBytes, Func<HttpContentHeaders, Boolean> isExpectedContent, CancellationToken cancellationToken)
+        // NotFound is true only when the caller passes notFoundIsAnAnswer and xkcd answers HTTP 404; any other
+        // failure, a 404 included, is logged here and returns a null Body.
+        private async Task<(Byte[] Body, Boolean NotFound)> GetBodyAsync(
+            Uri url,
+            String entity,
+            Int32 maxBytes,
+            Func<HttpContentHeaders, Boolean> isExpectedContent,
+            Boolean notFoundIsAnAnswer,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -136,20 +155,25 @@ namespace Loupedeck.xkcdPlugin
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
+                        if (notFoundIsAnAnswer)
+                        {
+                            return (null, true);
+                        }
+
                         this._log.Warning($"Cannot get {entity} - xkcd says it doesn't exist (404)");
-                        return null;
+                        return (null, false);
                     }
 
                     if (!response.IsSuccessStatusCode)
                     {
                         this._log.Warning($"Cannot get {entity} - xkcd answered {(Int32)response.StatusCode} {response.StatusCode}");
-                        return null;
+                        return (null, false);
                     }
 
                     if (isExpectedContent != null && !isExpectedContent(response.Content.Headers))
                     {
                         this._log.Warning($"Cannot get {entity} - unexpected content type {response.Content.Headers.ContentType?.MediaType ?? "(none)"}");
-                        return null;
+                        return (null, false);
                     }
 
                     var body = await ReadCappedAsync(response.Content, maxBytes, cancellationToken);
@@ -158,23 +182,23 @@ namespace Loupedeck.xkcdPlugin
                         this._log.Warning($"Cannot get {entity} - the response is larger than {maxBytes} bytes");
                     }
 
-                    return body;
+                    return (body, false);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 this._log.Verbose($"Stopped getting {entity} - cancelled");
-                return null;
+                return (null, false);
             }
             catch (OperationCanceledException)
             {
                 this._log.Warning($"Cannot get {entity} - timed out after {this._httpClient.Timeout.TotalSeconds:0} s");
-                return null;
+                return (null, false);
             }
             catch (Exception ex)
             {
                 this._log.Error($"Failed to get {entity}: {ex.Message}");
-                return null;
+                return (null, false);
             }
         }
     }

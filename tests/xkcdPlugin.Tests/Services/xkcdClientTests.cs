@@ -42,7 +42,6 @@ namespace Loupedeck.xkcdPlugin.Tests
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
-        [InlineData(ComicNumbers.Missing)]
         public async Task GetComicAsync_NoSuchComic_ReturnsNullWithoutARequest(Int32 num)
         {
             var handler = StubHttpMessageHandler.Json(Fixture.Read("353.json"));
@@ -63,6 +62,63 @@ namespace Loupedeck.xkcdPlugin.Tests
 
             Assert.Null(comic);
             this.VerifyWarning("comic 9999", "404");
+        }
+
+        [Fact]
+        public async Task GetComicAsync_Comic404AnsweredWithHttp404_ReturnsTheJokeComic()
+        {
+            var handler = Respond(HttpStatusCode.NotFound, new StringContent("<html>404 Not Found</html>", null, "text/html"));
+
+            var comic = await this.CreateClient(handler).GetComicAsync(404);
+
+            Assert.Equal("https://xkcd.com/404/info.0.json", Assert.Single(handler.Requests).RequestUri.ToString());
+            Assert.Equal(new xkcdComic(404, "404 Not Found", null), comic);
+            Assert.Equal(new Uri("https://xkcd.com/404/"), comic.PageUrl);
+            this._mockLog.Verify(x => x.Info(It.Is<String>(m => m.Contains("comic 404"))), Times.Once);
+            this._mockLog.Verify(x => x.Warning(It.IsAny<String>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetComicAsync_Comic404AnsweredWithJson_IsParsedLikeAnyOtherComic()
+        {
+            var handler = StubHttpMessageHandler.Json("""{"num": 404, "title": "Found It", "img": "https://imgs.xkcd.com/comics/found.png"}""");
+
+            var comic = await this.CreateClient(handler).GetComicAsync(404);
+
+            Assert.Equal(new xkcdComic(404, "Found It", new Uri("https://imgs.xkcd.com/comics/found.png")), comic);
+        }
+
+        [Fact]
+        public async Task GetComicAsync_Comic404OtherFailure_ReturnsNullAndWarns()
+        {
+            var handler = Respond(HttpStatusCode.InternalServerError, new StringContent("oops"));
+
+            var comic = await this.CreateClient(handler).GetComicAsync(404);
+
+            Assert.Null(comic);
+            this.VerifyWarning("comic 404", "500");
+        }
+
+        [Fact]
+        public async Task GetLatestAsync_NotFound_ReturnsNullAndWarns()
+        {
+            var handler = Respond(HttpStatusCode.NotFound, new StringContent("<html>404 Not Found</html>"));
+
+            var comic = await this.CreateClient(handler).GetLatestAsync();
+
+            Assert.Null(comic);
+            this.VerifyWarning("the latest comic", "404");
+        }
+
+        [Fact]
+        public async Task GetImageAsync_NotFound_ReturnsNullAndWarns()
+        {
+            var handler = Respond(HttpStatusCode.NotFound, new StringContent("<html>404 Not Found</html>"));
+
+            var result = await this.CreateClient(handler).GetImageAsync(new Uri("https://imgs.xkcd.com/comics/python.png"));
+
+            Assert.Null(result);
+            this.VerifyWarning("python.png", "404");
         }
 
         [Theory]

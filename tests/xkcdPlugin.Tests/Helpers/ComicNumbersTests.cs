@@ -11,7 +11,7 @@ namespace Loupedeck.xkcdPlugin.Tests
         [Theory]
         [InlineData(353, 352)]
         [InlineData(2, 1)]
-        [InlineData(405, 403)]
+        [InlineData(405, 404)]
         [InlineData(404, 403)]
         [InlineData(Latest, Latest - 1)]
         public void Previous_PastTheFirstComic_StepsBack(Int32 current, Int32 expected)
@@ -31,7 +31,7 @@ namespace Loupedeck.xkcdPlugin.Tests
         [Theory]
         [InlineData(1, 2)]
         [InlineData(352, 353)]
-        [InlineData(403, 405)]
+        [InlineData(403, 404)]
         [InlineData(404, 405)]
         [InlineData(Latest - 1, Latest)]
         public void Next_BeforeTheLatestComic_StepsForward(Int32 current, Int32 expected)
@@ -54,9 +54,9 @@ namespace Loupedeck.xkcdPlugin.Tests
         }
 
         [Fact]
-        public void Next_OnlyThe404GapIsLeft_DoesNotMove()
+        public void Next_Comic404IsTheLatest_StepsOntoIt()
         {
-            Assert.Equal(403, ComicNumbers.Next(403, 404));
+            Assert.Equal(404, ComicNumbers.Next(403, 404));
         }
     }
 }

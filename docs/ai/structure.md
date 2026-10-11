@@ -10,7 +10,7 @@ xkcdPlugin/
 │   │   └── CounterAdjustment.cs      # SDK template example - delete with the first real action
 │   ├── Helpers/
 │   │   ├── ComicFit.cs               # Comic image → letterboxed picture or title card, and where it goes
-│   │   ├── ComicNumbers.cs           # Prev/Next comic numbers (skips 404, stays within 1..latest)
+│   │   ├── ComicNumbers.cs           # Prev/Next comic numbers (stays within 1..latest)
 │   │   ├── DeviceGrid.cs             # DeviceType → grid columns, as observed on hardware; 3 for anything else
 │   │   ├── FolderLayout.cs           # The folder's keys (Prev, Next, padding, comic tiles) and their action names
 │   │   ├── PluginLog.cs              # SDK-provided static logging facade
@@ -110,7 +110,7 @@ Add notification interfaces as real needs appear; don't design the hierarchy up 
 
 ### 5. Extracting Pure Logic Out of SDK-Exempt Code (apply proactively)
 
-The `Actions/` exemption covers SDK glue (`GetCommandImage`, `RunCommand`, `AddParameter`), not every line in the class. When a method mixes "get data" (async, SDK-touching) with "decide what to do with it" (synchronous, pure), split at that seam. Move the pure half into a static method with no SDK types in its signature, and test it fully. Typical candidates here: wrapping a comic title onto button lines, clamping a comic number to `1..latest`, choosing a random comic, skipping comic 404 (which doesn't exist).
+The `Actions/` exemption covers SDK glue (`GetCommandImage`, `RunCommand`, `AddParameter`), not every line in the class. When a method mixes "get data" (async, SDK-touching) with "decide what to do with it" (synchronous, pure), split at that seam. Move the pure half into a static method with no SDK types in its signature, and test it fully. Typical candidates here: wrapping a comic title onto button lines, clamping a comic number to `1..latest`, choosing a random comic.
 
 ## Build Output
 

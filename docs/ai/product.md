@@ -90,7 +90,7 @@ What real responses showed (captured as test fixtures in `tests/xkcdPlugin.Tests
 - `num` is a JSON number. `month`, `day` and `year` are strings. Nothing uses the dates yet.
 - `title` can hold HTML tags (#472) and entities (#259). `safe_title` is clean but can lose characters (#259's "Clichd"). So the title shown is `title` with tags stripped and entities decoded, falling back to `safe_title`, then to `#num`.
 - Interactive comics (#1608, #1663) have `img` set to `https://imgs.xkcd.com/comics/` with no file name. They load with no image and get the title card.
-- Comic 404 answers HTTP 404 with an HTML page.
+- Comic 404 is a joke: `https://xkcd.com/404/info.0.json` answers HTTP 404 with an HTML page, and that answer *is* the comic. Prev/Next step onto it like any other number. `xkcdClient` turns that one HTTP 404 into comic 404 (title "404 Not Found", no image, so it gets the title card, and pressing a tile opens `https://xkcd.com/404/`). That is the only place an HTTP 404 counts as success: a 404 for any other comic, the latest comic or an image is a failure.
 
 ## Comic shapes
 
@@ -109,7 +109,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 ## v1 scope
 
 - The folder with the 3×2 comic block and the Prev / Next row, laid out per device as above
-- Latest comic on open; Prev/Next by number (skipping comic 404, which doesn't exist); a comic tile press opens it in the browser
+- Latest comic on open; Prev/Next by number (comic 404 included: it's a joke, see "Data"); a comic tile press opens it in the browser
 - Comics and sliced tiles cached in memory; the latest comic number checked at most every few minutes
 - A sensible placeholder while loading and when offline
 
