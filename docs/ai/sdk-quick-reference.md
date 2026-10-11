@@ -199,10 +199,10 @@ protected override void RunCommand(String actionParameter)
 Embedded resources are looked up by **file name only** (`PluginResources.FindFile`), so no namespace prefix is needed:
 
 ```csharp
-var icon = PluginResources.ReadImage("Random.svg");
+var logoSvg = PluginResources.ReadTextFile("xkcdviewerlogo.svg");
 ```
 
-The file must be an `<EmbeddedResource>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`.
+The file must be an `<EmbeddedResource>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`. `PluginResources` only wraps what the plugin uses (`FindFile`, `ReadTextFile`); for an image or binary file, add a one-line wrapper over the SDK's `ReadImage` / `ReadBinaryFile` assembly extension.
 
 ### Drawing an SVG Inside a Composed Key
 

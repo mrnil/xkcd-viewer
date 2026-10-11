@@ -25,7 +25,7 @@ xkcdviewerPlugin/
 │       │   ├── LruCache.cs           # Generic count-limited LRU; the folder caches comic areas in it
 │       │   ├── PluginLog.cs          # SDK-provided static logging facade
 │       │   ├── PluginLogAdapter.cs   # IPluginLog over PluginLog, for injecting into services
-│       │   ├── PluginResources.cs    # Embedded resource access helper (filename-only lookup)
+│       │   ├── PluginResources.cs    # Reads embedded resources by file name (only FindFile and ReadTextFile)
 │       │   ├── PluginTimings.cs      # Timeouts and intervals: HTTP timeout, failed-load retry delay, hold-to-jump, new-comic flash
 │       │   ├── ReleaseSchedule.cs    # When to check for a new comic: release days, US Eastern afternoon, per-install minute
 │       │   └── TitleCardLayout.cs    # Splits "#num" and the title across the six tiles, no word crossing a seam
@@ -44,7 +44,7 @@ xkcdviewerPlugin/
 │       │   └── xkcdUrls.cs           # Every URL requested or opened is built or checked here
 │       ├── package/metadata/         # LoupedeckPackage.yaml (manifest) + Icon256x256.png (generated, see art/)
 │       ├── xkcdviewerPlugin.cs       # Main plugin class (Plugin subclass)
-│       ├── xkcdviewerApplication.cs  # ClientApplication subclass (unused: this is a universal plugin)
+│       ├── xkcdviewerApplication.cs  # ClientApplication subclass: does nothing for a universal plugin, but the SDK docs require one
 │       ├── xkcdviewerPlugin.csproj
 │       └── xkcdviewerPlugin.csproj.user # Visual Studio F5 target (LogiPluginService.exe); git-ignored
 ├── tests/
@@ -59,7 +59,6 @@ xkcdviewerPlugin/
 │   ├── xkcdviewerlogo.svg            # The logo: the owner's own ("xkcd" over "viewer", hand-lettered, eyes underneath). Embedded in the plugin, which draws the folder keys from it
 │   ├── xkcdviewerlogo-closed.svg     # The same logo with its eyes closed: the New Comic key with nothing new
 │   ├── xkcdviewer-icon.svg           # The package icon's drawing: the logo's eyes only, no lettering
-│   ├── xkcdviewer-logo.jpg           # The earlier logo, a pencil drawing; no longer used
 │   └── make-icons.ps1                # Regenerates the package icon (a PNG) from xkcdviewer-icon.svg (needs Edge or Chrome); edit the SVG, not the PNG
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
