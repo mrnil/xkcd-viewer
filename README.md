@@ -11,7 +11,7 @@ This is an unofficial fan project. It isn't made by or affiliated with xkcd or R
 - **Three folder actions**, in the **xkcd viewer** group in Logi Options+:
 
   | Action | Opens at |
-  |--------|----------|
+  | --- | --- |
   | **Comic Browser** | The last comic you viewed (the newest one on first use) |
   | **Latest Comic** | The newest comic published |
   | **Random Comic** | A random comic, with a "show another" key |
@@ -28,7 +28,7 @@ This is an unofficial fan project. It isn't made by or affiliated with xkcd or R
 ## Supported devices
 
 | Device | Layout |
-|--------|--------|
+| --- | --- |
 | MX Creative Console keypad (primary target) | 3 × 3 |
 | Loupedeck Live S | 5 × 3, comic centred |
 | Loupedeck CT | 4 × 3 |

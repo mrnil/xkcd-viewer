@@ -62,7 +62,7 @@ public class OpenComicCommand : ActionEditorCommand
 ## Controls
 
 | Control | Use |
-|---------|-----|
+| --- | --- |
 | `ActionEditorTextbox` | Free text. Validate everything read from it |
 | `ActionEditorListbox` | Dropdown whose items are supplied **at runtime** (below) |
 | `ActionEditorCheckbox` | Boolean |
@@ -109,7 +109,7 @@ A caption the user types for a button permanently replaces `GetCommandDisplayNam
 ## Choosing a Pattern
 
 | Need | Use |
-|------|-----|
+| --- | --- |
 | User types or picks a value per button | `ActionEditorCommand` |
 | One button per item from a runtime list | `PluginDynamicFolder`, or `PluginDynamicCommand` with `AddParameter` per item |
 | A small fixed set of actions | `PluginDynamicCommand` with fixed parameters |

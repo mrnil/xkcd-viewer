@@ -13,7 +13,7 @@ The v1 folders are built (`src/xkcdviewerPlugin/Actions/`: `ComicFolder` is the 
 Read these before making changes:
 
 | File | Read this for |
-|------|----------------|
+| --- | --- |
 | [`docs/ai/product.md`](docs/ai/product.md) | What the plugin does (a comic split across the keypad), target devices, layout, v1 scope, **risks to test on hardware first** |
 | [`docs/ai/structure.md`](docs/ai/structure.md) | Repo layout, the layering to grow into, architectural patterns |
 | [`docs/ai/tech.md`](docs/ai/tech.md) | Stack, what the build enforces, build/test/package commands |

@@ -3,7 +3,7 @@
 ## Runtime and Language
 
 | Item | Value |
-|------|-------|
+| --- | --- |
 | Language | C# (`LangVersion` latest) |
 | Target Framework | .NET 10.0 (`net10.0`). The installed `PluginApi.dll` (6.4.1.3246+) is built against .NET 10 and a net8.0 project fails to resolve it (`CS1705`) |
 | Nullable Reference Types | Disabled |
@@ -16,7 +16,7 @@
 ### Plugin Project (`src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`)
 
 | Package | Version | Purpose |
-|---------|---------|---------|
+| --- | --- | --- |
 | `PluginApi.dll` | runtime-provided (6.4.1.3246 at time of writing) | Logi Actions SDK: `Plugin`, `PluginDynamicCommand`, `PluginDynamicAdjustment`, `PluginDynamicFolder`, `ActionEditorCommand`, `BitmapBuilder`, etc. |
 
 No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 10 and are enough for xkcd's JSON API, so don't add a third-party HTTP or JSON library without a reason. Keep this table current.
@@ -24,7 +24,7 @@ No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 1
 ### Test Project (`tests/xkcdviewerPlugin.Tests/xkcdviewerPlugin.Tests.csproj`)
 
 | Package | Version | Purpose |
-|---------|---------|---------|
+| --- | --- | --- |
 | `xunit` | 2.9.3 | Test framework |
 | `xunit.runner.visualstudio` | 3.1.4 | Test adapter for `dotnet test` and IDEs |
 | `Microsoft.NET.Test.Sdk` | 17.14.1 | Test host |

@@ -81,7 +81,7 @@ When submitting to the Logitech Marketplace, provide `EULA.md` as the Developer 
 ## LogiPluginTool Commands Reference
 
 | Command | Purpose |
-|---------|---------|
+| --- | --- |
 | `LogiPluginTool pack <bin/Release dir> <output.lplug4>` | Build the package |
 | `LogiPluginTool verify <package>` | Unpack and check for errors/missing files |
 | `LogiPluginTool metadata <package>` | Print the manifest as JSON |

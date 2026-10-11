@@ -4,11 +4,11 @@ When and how to split a growing Logi Actions SDK plugin. Use it once `xkcdviewer
 
 ## God Class Refactoring
 
-### Problem
+### God Class: Problem
 
 A single main plugin class accumulates connection lifecycle, command registration, state queries, action delegation, and event routing all at once — a God Class violating the Single Responsibility Principle.
 
-### Solution
+### God Class: Solution
 
 Split into focused classes, each with a single responsibility:
 
@@ -55,7 +55,7 @@ Handles:
 - Public API delegation to the facade
 - Resource management
 
-### Benefits
+### God Class: Benefits
 
 - **Single Responsibility Principle** - Each class has one clear purpose
 - **Easier to Test** - Mock only what you need
@@ -65,7 +65,7 @@ Handles:
 
 ## Command Registry Pattern
 
-### Problem
+### Command Registry: Problem
 
 Manual command registration/notification scattered through the main plugin class:
 
@@ -74,7 +74,7 @@ Manual command registration/notification scattered through the main plugin class
 - No compile-time safety
 - Scattered notification logic
 
-### Solution
+### Command Registry: Solution
 
 Interface-based self-registration with a command registry:
 
@@ -118,7 +118,7 @@ public class CommandRegistry
 }
 ```
 
-### Benefits
+### Command Registry: Benefits
 
 - **Self-Documenting** - Commands register themselves
 - **Compile-Time Safety** - Interfaces enforce implementation
@@ -130,7 +130,7 @@ Prefer per-command exception isolation in the dispatch loop (`try`/`catch` aroun
 
 ## Facade Pattern
 
-### Problem
+### Facade: Problem
 
 Direct access to a connection manager from the main plugin class:
 
@@ -139,7 +139,7 @@ Direct access to a connection manager from the main plugin class:
 - Complex delegation chains
 - Scattered error handling
 
-### Solution
+### Facade: Solution
 
 A facade class provides a simplified interface:
 
@@ -165,7 +165,7 @@ public class ComicFacade
 }
 ```
 
-### Benefits
+### Facade: Benefits
 
 - **Simplified Interface** - Hide complexity
 - **Consistent Validation** - Connection checks in one place

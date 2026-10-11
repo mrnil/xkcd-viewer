@@ -14,7 +14,7 @@ TDD with xUnit + Moq. Write tests before or alongside the implementation.
 ## Coverage Targets by Layer
 
 | Layer | Target | Why |
-|-------|--------|-----|
+| --- | --- | --- |
 | Business logic / core functionality | 90%+ | Pure logic, no SDK dependency, cheap to test |
 | Services (classes wrapping HTTP or other I/O) | 80%+ | Testable through injected interfaces or a fake `HttpMessageHandler` |
 | `src/xkcdviewerPlugin/Actions/` (SDK commands/adjustments/folders) | Exempt from the numeric target | See below |

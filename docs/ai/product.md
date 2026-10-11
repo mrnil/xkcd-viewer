@@ -32,7 +32,7 @@ MX Creative Keypad (3×3)        Loupedeck Live S (5×3)              Loupedeck 
 There is **no API for the number of slots on a page**, but the SDK passes the actual device to `GetButtonPressActionNames(DeviceType deviceType)`. `DeviceTypeAliases` maps each device to its own `DeviceType` bit:
 
 | Device | `DeviceType` | Alias | Grid | SDK Back key |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | MX Creative Keypad | `Loupedeck70` (0x10000) | `MxCreativeKeypad` | 3 × 3 | grid slot 0 |
 | Loupedeck Live S | `Loupedeck50` (0x800) | `LoupedeckLiveS` | 5 × 3 | grid slot 0 |
 | Loupedeck CT | `Loupedeck20` (0x100) | `LoupedeckCt` | 4 × 3 | grid slot 0 |
@@ -155,7 +155,7 @@ Only the **Comic Browser**'s Next chevron goes green; Latest Comic's stays as it
 Three folder actions, all in the **xkcd viewer** group and all the same folder underneath (`ComicFolder` in a `ComicFolderMode`; decided 2026-10-11):
 
 | Folder action | Class | Opens at | Top-row keys |
-|---------------|-------|----------|--------------|
+| --- | --- | --- | --- |
 | **Comic Browser** | `ComicFolder` | The last comic viewed | Prev / Next |
 | **Latest Comic** | `LatestComicFolder` | The newest comic published (asks xkcd each time) | Prev / Next |
 | **Random Comic** | `RandomComicFolder` | A random comic, new each time it opens | One "show another" key, where Next is; Prev's key is blank |

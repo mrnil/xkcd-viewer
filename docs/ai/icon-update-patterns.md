@@ -5,7 +5,7 @@ How to get a button or dial redrawn when state changes. The SDK caches what it d
 ## Which Refresh Call (verified by reflection against PluginApi 6.4.1)
 
 | Base class | Redraw one parameter | Redraw everything | Re-list buttons/parameters |
-|------------|----------------------|-------------------|----------------------------|
+| --- | --- | --- | --- |
 | `PluginDynamicCommand` | `ActionImageChanged(actionParameter)` | `ActionImageChanged()` | `ParametersChanged()` (after `RemoveAllParameters`/`AddParameter`) |
 | `PluginDynamicAdjustment` | `AdjustmentValueChanged(actionParameter)` | `AdjustmentValueChanged()` | `ParametersChanged()` |
 | `PluginDynamicFolder` | `CommandImageChanged(actionParameter)` / `AdjustmentValueChanged(actionParameter)` | none | `ButtonActionNamesChanged()` / `EncoderActionNamesChanged()` |
