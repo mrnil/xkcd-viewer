@@ -37,11 +37,11 @@ The plugin is provided “as is”, without warranty of any kind. It depends on 
 
 To the extent the law allows, the author is not liable for any loss or damage arising from your use of, or inability to use, the plugin.
 
-Some consumer laws give you rights that can't be excluded or limited. Nothing in this agreement excludes, restricts or changes those rights.
+Nothing in this agreement limits or excludes liability for death or personal injury caused by negligence, for fraud or fraudulent misrepresentation, or for anything else that can't be limited or excluded by law. If you're a consumer, nothing in it affects your legal rights as a consumer.
 
 ## 6. Ending this agreement
 
-You can end this agreement at any time by uninstalling the plugin. It also ends if you break it. Sections 2, 4 and 5 continue after it ends.
+You can end this agreement at any time by uninstalling the plugin. It also ends if you break it. Sections 2, 4, 5 and 9 continue after it ends.
 
 ## 7. Changes
 
@@ -49,4 +49,10 @@ A future version of the plugin may come with an updated agreement. The version t
 
 ## 8. Contact
 
-Questions and bug reports go through the support link on the plugin's Marketplace page.
+Questions and bug reports go to the plugin's issue tracker: [github.com/mrnil/xkcd-viewer/issues](https://github.com/mrnil/xkcd-viewer/issues).
+
+## 9. Governing law
+
+This agreement is governed by the law of England and Wales, and the courts of England and Wales have jurisdiction over any dispute about it.
+
+If you're a consumer, you can also bring proceedings in the courts of the part of the United Kingdom, or the country, where you live, and you keep the protection of any mandatory consumer law of that place.
