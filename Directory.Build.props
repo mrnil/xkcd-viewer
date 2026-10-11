@@ -14,10 +14,13 @@
   </PropertyGroup>
 
   <!-- A file reference doesn't flow through a ProjectReference at compile time, so every project that touches
-       PluginApi types (the tests use DeviceType) needs its own. -->
+       PluginApi types (the tests use DeviceType) needs its own. Logi Plugin Service supplies PluginApi and its
+       dependencies at runtime, so the plugin must not copy them into its output (and the .lplug4); the tests run
+       outside the service and do need the copy. -->
   <ItemGroup>
     <Reference Include="PluginApi">
       <HintPath>$(PluginApiDir)PluginApi.dll</HintPath>
+      <Private Condition="'$(MSBuildProjectName)' == 'xkcdviewerPlugin'">false</Private>
     </Reference>
   </ItemGroup>
 

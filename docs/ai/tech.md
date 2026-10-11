@@ -96,6 +96,8 @@ LogiPluginTool verify ./xkcdviewer-v{VERSION}.lplug4
 LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
 ```
 
+`bin/Release/bin` should hold only `xkcdviewerPlugin.dll`, its `.deps.json` and `.pdb` (the package is about 64 KB). Logi Plugin Service supplies `PluginApi.dll` and its dependencies (SkiaSharp, Svg.Skia, Newtonsoft.Json, …), so `Directory.Build.props` marks the reference `Private=false` for the plugin project. If those DLLs show up in the output again, that setting has been lost.
+
 **LogiPluginTool locations on this machine:**
 
 - Preferred: `C:\Users\steph\.dotnet\tools\logiplugintool.exe` (dotnet global tool, callable as `LogiPluginTool`)
