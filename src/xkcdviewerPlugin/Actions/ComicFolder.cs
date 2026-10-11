@@ -23,8 +23,8 @@ namespace Loupedeck.xkcdviewerPlugin
 
         public ComicFolder()
         {
+            // No GroupName: with only one or two actions, a group is just an extra level to open in Options+.
             this.DisplayName = "Comic Browser";
-            this.GroupName = "xkcd viewer";
         }
 
         public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType _) => PluginDynamicFolderNavigation.ButtonArea;
