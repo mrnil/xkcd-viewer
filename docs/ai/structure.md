@@ -22,7 +22,7 @@ xkcdPlugin/
 │   │   └── xkcdComic.cs              # A validated comic: number, display-ready title, image URL or null, page URL
 │   ├── Services/
 │   │   ├── ComicJson.cs              # info.0.json → xkcdComic; normalizes the title, drops disallowed images
-│   │   ├── ComicService.cs           # Current comic, caches, Prev/Next preloading, retry delay; raises Changed
+│   │   ├── ComicService.cs           # Current comic, caches, preloads ±2, retry delay; raises Changed
 │   │   ├── ImageCache.cs             # LRU of image bytes, limited by count and total size
 │   │   ├── IPluginLog.cs             # Logging interface services depend on
 │   │   ├── IxkcdClient.cs            # The xkcd API: latest, by number, image bytes. Null on any failure

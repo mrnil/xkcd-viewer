@@ -6,7 +6,8 @@ namespace Loupedeck.xkcdPlugin
 
     // Which comic is showing, plus everything fetched so far. Comic details are kept for the whole session (a
     // published comic never changes); image bytes are kept in a size-limited ImageCache. Whenever the current comic
-    // changes, the comics either side of it are fetched in the background, so Prev / Next are usually instant.
+    // changes, the PreloadDistance comics either side of it are fetched in the background, so Prev / Next are usually
+    // instant, even when pressed twice quickly.
     //
     // The latest comic is fetched once per session: it's where Next stops, and it's the starting comic when there's
     // no last-viewed one. It isn't checked again for newer comics.
@@ -14,7 +15,13 @@ namespace Loupedeck.xkcdPlugin
     // Thread-safe. SDK callbacks can call in from any thread; Changed is raised on a background thread.
     public sealed class ComicService
     {
-        public const Int32 MaxCachedImages = 20;
+        public const Int32 PreloadDistance = 2;
+
+        // The preloaded window (current plus PreloadDistance either side) plus one spare each way, so the comic
+        // just stepped away from is still cached when the user turns straight back.
+        public const Int32 MaxCachedImages = 2 * PreloadDistance + 1 + 2;
+
+        // A safety net for unusually large images; seven typical comics come to about 1 MB.
         public const Int64 MaxCachedImageBytes = 16 * 1024 * 1024;
 
         private readonly IxkcdClient _client;
@@ -108,7 +115,7 @@ namespace Loupedeck.xkcdPlugin
 
         private Task LoadCurrentAndNeighboursAsync()
         {
-            var loads = new List<Task>(3);
+            var loads = new List<Task>(2 * PreloadDistance + 1);
             lock (this._lock)
             {
                 if (!this._currentNum.HasValue)
@@ -119,17 +126,22 @@ namespace Loupedeck.xkcdPlugin
                 var current = this._currentNum.Value;
                 loads.Add(this.EnsureLoadedLocked(current));
 
-                var previous = ComicNumbers.Previous(current);
-                if (previous != current)
+                // Nearest first, so the comic one press away starts fetching before the one two presses away.
+                var previous = current;
+                var next = current;
+                for (var distance = 1; distance <= PreloadDistance; distance++)
                 {
-                    loads.Add(this.EnsureLoadedLocked(previous));
-                }
-
-                if (this._latestNum.HasValue)
-                {
-                    var next = ComicNumbers.Next(current, this._latestNum.Value);
-                    if (next != current)
+                    var stepBack = ComicNumbers.Previous(previous);
+                    if (stepBack != previous)
                     {
+                        previous = stepBack;
+                        loads.Add(this.EnsureLoadedLocked(previous));
+                    }
+
+                    var stepForward = this._latestNum.HasValue ? ComicNumbers.Next(next, this._latestNum.Value) : next;
+                    if (stepForward != next)
+                    {
+                        next = stepForward;
                         loads.Add(this.EnsureLoadedLocked(next));
                     }
                 }

@@ -55,19 +55,40 @@ namespace Loupedeck.xkcdPlugin.Tests
         }
 
         [Fact]
-        public async Task StartAsync_AtTheLatest_PreloadsOnlyThePreviousComic()
+        public async Task StartAsync_AtTheLatest_PreloadsOnlyTheTwoEarlierComics()
         {
             var service = this.CreateService(null);
 
             await service.StartAsync();
 
-            this.VerifyComicFetched(Latest - 1, Times.Once());
-            this.VerifyImageFetched(Latest - 1, Times.Once());
+            foreach (var num in new[] { Latest - 1, Latest - 2 })
+            {
+                this.VerifyComicFetched(num, Times.Once());
+                this.VerifyImageFetched(num, Times.Once());
+            }
+
+            this.VerifyComicFetched(Latest - 3, Times.Never());
             this.VerifyComicFetched(Latest + 1, Times.Never());
         }
 
         [Fact]
-        public async Task StartAsync_LastViewedComic_ShowsItAndPreloadsBothNeighbours()
+        public async Task StartAsync_NearTheFirstComic_PreloadsNothingBeforeIt()
+        {
+            var service = this.CreateService(2);
+
+            await service.StartAsync();
+
+            foreach (var num in new[] { 1, 3, 4 })
+            {
+                this.VerifyComicFetched(num, Times.Once());
+            }
+
+            this.VerifyComicFetched(0, Times.Never());
+            this.VerifyComicFetched(5, Times.Never());
+        }
+
+        [Fact]
+        public async Task StartAsync_LastViewedComic_ShowsItAndPreloadsTwoEitherSide()
         {
             var service = this.CreateService(353);
 
@@ -76,11 +97,14 @@ namespace Loupedeck.xkcdPlugin.Tests
             Assert.Equal(353, service.View.Num);
             Assert.Equal(ComicViewState.Ready, service.View.State);
             Assert.True(service.View.CanGoNext);
-            foreach (var num in new[] { 352, 353, 354 })
+            foreach (var num in new[] { 351, 352, 353, 354, 355 })
             {
                 this.VerifyComicFetched(num, Times.Once());
                 this.VerifyImageFetched(num, Times.Once());
             }
+
+            this.VerifyComicFetched(350, Times.Never());
+            this.VerifyComicFetched(356, Times.Never());
         }
 
         [Theory]
@@ -152,19 +176,46 @@ namespace Loupedeck.xkcdPlugin.Tests
         }
 
         [Fact]
-        public async Task NextAsync_AfterMoving_PreloadsTheNewNeighbour()
+        public async Task NextAsync_AfterMoving_PreloadsOnlyTheComicNewlyInRange()
         {
             var service = this.CreateService(353);
             await service.StartAsync();
 
             await service.NextAsync();
 
+            this.VerifyComicFetched(356, Times.Once());
+            this.VerifyImageFetched(356, Times.Once());
             this.VerifyComicFetched(355, Times.Once());
-            this.VerifyImageFetched(355, Times.Once());
+            this.VerifyComicFetched(357, Times.Never());
         }
 
         [Fact]
-        public async Task PreviousAsync_AfterMoving_ShowsItAndPreloadsTheNewNeighbour()
+        public async Task PreviousAsync_RightAfterTwoNexts_FetchesNothingAgain()
+        {
+            var service = this.CreateService(353);
+            await service.StartAsync();
+            await service.NextAsync();
+            await service.NextAsync();
+
+            await service.PreviousAsync();
+            await service.PreviousAsync();
+
+            Assert.Equal(353, service.View.Num);
+            Assert.Equal(ComicViewState.Ready, service.View.State);
+            foreach (var num in new[] { 351, 352, 353, 354, 355, 356, 357 })
+            {
+                this.VerifyImageFetched(num, Times.Once());
+            }
+        }
+
+        [Fact]
+        public void MaxCachedImages_IsThePreloadedWindowPlusOneSpareEachWay()
+        {
+            Assert.Equal(7, ComicService.MaxCachedImages);
+        }
+
+        [Fact]
+        public async Task PreviousAsync_AfterMoving_ShowsItAndPreloadsTheComicNewlyInRange()
         {
             var service = this.CreateService(353);
             await service.StartAsync();
@@ -173,7 +224,8 @@ namespace Loupedeck.xkcdPlugin.Tests
 
             Assert.Equal(352, service.View.Num);
             Assert.Equal(ComicViewState.Ready, service.View.State);
-            this.VerifyComicFetched(351, Times.Once());
+            this.VerifyComicFetched(350, Times.Once());
+            this.VerifyComicFetched(349, Times.Never());
         }
 
         [Fact]
@@ -237,6 +289,7 @@ namespace Loupedeck.xkcdPlugin.Tests
             Assert.Equal(ComicViewState.Ready, service.View.State);
             Assert.False(service.View.CanGoNext);
             this.VerifyComicFetched(352, Times.Once());
+            this.VerifyComicFetched(351, Times.Once());
             this.VerifyComicFetched(354, Times.Never());
         }
 
@@ -259,6 +312,7 @@ namespace Loupedeck.xkcdPlugin.Tests
             Assert.Equal(353, service.View.Num);
             Assert.True(service.View.CanGoNext);
             this.VerifyComicFetched(354, Times.Once());
+            this.VerifyComicFetched(355, Times.Once());
         }
 
         [Fact]
