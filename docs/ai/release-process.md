@@ -1,6 +1,6 @@
 # Release Process
 
-How to create and publish a new release of the xkcd plugin.
+How to create and publish a new release of the xkcd viewer plugin.
 
 ## Prerequisites
 

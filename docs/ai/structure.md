@@ -58,7 +58,8 @@ xkcdviewerPlugin/
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
 ├── Directory.Build.props             # Settings shared by both projects: TargetFramework, LangVersion, code style, PluginApi reference
 ├── xkcdviewerPlugin.sln
-├── AGENTS.md / CLAUDE.md
+├── README.md                         # For people: what the plugin does, devices, building, credits
+├── AGENTS.md / CLAUDE.md             # For AI assistants: where to start, non-negotiables
 └── .gitignore
 ```
 
@@ -74,7 +75,7 @@ src/xkcdviewerPlugin/
 ├── Services/                         # Business logic + the xkcd HTTP client behind an interface. No SDK types. Tested.
 ├── Models/                           # Plain data (e.g. the comic DTO). No SDK types.
 ├── Helpers/                          # Static helpers. Pure ones are fully tested; SDK-bound renderers are thin.
-└── Resources/                        # Embedded assets (icons/*.svg), one <EmbeddedResource> entry each in the .csproj.
+└── Resources/                        # Embedded assets (Images/*.png so far), one <EmbeddedResource> entry each in the .csproj.
 ```
 
 Create a folder when its first file arrives, not ahead of time. Once one feature area needs several files, give it a same-named subfolder with a matching namespace suffix (`Services.Comics`), rather than filling a flat folder with unrelated files.
@@ -87,12 +88,10 @@ Group commands by SDK base class: `PluginDynamicCommand` (buttons), `PluginDynam
 
 ### `src/xkcdviewerPlugin/Helpers/`
 
-| File | Purpose |
-|------|---------|
-| `PluginLog.cs` | Static logging facade over the SDK's `PluginLogFile` (exists) |
-| `PluginResources.cs` | Embedded resource access (exists) |
-| `ButtonImageHelper.cs` / `ButtonTextRenderer.cs` | Button image drawing: create when first needed, see `image-rendering-simplified.md` |
-| `PluginTimings.cs` | Centralised timing constants: create when the first delay/timeout appears |
+The current files are listed in the layout tree above. Two kinds live here:
+
+- **Pure helpers** (`ComicFit`, `ComicNumbers`, `DeviceGrid`, `FolderLayout`, `KeyContent`, `KeyHold`, `LruCache`, `TitleCardLayout`): no SDK calls in their logic, fully tested.
+- **SDK- or OS-bound helpers** (`KeyRenderer`, `PluginLog`, `PluginResources`, `BrowserLauncher`): kept thin, with every decision pushed into a pure helper. All drawing goes through `KeyRenderer` (see `image-rendering-simplified.md`), and all delays and timeouts are in `PluginTimings`.
 
 ## Architectural Patterns
 

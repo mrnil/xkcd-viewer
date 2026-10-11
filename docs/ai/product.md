@@ -6,7 +6,7 @@ A Logi Actions SDK plugin that shows the current xkcd comic **across the keys** 
 
 It's an at-a-glance view. xkcd is text-heavy, and speech bubbles and labels will usually be unreadable at key size, so reading a comic properly means opening it in the browser, which is one key press away.
 
-Everything under "Hardware facts" was **confirmed on real devices** (MX Creative Keypad, Loupedeck Live S, Loupedeck CT) with a throwaway spike on branch `spike/keypad-grid`, 2026-09-26/27. That branch's `src/xkcdviewerPlugin/Actions/GridSpikeFolder.cs` is a working reference for every mechanism below. Don't merge it; build the real folder fresh, with tests.
+Everything under "Hardware facts" was **confirmed on real devices** (MX Creative Keypad, Loupedeck Live S, Loupedeck CT) with a throwaway spike on branch `spike/keypad-grid`, 2026-09-26/27. That branch's `GridSpikeFolder.cs` is a working reference for every mechanism below. The real folders were built fresh on `main`, with tests; the spike branch is kept for reference only and must never be merged.
 
 ## Layout
 
@@ -100,7 +100,7 @@ What real responses showed (captured as test fixtures in `tests/xkcdviewerPlugin
 
 `ComicService` (`src/xkcdviewerPlugin/Services/`) holds which comic is showing and everything fetched so far. Decided 2026-10-11:
 
-- **The folder opens at the last comic viewed.** The service takes it as a starting number and raises `Changed` whenever the comic changes, so the plugin can save it in the plugin settings and restore it next session (step 3). On a first run, or if the saved number isn't a comic, it opens at the latest. A saved number beyond the latest falls back to the latest.
+- **The folder opens at the last comic viewed.** The service takes it as a starting number and raises `Changed` whenever the comic changes, so the plugin can save it in the plugin settings and restore it next session. On a first run, or if the saved number isn't a comic, it opens at the latest. A saved number beyond the latest falls back to the latest.
 - **Prev / Next are preloaded, two either side.** Whenever the current comic changes, the two comics before and after it are fetched in the background, details and image, so even two quick presses usually show their comic at once. After one press only one comic is newly in range, so a step costs one comic fetch. Only one fetch per comic runs at a time, however many keys or presses ask for it.
 - **Comic details are kept for the whole session** (a published comic never changes, and each is about 200 bytes). **Image bytes are kept for the 7 most recently used comics** (decided 2026-10-11): the five preloaded plus one spare each way, so turning straight back after a step fetches nothing. A 16 MB total acts as a safety net for unusually large images; seven typical comics come to about 1 MB. Memory only: nothing is written to disk.
 - **A failed fetch is retried only after 30 s** (`PluginTimings.FailedLoadRetryDelay`), and only when the comic is needed again, so pressing Prev / Next while offline doesn't send a request each time. If a comic's details arrive but its image doesn't, it shows as the title card.
@@ -109,9 +109,9 @@ What real responses showed (captured as test fixtures in `tests/xkcdviewerPlugin
 - **Latest and random jumps** (`ShowLatestAsync`, `ShowRandomAsync`; decided 2026-10-11) wait for xkcd's answer about the latest comic. Until it arrives they show no comic ("loading…") rather than the last-viewed one, which would look like the answer. Opening the Comic Browser while one is waiting still shows the last-viewed comic. `ShowFirstAsync` (holding Prev) needs nothing first.
 - **A random comic preloads the next random pick**, not its neighbours: its neighbours are no likelier to be shown next than any other comic. The pick is any comic from 1 to the latest except the one showing (`ComicNumbers.PickRandom`), so "show another" never repeats the comic in front of you. Comic 404 can come up like any other. Pressing Prev / Next after a random comic (only possible from another folder) goes back to preloading neighbours.
 
-The cut tiles are cached by the folder itself (step 3), because they're SDK `BitmapImage`s.
+The cut tiles are cached by the folder itself, because they're SDK `BitmapImage`s.
 
-## The folders (step 3)
+## The folders
 
 Three folder actions, all in the **xkcd viewer** group and all the same folder underneath (`ComicFolder` in a `ComicFolderMode`; decided 2026-10-11):
 

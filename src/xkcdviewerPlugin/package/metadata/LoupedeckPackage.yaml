@@ -12,7 +12,7 @@ name: xkcdviewer
 displayName: xkcd viewer
 
 # Short description of the plugin.
-description: Add a short description of the plugin here.
+description: Shows an xkcd comic split across your keys, with Prev / Next keys to browse and a key press to open it on xkcd.com. Unofficial; not affiliated with xkcd.
 
 # Name of the plugin library file.
 pluginFileName: xkcdviewerPlugin.dll
