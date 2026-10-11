@@ -1,4 +1,4 @@
-namespace Loupedeck.xkcdPlugin
+namespace Loupedeck.xkcdviewerPlugin
 {
     using System;
     using System.IO;
@@ -79,7 +79,7 @@ namespace Loupedeck.xkcdPlugin
 
             var client = new HttpClient(handler) { Timeout = PluginTimings.HttpTimeout };
             var version = typeof(xkcdClient).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("xkcdPlugin", version));
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("xkcdviewer", version));
             return client;
         }
 

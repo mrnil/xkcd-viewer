@@ -19,15 +19,15 @@ In `src/package/metadata/LoupedeckPackage.yaml`:
 version: 1.0.0
 ```
 
-Also update `<Version>` in `src/xkcdPlugin.csproj` (add it on the first release). The two must match.
+Also update `<Version>` in `src/xkcdviewerPlugin.csproj` (add it on the first release). The two must match.
 
 ### 2. Build Release Configuration
 
 ```bash
-dotnet build xkcdPlugin.sln -c Release
+dotnet build xkcdviewerPlugin.sln -c Release
 ```
 
-Output: `bin/Release/bin/xkcdPlugin.dll` plus dependencies, and `bin/Release/metadata/`. The post-build step also repoints the `.link` file at `bin/Release/` and reloads the plugin. Run a Debug build afterwards to go back to development.
+Output: `bin/Release/bin/xkcdviewerPlugin.dll` plus dependencies, and `bin/Release/metadata/`. The post-build step also repoints the `.link` file at `bin/Release/` and reloads the plugin. Run a Debug build afterwards to go back to development.
 
 ### 3. Update CHANGELOG.md
 
@@ -36,7 +36,7 @@ Add a `## [{VERSION}] - {DATE}` entry at the top, in [Keep a Changelog](https://
 ### 4. Commit and Tag
 
 ```bash
-git add CHANGELOG.md src/package/metadata/LoupedeckPackage.yaml src/xkcdPlugin.csproj
+git add CHANGELOG.md src/package/metadata/LoupedeckPackage.yaml src/xkcdviewerPlugin.csproj
 git commit -m "chore(release): v{VERSION}"
 git tag -a v{VERSION} -m "Release v{VERSION}"
 ```
@@ -44,7 +44,7 @@ git tag -a v{VERSION} -m "Release v{VERSION}"
 ### 5. Create the .lplug4 Package
 
 ```bash
-LogiPluginTool pack ./bin/Release ./xkcd-v{VERSION}.lplug4
+LogiPluginTool pack ./bin/Release ./xkcdviewer-v{VERSION}.lplug4
 ```
 
 `*.lplug4` is git-ignored. Attach the package to the release rather than committing it. See `tech.md` for which `LogiPluginTool` binary to use.
@@ -52,8 +52,8 @@ LogiPluginTool pack ./bin/Release ./xkcd-v{VERSION}.lplug4
 ### 6. Verify the Package
 
 ```bash
-LogiPluginTool verify ./xkcd-v{VERSION}.lplug4
-LogiPluginTool metadata ./xkcd-v{VERSION}.lplug4
+LogiPluginTool verify ./xkcdviewer-v{VERSION}.lplug4
+LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
 ```
 
 Check the version, display name and supported platforms.
@@ -61,7 +61,7 @@ Check the version, display name and supported platforms.
 ### 7. Test Install
 
 ```bash
-LogiPluginTool install ./xkcd-v{VERSION}.lplug4
+LogiPluginTool install ./xkcdviewer-v{VERSION}.lplug4
 ```
 
 Run `dotnet clean` first so the development `.link` file doesn't shadow the installed package. Check the actions on each target device.
@@ -83,7 +83,7 @@ Create a GitHub release from the tag and attach the `.lplug4`.
 | `LogiPluginTool verify <package>` | Unpack and check for errors/missing files |
 | `LogiPluginTool metadata <package>` | Print the manifest as JSON |
 | `LogiPluginTool install <package>` | Install into Logi Plugin Service |
-| `LogiPluginTool uninstall xkcd` | Remove it |
+| `LogiPluginTool uninstall xkcdviewer` | Remove it |
 
 ## Version Numbering
 
@@ -103,5 +103,5 @@ Semantic Versioning: **major** for breaking changes, **minor** for backward-comp
 ## Troubleshooting
 
 - **Pack fails**: check that the Release build succeeded and `bin/Release/bin` and `bin/Release/metadata` exist.
-- **Verify fails**: check the manifest keys against the SDK docs and that `pluginFileName` (`xkcdPlugin.dll`) exists under `pluginFolderWin` (`bin`).
+- **Verify fails**: check the manifest keys against the SDK docs and that `pluginFileName` (`xkcdviewerPlugin.dll`) exists under `pluginFolderWin` (`bin`).
 - **Version mismatch**: update both version locations, rebuild Release, repack.

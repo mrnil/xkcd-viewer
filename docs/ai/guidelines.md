@@ -33,7 +33,7 @@ _client.GetComicAsync(number)
 ActionImageChanged()
 ```
 
-Static members are qualified with the type name: `PluginLog.Info(...)`, `xkcdPlugin.Instance`.
+Static members are qualified with the type name: `PluginLog.Info(...)`, `xkcdviewerPlugin.Instance`.
 
 ### Private Fields: Underscore Prefix, No Redundant Initializers
 
@@ -70,7 +70,7 @@ if (comic == null)
 ### `using` Directives Inside Namespace
 
 ```csharp
-namespace Loupedeck.xkcdPlugin
+namespace Loupedeck.xkcdviewerPlugin
 {
     using System;
     using System.Net.Http;
@@ -83,12 +83,12 @@ Opening brace always on its own line, for types, members and blocks alike.
 
 ### The xkcd Name: Always Lowercase
 
-"xkcd" is always written in lowercase: in user-facing text, file names, package names **and code identifiers**. This is a deliberate exception to PascalCase:
+"xkcd" is always written in lowercase: in user-facing text, file names, package names **and code identifiers**. This is a deliberate exception to PascalCase. The plugin's own name, **xkcdviewer**, is one all-lowercase word too (`xkcdviewerPlugin`, `Loupedeck.xkcdviewerPlugin`), while types about the xkcd website keep plain "xkcd" (`IxkcdClient`, `xkcdComic`):
 
 ```csharp
 // CORRECT
-namespace Loupedeck.xkcdPlugin
-public class xkcdPlugin : Plugin
+namespace Loupedeck.xkcdviewerPlugin
+public class xkcdviewerPlugin : Plugin
 public interface IxkcdClient
 public class xkcdComic
 var client = new xkcdClient(httpClient);
@@ -190,7 +190,7 @@ public class LatestComicCommand : PluginDynamicCommand
 }
 ```
 
-When commands need events from the plugin (see "Notification Interface Pattern" below), they also self-register: `xkcdPlugin.Instance?.RegisterCommand(this);`. Add a static `Instance` to a command only when another class actually needs to call it.
+When commands need events from the plugin (see "Notification Interface Pattern" below), they also self-register: `xkcdviewerPlugin.Instance?.RegisterCommand(this);`. Add a static `Instance` to a command only when another class actually needs to call it.
 
 ### Null Guard in RunCommand
 
@@ -204,7 +204,7 @@ protected override void RunCommand(String actionParameter)
         return;
     }
 
-    xkcdPlugin.Instance?.OpenComic(actionParameter);
+    xkcdviewerPlugin.Instance?.OpenComic(actionParameter);
 }
 ```
 
@@ -215,7 +215,7 @@ protected override void RunCommand(String actionParameter)
 ```csharp
 protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
 {
-    var comic = xkcdPlugin.Instance?.CurrentComic;
+    var comic = xkcdviewerPlugin.Instance?.CurrentComic;
     return comic == null
         ? ButtonTextRenderer.RenderText("xkcd\nloading…", imageSize)
         : ButtonTextRenderer.RenderText(comic.Title, imageSize);

@@ -45,14 +45,14 @@ When a press starts a fetch, redraw after the data arrives. A redraw in `RunComm
 // WRONG - GetCommandImage runs before the comic has loaded
 protected override void RunCommand(String actionParameter)
 {
-    xkcdPlugin.Instance?.LoadRandom();
+    xkcdviewerPlugin.Instance?.LoadRandom();
     this.ActionImageChanged(); // too early
 }
 
 // RIGHT - redraw when the plugin reports the new comic
 protected override void RunCommand(String actionParameter)
 {
-    xkcdPlugin.Instance?.LoadRandom(); // raises ComicChanged when done
+    xkcdviewerPlugin.Instance?.LoadRandom(); // raises ComicChanged when done
 }
 
 private void OnComicChanged(Object sender, EventArgs e) => this.ActionImageChanged();
@@ -75,7 +75,7 @@ Never paper over ordering problems with `Task.Delay` before a redraw. Refresh fr
 ## Event Flow Example: "Random Comic" Button
 
 1. User presses the button → `RunCommand`
-2. The command calls `xkcdPlugin.Instance?.LoadRandom()`, which returns immediately and fetches in `Task.Run`
+2. The command calls `xkcdviewerPlugin.Instance?.LoadRandom()`, which returns immediately and fetches in `Task.Run`
 3. The fetch completes, the plugin stores the comic and raises `ComicChanged`
 4. Every interested command calls `ActionImageChanged()` (or `AdjustmentValueChanged()`)
 5. The SDK calls `GetCommandImage`, which reads the stored comic and draws it

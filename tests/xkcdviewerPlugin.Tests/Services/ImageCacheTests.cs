@@ -1,4 +1,4 @@
-namespace Loupedeck.xkcdPlugin.Tests
+namespace Loupedeck.xkcdviewerPlugin.Tests
 {
     using System;
 

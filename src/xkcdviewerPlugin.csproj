@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <RootNamespace>Loupedeck.xkcdPlugin</RootNamespace>
+    <RootNamespace>Loupedeck.xkcdviewerPlugin</RootNamespace>
 
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -23,7 +23,7 @@
     <BaseOutputPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\bin\'))</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\bin\</OutputPath>
 
-    <PluginShortName>xkcd</PluginShortName>
+    <PluginShortName>xkcdviewer</PluginShortName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="xkcdPlugin.Tests" />
+    <InternalsVisibleTo Include="xkcdviewerPlugin.Tests" />
   </ItemGroup>
 
   <!-- Generated from art/xkcdviewer-logo.jpg by art/make-icons.ps1; regenerate rather than edit. -->

@@ -85,7 +85,7 @@ Build the scaled source once per comic and tile size. `ComicFolder` caches that 
 
 The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.com/{num}/info.0.json`, through `IxkcdClient` (`src/Services/`). Decode the image bytes with `BitmapImage.FromArray(bytes)`. See `secure-coding.md` → "This Plugin" for how to treat those responses.
 
-What real responses showed (captured as test fixtures in `tests/xkcdPlugin.Tests/Fixtures/`):
+What real responses showed (captured as test fixtures in `tests/xkcdviewerPlugin.Tests/Fixtures/`):
 
 - `num` is a JSON number. `month`, `day` and `year` are strings. Nothing uses the dates yet.
 - `title` can hold HTML tags (#472) and entities (#259). `safe_title` is clean but can lose characters (#259's "Clichd"). So the title shown is `title` with tags stripped and entities decoded, falling back to `safe_title`, then to `#num`.

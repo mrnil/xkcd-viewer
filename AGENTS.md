@@ -4,7 +4,7 @@ Instructions for AI coding assistants working in this repository (Claude Code, C
 
 ## What this project is
 
-`xkcdPlugin`: a Logitech/Loupedeck hardware plugin (MX Creative Console, Loupedeck CT/Live) that shows the current xkcd comic split across the device's keys, with navigation keys beside it. It's built on the Logi Actions SDK in C#/.NET 10. The primary target is the MX Creative Keypad; see `docs/ai/product.md`. The folder lays itself out per device from the `DeviceType` the SDK passes in (keypad 3×3, Live S 5×3, CT 4×3), and assumes **3×3 for any other device**. These and the other folder behaviours were confirmed on hardware; see "Hardware facts" in `product.md` before changing the layout.
+`xkcdviewerPlugin`: a Logitech/Loupedeck hardware plugin (MX Creative Console, Loupedeck CT/Live) that shows the current xkcd comic split across the device's keys, with navigation keys beside it. It's built on the Logi Actions SDK in C#/.NET 10. The primary target is the MX Creative Keypad; see `docs/ai/product.md`. The folder lays itself out per device from the `DeviceType` the SDK passes in (keypad 3×3, Live S 5×3, CT 4×3), and assumes **3×3 for any other device**. These and the other folder behaviours were confirmed on hardware; see "Hardware facts" in `product.md` before changing the layout.
 
 The v1 folder is built (`src/Actions/ComicFolder.cs`) and awaiting hardware testing; `docs/ai/product.md` → "Hardware test checklist" lists what to check. **`ComicFolder`'s class name and namespace are what users' placed buttons are stored by**: don't rename them.
 
@@ -44,7 +44,7 @@ Comic data comes from xkcd's public JSON endpoints (`https://xkcd.com/info.0.jso
 ## Non-negotiables
 
 - Follow `docs/ai/guidelines.md` for code style. The repo-root `.editorconfig` requires BCL type names (`String`, not `string`), `var` where the type is apparent, `this.` qualification, `_camelCase` private fields and Allman braces. The build reports most of these (`EnforceCodeStyleInBuild`) and must stay at **zero warnings**. It does **not** check BCL type names or field naming, so check those yourself (see `docs/ai/tech.md`).
-- "xkcd" is **always lowercase**, in prose, file names, package names and code identifiers alike (`xkcdPlugin`, `IxkcdClient`), never `Xkcd` or `XKCD`. See `docs/ai/guidelines.md` → "The xkcd Name".
+- "xkcd" is **always lowercase**, in prose, file names, package names and code identifiers alike (`xkcdviewerPlugin`, `IxkcdClient`), never `Xkcd` or `XKCD`. See `docs/ai/guidelines.md` → "The xkcd Name".
 - All new business logic needs tests (see `docs/ai/test-coverage.md`). SDK glue in `src/Actions/` is exempt; the pure logic inside it is not.
 - Commits follow Conventional Commits and explain **why**, not just what (see `docs/ai/commit-conventions.md`).
 - Every `.md` file you write or edit uses consistent Markdown: a blank line before and after headings and fenced code blocks, no bare URLs, and ordered lists that actually increment.

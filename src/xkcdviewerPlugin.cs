@@ -1,24 +1,24 @@
-namespace Loupedeck.xkcdPlugin
+namespace Loupedeck.xkcdviewerPlugin
 {
     using System;
 
     // Owns the services and remembers the last comic viewed across sessions. Kept thin: everything it does is
     // wiring that needs the plugin runtime.
-    public class xkcdPlugin : Plugin
+    public class xkcdviewerPlugin : Plugin
     {
         private const String LastViewedComicSetting = "LastViewedComic";
 
         private Int32? _savedNum;
 
-        public xkcdPlugin()
+        public xkcdviewerPlugin()
         {
             PluginLog.Init(this.Log);
             PluginResources.Init(this.Assembly);
-            xkcdPlugin.Instance = this;
+            xkcdviewerPlugin.Instance = this;
         }
 
         // Actions can be constructed before Load runs, so they must null-check this and Comics.
-        public static xkcdPlugin Instance { get; private set; }
+        public static xkcdviewerPlugin Instance { get; private set; }
 
         public override Boolean UsesApplicationApiOnly => true;
 

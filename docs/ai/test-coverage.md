@@ -1,6 +1,6 @@
 # Test Coverage & Architecture Policy
 
-Applies to `tests/xkcdPlugin.Tests/` (xUnit + Moq; see `tech.md`). Test files mirror the `src/` folders: `src/Helpers/ComicFit.cs` is tested in `tests/xkcdPlugin.Tests/Helpers/ComicFitTests.cs`.
+Applies to `tests/xkcdviewerPlugin.Tests/` (xUnit + Moq; see `tech.md`). Test files mirror the `src/` folders: `src/Helpers/ComicFit.cs` is tested in `tests/xkcdviewerPlugin.Tests/Helpers/ComicFitTests.cs`.
 
 ## Overall Approach
 
@@ -25,7 +25,7 @@ TDD with xUnit + Moq. Write tests before or alongside the implementation.
 Classes in `src/Actions/` inherit from SDK base classes (`PluginDynamicCommand`, `PluginDynamicAdjustment`, `PluginDynamicFolder`, `ActionEditorCommand`). They:
 
 - Need the Logi Plugin Service runtime to behave properly
-- Reach the plugin through `xkcdPlugin.Instance`, which ties them to the plugin lifecycle
+- Reach the plugin through `xkcdviewerPlugin.Instance`, which ties them to the plugin lifecycle
 - Draw with `BitmapBuilder`, embedded resources and `PluginImageSize`
 - Can't be unit tested meaningfully without mocking the whole framework
 
@@ -62,7 +62,7 @@ For every service method, test:
 
 The class that calls `https://xkcd.com` directly needs a fake `HttpMessageHandler`, not a mock of itself. Mocking `IxkcdClient` tests the *caller*, and never runs the client's own URL building, status handling or JSON mapping.
 
-1. Give the client a second, `internal` constructor that takes an `HttpClient`. Production code uses the public constructor with a single shared static `HttpClient`. `src/xkcdPlugin.csproj` exposes internals to the test project with `<InternalsVisibleTo Include="xkcdPlugin.Tests" />`, so internal members don't have to be made public for testing. `xkcdClient` is the worked example.
+1. Give the client a second, `internal` constructor that takes an `HttpClient`. Production code uses the public constructor with a single shared static `HttpClient`. `src/xkcdviewerPlugin.csproj` exposes internals to the test project with `<InternalsVisibleTo Include="xkcdviewerPlugin.Tests" />`, so internal members don't have to be made public for testing. `xkcdClient` is the worked example.
 2. Write a small `StubHttpMessageHandler` that records every `HttpRequestMessage` and returns a response supplied by the test.
 3. Assert on the recorded request (URL) and the parsed result. Cover what a mock can't: the exact URL for "latest" vs a numbered comic, 404 handling, malformed or missing JSON fields, and that the wire JSON maps onto the model.
 

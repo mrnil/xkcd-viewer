@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Loupedeck.xkcdPlugin.Tests</RootNamespace>
+    <RootNamespace>Loupedeck.xkcdviewerPlugin.Tests</RootNamespace>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <PluginApiDir Condition="$(OS) == 'Windows_NT'">C:\Program Files\Logi\LogiPluginService\</PluginApiDir>
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\xkcdPlugin.csproj" />
+    <ProjectReference Include="..\..\src\xkcdviewerPlugin.csproj" />
   </ItemGroup>
 
 </Project>

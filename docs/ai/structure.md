@@ -3,7 +3,7 @@
 ## Current Repository Layout
 
 ```text
-xkcdPlugin/
+xkcdviewerPlugin/
 ├── src/                              # Plugin source code
 │   ├── Actions/                      # Loupedeck SDK command/adjustment/folder classes
 │   │   └── ComicFolder.cs            # The xkcd folder: layout, key images, presses. Users place it by this name
@@ -34,13 +34,13 @@ xkcdPlugin/
 │   │   └── xkcdUrls.cs               # Every URL requested or opened is built or checked here
 │   ├── package/metadata/             # LoupedeckPackage.yaml (manifest) + Icon256x256.png (generated, see art/)
 │   ├── Resources/Images/             # FolderButton116.png / FolderButton80.png: the folder key's logo (generated, see art/)
-│   ├── xkcdPlugin.cs                 # Main plugin class (Plugin subclass)
-│   ├── xkcdApplication.cs            # ClientApplication subclass (unused: this is a universal plugin)
-│   ├── xkcdPlugin.csproj
-│   ├── xkcdPlugin.csproj.user        # Visual Studio F5 target (LogiPluginService.exe); git-ignored
+│   ├── xkcdviewerPlugin.cs                 # Main plugin class (Plugin subclass)
+│   ├── xkcdviewerApplication.cs            # ClientApplication subclass (unused: this is a universal plugin)
+│   ├── xkcdviewerPlugin.csproj
+│   ├── xkcdviewerPlugin.csproj.user        # Visual Studio F5 target (LogiPluginService.exe); git-ignored
 │   └── Directory.Build.props         # LangVersion + obj/ location - see note below
 ├── tests/
-│   └── xkcdPlugin.Tests/             # xUnit + Moq; mirrors src/ folders (Helpers/ → Helpers/*Tests.cs)
+│   └── xkcdviewerPlugin.Tests/             # xUnit + Moq; mirrors src/ folders (Helpers/ → Helpers/*Tests.cs)
 │       ├── Actions/                  # Constructor smoke tests only (SDK glue is exempt)
 │       ├── Fixtures/                 # Real info.0.json responses captured from the API (see its README.md)
 │       ├── ManualTimeProvider.cs     # A clock tests move by hand
@@ -52,12 +52,12 @@ xkcdPlugin/
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config + build/pack tasks
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
-├── xkcdPlugin.sln
+├── xkcdviewerPlugin.sln
 ├── AGENTS.md / CLAUDE.md
 └── .gitignore
 ```
 
-**Naming**: "xkcd" is always lowercase, including in code (see `guidelines.md` → "The xkcd Name"). The folder, project, assembly, `.sln` and plugin class are `xkcdPlugin`, the namespace is `Loupedeck.xkcdPlugin`, and the package name (`LoupedeckPackage.yaml` `name:`, `.csproj` `PluginShortName`) is `xkcd`. Those two package names must match: the post-build reload URL (`loupedeck:plugin/xkcd/reload`) and `logiplugintool uninstall xkcd` both use them.
+**Naming**: "xkcd" is always lowercase, including in code (see `guidelines.md` → "The xkcd Name"). The plugin itself is called **xkcdviewer**, not plain xkcd (decided 2026-10-11, for licensing: it's a viewer of xkcd, not xkcd). The repo folder, project, assembly, `.sln` and plugin class are `xkcdviewerPlugin`, the namespace is `Loupedeck.xkcdviewerPlugin`, and the package name and display name (`LoupedeckPackage.yaml` `name:` / `displayName:`, `.csproj` `PluginShortName`) are `xkcdviewer`. The plugin service names its log (`plugin_logs/xkcdviewer.log`) and settings after the package name. The SDK requires the plugin class to be `{name}Plugin`, and the two package names must match: the post-build reload URL (`loupedeck:plugin/xkcdviewer/reload`) and `logiplugintool uninstall xkcdviewer` both use them. Types named after the xkcd website (`xkcdClient`, `xkcdComic`, `xkcdUrls`) keep plain "xkcd": they describe the site, not the plugin.
 
 **`src/Directory.Build.props` gotcha**: `BaseIntermediateOutputPath` is computed from `$(MSBuildThisFileDirectory)`, **never** `$(SolutionDir)`. `SolutionDir` is only defined when building through the `.sln`; building the bare `.csproj` leaves it empty, which sends `obj/` to a different folder and leaves stray generated files. The next `.sln` build then fails with `CS0579` (duplicate assembly attributes). `BaseOutputPath` lives only in the `.csproj`.
 
@@ -96,8 +96,8 @@ Group commands by SDK base class: `PluginDynamicCommand` (buttons), `PluginDynam
 ```text
 Loupedeck SDK
   └── Actions layer (commands / adjustments / folders)
-        ↓ via xkcdPlugin.Instance
-xkcdPlugin (constructs and owns the services; thin orchestration)
+        ↓ via xkcdviewerPlugin.Instance
+xkcdviewerPlugin (constructs and owns the services; thin orchestration)
         ↓
 Services (IxkcdClient → HttpClient → https://xkcd.com)
 ```
@@ -106,7 +106,7 @@ Dependencies point one way: Actions → Plugin → Services. Services never refe
 
 ### 2. Singleton Instance
 
-`xkcdPlugin.Instance` is set in the plugin's constructor; the services (`Comics`, `ServiceLog`) are created in `Load()`. Actions reach them through `xkcdPlugin.Instance?.Comics`. Always null-propagate: actions can be constructed before the plugin is fully initialized.
+`xkcdviewerPlugin.Instance` is set in the plugin's constructor; the services (`Comics`, `ServiceLog`) are created in `Load()`. Actions reach them through `xkcdviewerPlugin.Instance?.Comics`. Always null-propagate: actions can be constructed before the plugin is fully initialized.
 
 ### 3. Command Registry / Self-Registration (introduce when needed)
 
@@ -137,7 +137,7 @@ bin/
 obj/                  ← intermediate files (repo root, see Directory.Build.props)
 ```
 
-Post-build writes `%LocalAppData%\Logi\LogiPluginService\Plugins\xkcdPlugin.link` (pointing at `bin/<Configuration>/`) and triggers `loupedeck:plugin/xkcd/reload`. `dotnet clean` deletes the link.
+Post-build writes `%LocalAppData%\Logi\LogiPluginService\Plugins\xkcdviewerPlugin.link` (pointing at `bin/<Configuration>/`) and triggers `loupedeck:plugin/xkcdviewer/reload`. `dotnet clean` deletes the link.
 
 ## Package Format
 

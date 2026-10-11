@@ -1,12 +1,12 @@
-namespace Loupedeck.xkcdPlugin
+namespace Loupedeck.xkcdviewerPlugin
 {
     using System;
 
     // This class can be used to connect the Loupedeck plugin to an application.
 
-    public class xkcdApplication : ClientApplication
+    public class xkcdviewerApplication : ClientApplication
     {
-        public xkcdApplication()
+        public xkcdviewerApplication()
         {
         }
 

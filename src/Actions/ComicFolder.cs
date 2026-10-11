@@ -1,4 +1,4 @@
-namespace Loupedeck.xkcdPlugin
+namespace Loupedeck.xkcdviewerPlugin
 {
     using System;
     using System.Collections.Concurrent;
@@ -52,7 +52,7 @@ namespace Loupedeck.xkcdPlugin
 
         public override Boolean Activate()
         {
-            var service = xkcdPlugin.Instance?.Comics;
+            var service = xkcdviewerPlugin.Instance?.Comics;
             if (service != null)
             {
                 if (this._subscribedTo == null)
@@ -86,7 +86,7 @@ namespace Loupedeck.xkcdPlugin
 
         public override void RunCommand(String actionParameter)
         {
-            var service = xkcdPlugin.Instance?.Comics;
+            var service = xkcdviewerPlugin.Instance?.Comics;
             if (service == null || !FolderSlot.TryParse(actionParameter, out var slot))
             {
                 return;
@@ -101,14 +101,14 @@ namespace Loupedeck.xkcdPlugin
                     _ = service.NextAsync();
                     break;
                 case FolderSlotKind.ComicTile when service.View.Num is Int32 num:
-                    BrowserLauncher.OpenComicPage(xkcdUrls.Page(num), xkcdPlugin.Instance.ServiceLog);
+                    BrowserLauncher.OpenComicPage(xkcdUrls.Page(num), xkcdviewerPlugin.Instance.ServiceLog);
                     break;
             }
         }
 
         public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
         {
-            var service = xkcdPlugin.Instance?.Comics;
+            var service = xkcdviewerPlugin.Instance?.Comics;
             if (service == null || !FolderSlot.TryParse(actionParameter, out var slot))
             {
                 return null;
@@ -147,7 +147,7 @@ namespace Loupedeck.xkcdPlugin
             {
                 if (!this._areas.TryGet(key, out var area))
                 {
-                    area = KeyRenderer.BuildComicArea(view.Comic.Num, view.Image, tileWidth, tileHeight, xkcdPlugin.Instance.ServiceLog);
+                    area = KeyRenderer.BuildComicArea(view.Comic.Num, view.Image, tileWidth, tileHeight, xkcdviewerPlugin.Instance.ServiceLog);
                     this._areas.Add(key, area);
                 }
 

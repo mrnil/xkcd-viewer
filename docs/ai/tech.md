@@ -8,12 +8,12 @@
 | Target Framework | .NET 10.0 (`net10.0`). The installed `PluginApi.dll` (6.4.1.3246+) is built against .NET 10 and a net8.0 project fails to resolve it (`CS1705`) |
 | Nullable Reference Types | Disabled |
 | Implicit Usings | Enabled |
-| Root Namespace | `Loupedeck.xkcdPlugin` |
+| Root Namespace | `Loupedeck.xkcdviewerPlugin` |
 | Plugin type | Universal (`HasNoApplication => true`, `UsesApplicationApiOnly => true`) |
 
 ## Key Dependencies
 
-### Plugin Project (`src/xkcdPlugin.csproj`)
+### Plugin Project (`src/xkcdviewerPlugin.csproj`)
 
 | Package | Version | Purpose |
 |---------|---------|---------|
@@ -21,7 +21,7 @@
 
 No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 10 and are enough for xkcd's JSON API, so don't add a third-party HTTP or JSON library without a reason. Keep this table current.
 
-### Test Project (`tests/xkcdPlugin.Tests/xkcdPlugin.Tests.csproj`)
+### Test Project (`tests/xkcdviewerPlugin.Tests/xkcdviewerPlugin.Tests.csproj`)
 
 | Package | Version | Purpose |
 |---------|---------|---------|
@@ -38,7 +38,7 @@ The project has its **own** `<Reference Include="PluginApi">` pointing at the sa
 - **Windows**: `C:\Program Files\Logi\LogiPluginService\PluginApi.dll`
 - **macOS**: `/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/PluginApi.dll`
 
-`src/xkcdPlugin.csproj` resolves this through `PluginApiDir`. A Logi Options+ update can bump the `PluginApi` version and its target framework: if the build suddenly fails with `CS1705`, that is why.
+`src/xkcdviewerPlugin.csproj` resolves this through `PluginApiDir`. A Logi Options+ update can bump the `PluginApi` version and its target framework: if the build suddenly fails with `CS1705`, that is why.
 
 ## Code Style: EditorConfig Enforced Rules
 
@@ -69,13 +69,13 @@ When a rule would make the code worse, first try to restructure so the code sati
 
 ```bash
 # Development build (hot-reloads into Logi Plugin Service via the .link file)
-dotnet build xkcdPlugin.sln
+dotnet build xkcdviewerPlugin.sln
 
 # Release build (for packaging)
-dotnet build xkcdPlugin.sln -c Release
+dotnet build xkcdviewerPlugin.sln -c Release
 
 # Clean (also deletes the .link file)
-dotnet clean xkcdPlugin.sln
+dotnet clean xkcdviewerPlugin.sln
 ```
 
 VS Code: the `.vscode/tasks.json` tasks run the same commands, and the "Attach to Logi Plugin Service" launch config debugs the running plugin.
@@ -91,9 +91,9 @@ See `test-coverage.md`.
 ## Packaging and Release
 
 ```bash
-LogiPluginTool pack ./bin/Release ./xkcd-v{VERSION}.lplug4
-LogiPluginTool verify ./xkcd-v{VERSION}.lplug4
-LogiPluginTool metadata ./xkcd-v{VERSION}.lplug4
+LogiPluginTool pack ./bin/Release ./xkcdviewer-v{VERSION}.lplug4
+LogiPluginTool verify ./xkcdviewer-v{VERSION}.lplug4
+LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
 ```
 
 **LogiPluginTool locations on this machine:**
@@ -107,7 +107,7 @@ LogiPluginTool metadata ./xkcd-v{VERSION}.lplug4
 Update the version in both places for every release:
 
 1. `src/package/metadata/LoupedeckPackage.yaml`: `version:`
-2. `src/xkcdPlugin.csproj`: `<Version>` (add it on the first release; it isn't there yet)
+2. `src/xkcdviewerPlugin.csproj`: `<Version>` (add it on the first release; it isn't there yet)
 
 ## CI/CD
 

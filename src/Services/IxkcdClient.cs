@@ -1,4 +1,4 @@
-namespace Loupedeck.xkcdPlugin
+namespace Loupedeck.xkcdviewerPlugin
 {
     using System;
     using System.Threading;

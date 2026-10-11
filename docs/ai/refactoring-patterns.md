@@ -1,6 +1,6 @@
 # Refactoring Patterns
 
-When and how to split a growing Logi Actions SDK plugin. None of this applies yet: use it once `xkcdPlugin.cs` or a service shows the warning signs below.
+When and how to split a growing Logi Actions SDK plugin. None of this applies yet: use it once `xkcdviewerPlugin.cs` or a service shows the warning signs below.
 
 ## God Class Refactoring
 
@@ -97,7 +97,7 @@ public class ItemsDynamicFolder : PluginDynamicFolder, IPluginCommand, IItemAwar
     public ItemsDynamicFolder()
     {
         Instance = this;
-        xkcdPlugin.Instance?.RegisterCommand(this);
+        xkcdviewerPlugin.Instance?.RegisterCommand(this);
     }
 
     public void OnConnected() { }

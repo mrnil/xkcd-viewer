@@ -20,7 +20,7 @@ public class ComicNumberDisplay : PluginDynamicCommand
 
     // Override ONLY this. Do not set IsWidget, do not override GetCommandImage.
     protected override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize)
-        => $"xkcd{Environment.NewLine}#{xkcdPlugin.Instance?.CurrentComic?.Num}";
+        => $"xkcd{Environment.NewLine}#{xkcdviewerPlugin.Instance?.CurrentComic?.Num}";
 }
 ```
 
@@ -37,7 +37,7 @@ public class ComicTitleDisplay : PluginDynamicCommand
 
     // Override ONLY this. Do not override GetCommandDisplayName.
     protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
-        => ButtonTextRenderer.RenderText(xkcdPlugin.Instance?.CurrentComic?.Title ?? "xkcd", imageSize);
+        => ButtonTextRenderer.RenderText(xkcdviewerPlugin.Instance?.CurrentComic?.Title ?? "xkcd", imageSize);
 }
 ```
 
@@ -63,7 +63,7 @@ public class ComicNavigationCommand : PluginDynamicCommand
             return;
         }
 
-        xkcdPlugin.Instance?.Navigate(actionParameter);
+        xkcdviewerPlugin.Instance?.Navigate(actionParameter);
     }
 }
 ```
@@ -83,19 +83,19 @@ public class ComicBrowseAdjustment : PluginDynamicAdjustment
     // diff > 0: clockwise, diff < 0: anticlockwise. Several ticks can arrive in one call.
     protected override void ApplyAdjustment(String actionParameter, Int32 diff)
     {
-        xkcdPlugin.Instance?.MoveBy(diff);
+        xkcdviewerPlugin.Instance?.MoveBy(diff);
         this.AdjustmentValueChanged();
     }
 
     // With hasReset: true, pressing the dial (or the generated reset action) calls this.
     protected override void RunCommand(String actionParameter)
     {
-        xkcdPlugin.Instance?.GoToLatest();
+        xkcdviewerPlugin.Instance?.GoToLatest();
         this.AdjustmentValueChanged();
     }
 
     protected override String GetAdjustmentValue(String actionParameter)
-        => $"#{xkcdPlugin.Instance?.CurrentComic?.Num}";
+        => $"#{xkcdviewerPlugin.Instance?.CurrentComic?.Num}";
 }
 ```
 
@@ -111,7 +111,7 @@ public class FavouritesFolder : PluginDynamicFolder
     }
 
     public override IEnumerable<String> GetButtonPressActionNames(DeviceType deviceType)
-        => xkcdPlugin.Instance?.Favourites.Select(n => this.CreateCommandName(n.ToString()))
+        => xkcdviewerPlugin.Instance?.Favourites.Select(n => this.CreateCommandName(n.ToString()))
            ?? Enumerable.Empty<String>();
 
     public override void RunCommand(String actionParameter)
@@ -121,7 +121,7 @@ public class FavouritesFolder : PluginDynamicFolder
             return;
         }
 
-        xkcdPlugin.Instance?.OpenComic(actionParameter);
+        xkcdviewerPlugin.Instance?.OpenComic(actionParameter);
     }
 
     public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
@@ -134,12 +134,12 @@ After the list changes, call `this.ButtonActionNamesChanged()`. Note that folder
 ## Plugin Lifecycle
 
 ```csharp
-public class xkcdPlugin : Plugin
+public class xkcdviewerPlugin : Plugin
 {
     public override Boolean UsesApplicationApiOnly => true;
     public override Boolean HasNoApplication => true;
 
-    public xkcdPlugin()
+    public xkcdviewerPlugin()
     {
         // Helpers first: everything after may log or read resources.
         PluginLog.Init(this.Log);
@@ -181,7 +181,7 @@ protected override void RunCommand(String actionParameter)
     {
         try
         {
-            await xkcdPlugin.Instance.LoadRandomAsync();
+            await xkcdviewerPlugin.Instance.LoadRandomAsync();
             this.ActionImageChanged();
         }
         catch (Exception ex)
@@ -200,7 +200,7 @@ Embedded resources are looked up by **file name only** (`PluginResources.FindFil
 var icon = PluginResources.ReadImage("Random.svg");
 ```
 
-The file must be an `<EmbeddedResource>` in `src/xkcdPlugin.csproj`.
+The file must be an `<EmbeddedResource>` in `src/xkcdviewerPlugin.csproj`.
 
 ## Package Metadata (`src/package/metadata/LoupedeckPackage.yaml`)
 
@@ -208,10 +208,10 @@ The keys the manifest actually uses. The file's own comments explain each key.
 
 ```yaml
 type: plugin4
-name: xkcd                       # must match PluginShortName in the .csproj
-displayName: xkcd
+name: xkcdviewer                 # must match PluginShortName in the .csproj, and the plugin class is {name}Plugin
+displayName: xkcdviewer
 description: ...
-pluginFileName: xkcdPlugin.dll
+pluginFileName: xkcdviewerPlugin.dll
 version: 1.0
 author: ...
 copyright: ...
