@@ -5,8 +5,12 @@
   <PropertyGroup>
     <RootNamespace>Loupedeck.xkcdviewerPlugin</RootNamespace>
 
-    <!-- Must match version: in package/metadata/LoupedeckPackage.yaml (see docs/ai/release-process.md). -->
+    <!-- Must match version: in package/metadata/LoupedeckPackage.yaml (see docs/ai/release-process.md). FileVersion
+         would otherwise default to four parts (1.0.0.0), and the product version would get "+<git commit>"
+         appended; both should read exactly as the manifest does. -->
     <Version>1.0.0</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

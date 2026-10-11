@@ -111,6 +111,8 @@ Update the version in both places for every release:
 1. `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`: `version:`
 2. `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`: `<Version>`
 
+Always three parts (`1.0.0`). The `.csproj` copies `<Version>` into `<FileVersion>` and turns off `IncludeSourceRevisionInInformationalVersion`, so the DLL's file version and product version strings read exactly `1.0.0`, with no fourth part or `+<commit>` suffix. Two places will still show `1.0.0.0`, and nothing can change that: the assembly version (.NET always stores four parts) and the binary file version in the Windows version resource (four 16-bit numbers; Explorer's Details tab shows it). The package itself carries the manifest's `1.0.0` (`LogiPluginTool metadata`).
+
 ## CI/CD
 
 None yet. If one is added: build validation plus dependency vulnerability scanning, with tests included once they're deterministic (see `test-coverage.md` → CI Note).
