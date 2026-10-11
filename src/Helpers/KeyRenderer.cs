@@ -23,7 +23,7 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
-        // The key that opens the folder: the xkcd logo, pre-scaled by art/make-icons.ps1 to the two key sizes seen on
+        // The key that opens the folder: the xkcdviewer logo, pre-scaled by art/make-icons.ps1 to the two key sizes seen on
         // hardware so it's never resampled on the device at those sizes. Any other size scales the nearest one.
         public static BitmapImage Logo(PluginImageSize imageSize)
         {
