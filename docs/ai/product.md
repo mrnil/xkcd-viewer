@@ -92,6 +92,18 @@ What real responses showed (captured as test fixtures in `tests/xkcdPlugin.Tests
 - Interactive comics (#1608, #1663) have `img` set to `https://imgs.xkcd.com/comics/` with no file name. They load with no image and get the title card.
 - Comic 404 is a joke: `https://xkcd.com/404/info.0.json` answers HTTP 404 with an HTML page, and that answer *is* the comic. Prev/Next step onto it like any other number. `xkcdClient` turns that one HTTP 404 into comic 404 (title "404 Not Found", no image, so it gets the title card, and pressing a tile opens `https://xkcd.com/404/`). That is the only place an HTTP 404 counts as success: a 404 for any other comic, the latest comic or an image is a failure.
 
+## Which comic, and caching
+
+`ComicService` (`src/Services/`) holds which comic is showing and everything fetched so far. Decided 2026-10-11:
+
+- **The folder opens at the last comic viewed.** The service takes it as a starting number and raises `Changed` whenever the comic changes, so the plugin can save it in the plugin settings and restore it next session (step 3). On a first run, or if the saved number isn't a comic, it opens at the latest. A saved number beyond the latest falls back to the latest.
+- **Prev / Next are preloaded.** Whenever the current comic changes, the comics either side of it are fetched in the background, details and image, so a press usually shows its comic at once. Only one fetch per comic runs at a time, however many keys or presses ask for it.
+- **Comic details are kept for the whole session** (a published comic never changes, and each is about 200 bytes). **Image bytes are kept for the 20 most recently used comics, up to 16 MB in total.** Memory only: nothing is written to disk.
+- **A failed fetch is retried only after 30 s** (`PluginTimings.FailedLoadRetryDelay`), and only when the comic is needed again, so pressing Prev / Next while offline doesn't send a request each time. If a comic's details arrive but its image doesn't, it shows as the title card.
+- **The latest comic is fetched once per session.** It's where Next stops, and the starting comic on a first run. If that fetch fails, the last-viewed comic still shows, and Next asks for the latest again (after the 30 s wait) instead of moving.
+
+The cut tiles are cached by the folder itself (step 3), because they're SDK `BitmapImage`s.
+
 ## Comic shapes
 
 The comic area is 3:2 landscape. Most comics fit it well. For the rest:
@@ -105,12 +117,13 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file). Before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
+3. **Checking for new comics**: on hold (2026-10-11) while the owner thinks it over. Today the latest comic is fetched once per session and never re-checked, so a comic published while the plugin runs only appears after a restart. The proposal was to re-check when the folder opens and when Next is pressed on the newest comic, at most every 5 minutes, with no background timer.
 
 ## v1 scope
 
 - The folder with the 3×2 comic block and the Prev / Next row, laid out per device as above
-- Latest comic on open; Prev/Next by number (comic 404 included: it's a joke, see "Data"); a comic tile press opens it in the browser
-- Comics and sliced tiles cached in memory; the latest comic number checked at most every few minutes
+- The last comic viewed on open (the latest on a first run); Prev/Next by number (comic 404 included: it's a joke, see "Data"); a comic tile press opens it in the browser
+- Comics, images and sliced tiles cached in memory, with Prev / Next preloaded (see "Which comic, and caching")
 - A sensible placeholder while loading and when offline
 
 ## Later (not committed)

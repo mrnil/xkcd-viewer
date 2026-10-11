@@ -16,11 +16,14 @@ xkcdPlugin/
 │   │   ├── PluginLog.cs              # SDK-provided static logging facade
 │   │   ├── PluginLogAdapter.cs       # IPluginLog over PluginLog, for injecting into services
 │   │   ├── PluginResources.cs        # Embedded resource access helper (filename-only lookup)
-│   │   └── PluginTimings.cs          # Timeouts and intervals (HTTP timeout so far)
+│   │   └── PluginTimings.cs          # Timeouts and intervals: HTTP timeout, failed-load retry delay
 │   ├── Models/
+│   │   ├── ComicView.cs              # What the folder draws: current comic, Loading/Ready/Failed, image, Prev/Next possible
 │   │   └── xkcdComic.cs              # A validated comic: number, display-ready title, image URL or null, page URL
 │   ├── Services/
 │   │   ├── ComicJson.cs              # info.0.json → xkcdComic; normalizes the title, drops disallowed images
+│   │   ├── ComicService.cs           # Current comic, caches, Prev/Next preloading, retry delay; raises Changed
+│   │   ├── ImageCache.cs             # LRU of image bytes, limited by count and total size
 │   │   ├── IPluginLog.cs             # Logging interface services depend on
 │   │   ├── IxkcdClient.cs            # The xkcd API: latest, by number, image bytes. Null on any failure
 │   │   ├── xkcdClient.cs             # HttpClient implementation: no redirects, timeout, size caps
@@ -34,7 +37,9 @@ xkcdPlugin/
 ├── tests/
 │   └── xkcdPlugin.Tests/             # xUnit + Moq; mirrors src/ folders (Helpers/ → Helpers/*Tests.cs)
 │       ├── Fixtures/                 # Real info.0.json responses captured from the API (see its README.md)
-│       └── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
+│       ├── ManualTimeProvider.cs     # A clock tests move by hand
+│       ├── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
+│       └── TestWait.cs               # Bounded wait for a background condition, instead of sleeping
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config + build/pack tasks
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
