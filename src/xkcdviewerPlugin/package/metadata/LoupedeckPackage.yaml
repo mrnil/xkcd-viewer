@@ -79,6 +79,9 @@ supportPageUrl: https://github.com/mrnil/xkcd-viewer/issues
 # URL of the plugin homepage. The URL is shown in Loupedeck Marketplace.
 homePageUrl: https://github.com/mrnil/xkcd-viewer
 
+# Marketplace category (the owner's choice, 2026-10-12).
+category: Utility
+
 # Search keywords for the Marketplace listing. Only words that describe what the plugin shows and does: no author
 # names or other brands, so nothing suggests the plugin is official (see EULA.md).
 keywords:

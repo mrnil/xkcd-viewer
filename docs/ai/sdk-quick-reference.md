@@ -244,6 +244,7 @@ license: MIT
 licenseUrl: https://opensource.org/licenses/MIT
 supportPageUrl: https://github.com/mrnil/xkcd-viewer/issues
 homePageUrl: https://github.com/mrnil/xkcd-viewer
+category: Utility
 keywords:                        # Marketplace search words; describe the plugin, no brands or author names
     - xkcd
     - comic
