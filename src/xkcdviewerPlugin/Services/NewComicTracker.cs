@@ -203,25 +203,6 @@ namespace Loupedeck.xkcdviewerPlugin
             this._flashStartedAt.HasValue && this.HasUnreadLocked() && now - this._flashStartedAt.Value < this._flashDuration;
 
         // One handler failing doesn't stop the others.
-        private void RaiseChanged()
-        {
-            var handlers = this.Changed;
-            if (handlers == null)
-            {
-                return;
-            }
-
-            foreach (EventHandler handler in handlers.GetInvocationList())
-            {
-                try
-                {
-                    handler(this, EventArgs.Empty);
-                }
-                catch (Exception ex)
-                {
-                    this._log.Error($"A NewComicTracker.Changed handler failed: {ex.Message}");
-                }
-            }
-        }
+        private void RaiseChanged() => EventRaiser.Raise(this.Changed, this, this._log, "NewComicTracker.Changed");
     }
 }

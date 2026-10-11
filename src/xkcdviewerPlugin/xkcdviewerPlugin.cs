@@ -70,7 +70,16 @@ namespace Loupedeck.xkcdviewerPlugin
         public override void Unload()
         {
             this._poller?.Dispose();
-            this._flashTimer?.Dispose();
+            this._poller = null;
+
+            // Cleared as well as disposed: OnNewComicsChanged only starts a timer when there's none, so a disposed one
+            // left here would stop the flash from animating if this instance were loaded again.
+            lock (this._settingsLock)
+            {
+                this._flashTimer?.Dispose();
+                this._flashTimer = null;
+            }
+
             this.Comics?.Changed -= this.OnComicChanged;
             this.Comics?.LatestKnown -= this.OnLatestKnown;
             this.NewComics?.Changed -= this.OnNewComicsChanged;
@@ -148,16 +157,8 @@ namespace Loupedeck.xkcdviewerPlugin
             this.RaiseNewComicLookChanged();
         }
 
-        private void RaiseNewComicLookChanged()
-        {
-            try
-            {
-                this.NewComicLookChanged?.Invoke(this, EventArgs.Empty);
-            }
-            catch (Exception ex)
-            {
-                PluginLog.Error(ex, "A NewComicLookChanged handler failed");
-            }
-        }
+        // Each handler on its own, so the New Comic key failing to redraw can't stop the Next chevron, or the reverse.
+        private void RaiseNewComicLookChanged() =>
+            EventRaiser.Raise(this.NewComicLookChanged, this, this.ServiceLog, nameof(this.NewComicLookChanged));
     }
 }

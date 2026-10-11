@@ -542,47 +542,9 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
-        private void RaiseLatestKnown(Int32 latest)
-        {
-            var handlers = this.LatestKnown;
-            if (handlers == null)
-            {
-                return;
-            }
-
-            foreach (EventHandler<Int32> handler in handlers.GetInvocationList())
-            {
-                try
-                {
-                    handler(this, latest);
-                }
-                catch (Exception ex)
-                {
-                    this._log.Error($"A LatestKnown handler failed: {ex.Message}");
-                }
-            }
-        }
+        private void RaiseLatestKnown(Int32 latest) => EventRaiser.Raise(this.LatestKnown, this, latest, this._log, nameof(this.LatestKnown));
 
         // Never under the lock: a handler will call View. One handler failing doesn't stop the others.
-        private void RaiseChanged()
-        {
-            var handlers = this.Changed;
-            if (handlers == null)
-            {
-                return;
-            }
-
-            foreach (EventHandler handler in handlers.GetInvocationList())
-            {
-                try
-                {
-                    handler(this, EventArgs.Empty);
-                }
-                catch (Exception ex)
-                {
-                    this._log.Error($"A Changed handler failed: {ex.Message}");
-                }
-            }
-        }
+        private void RaiseChanged() => EventRaiser.Raise(this.Changed, this, this._log, nameof(this.Changed));
     }
 }

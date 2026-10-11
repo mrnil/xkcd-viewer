@@ -17,6 +17,7 @@ xkcdviewerPlugin/
 │       │   ├── ComicFit.cs           # Comic image → letterboxed picture or title card, and where it goes
 │       │   ├── ComicNumbers.cs       # Prev/Next and random comic numbers (stays within 1..latest)
 │       │   ├── DeviceGrid.cs         # DeviceType → grid columns, as observed on hardware; 3 for anything else
+│       │   ├── EventRaiser.cs        # Raises an event one handler at a time, logging one that throws; every event goes through it
 │       │   ├── FolderLayout.cs       # The folder's keys (Prev, Next, padding, comic tiles), their action names, ComicFolderMode
 │       │   ├── KeyContent.cs         # What each key shows, decided from the ComicView
 │       │   ├── KeyHold.cs            # Tells a tap on Prev / Next from a 2 s hold (pure state; the folder runs the delay)
@@ -49,7 +50,7 @@ xkcdviewerPlugin/
 │       └── xkcdviewerPlugin.csproj.user # Visual Studio F5 target (LogiPluginService.exe); git-ignored
 ├── tests/
 │   └── xkcdviewerPlugin.Tests/       # The test project. xUnit + Moq; mirrors the plugin's folders (Helpers/ → Helpers/*Tests.cs)
-│       ├── Actions/                  # Constructor smoke tests only (SDK glue is exempt)
+│       ├── Actions/                  # Constructor smoke tests only, one per action (SDK glue is exempt)
 │       ├── Fixtures/                 # Real info.0.json responses captured from the API (see its README.md)
 │       ├── Package/                  # PackageVersionTests: the DLL's version matches the manifest (a copy of which is linked here)
 │       ├── ManualTimeProvider.cs     # A clock tests move by hand
@@ -100,7 +101,7 @@ Group commands by SDK base class: `PluginDynamicCommand` (buttons), `PluginDynam
 
 The current files are listed in the layout tree above. Two kinds live here:
 
-- **Pure helpers** (`Chevron`, `ComicFit`, `ComicNumbers`, `DeviceGrid`, `FolderLayout`, `KeyContent`, `KeyHold`, `LogoBanner`, `LruCache`, `ReleaseSchedule`, `TitleCardLayout`, plus the `PluginTimings` constants): no SDK calls in their logic, fully tested. `Chevron` and `LogoBanner` only build SVG text; `KeyRenderer` draws it.
+- **Pure helpers** (`Chevron`, `ComicFit`, `ComicNumbers`, `DeviceGrid`, `EventRaiser`, `FolderLayout`, `KeyContent`, `KeyHold`, `LogoBanner`, `LruCache`, `ReleaseSchedule`, `TitleCardLayout`, plus the `PluginTimings` constants): no SDK calls in their logic, fully tested. `Chevron` and `LogoBanner` only build SVG text; `KeyRenderer` draws it.
 - **SDK- or OS-bound helpers** (`KeyRenderer`, `PluginLog`, `PluginLogAdapter`, `PluginResources`, `BrowserLauncher`): kept thin, with every decision pushed into a pure helper. All drawing goes through `KeyRenderer` (see `image-rendering-simplified.md`), and all delays and timeouts are in `PluginTimings`.
 
 ## Architectural Patterns
@@ -129,9 +130,9 @@ The plugin also saves the three comic numbers that must survive a restart (`Last
 Actions learn about changes from ordinary C# events. `NewComicCommand` subscribes in `OnLoad` and unsubscribes in `OnUnload`; `ComicFolder` subscribes only while it's open (`Activate`) and unsubscribes in `Deactivate` and `Unload`:
 
 - `ComicService.Changed`: the comic showing, or its state, changed. `ComicFolder` redraws its keys.
-- `xkcdviewerPlugin.NewComicLookChanged`: the new-comic signal changed (something became unread or read, or the 0.5 s flash moved on). `NewComicCommand` and the Comic Browser (for its Next chevron) redraw. It lives on the plugin, not the tracker, because it must exist before `Load` creates the tracker; the plugin catches and logs a handler that throws, so it never reaches the timer or the service.
+- `xkcdviewerPlugin.NewComicLookChanged`: the new-comic signal changed (something became unread or read, or the 0.5 s flash moved on). `NewComicCommand` and the Comic Browser (for its Next chevron) redraw. It lives on the plugin, not the tracker, because it must exist before `Load` creates the tracker.
 
-Two subscribers per event don't need more than that. If many actions come to need many events, consider a command registry with notification interfaces (`refactoring-patterns.md`, `guidelines.md` → "Notification Interface Pattern"), but don't build it ahead of the need.
+Every event is raised through `EventRaiser`, which calls each handler on its own and logs one that throws, so one key failing to redraw can't stop the others or reach the timer or service that raised the event. Raise new events the same way. Two subscribers per event don't need more than that. If many actions come to need many events, consider a command registry with notification interfaces (`refactoring-patterns.md`, `guidelines.md` → "Notification Interface Pattern"), but don't build it ahead of the need.
 
 ### 4. Async Result → Synchronous Render
 
