@@ -209,7 +209,7 @@ The keys the manifest actually uses. The file's own comments explain each key.
 ```yaml
 type: plugin4
 name: xkcdviewer                 # must match PluginShortName in the .csproj, and the plugin class is {name}Plugin
-displayName: xkcdviewer
+displayName: xkcd viewer
 description: ...
 pluginFileName: xkcdviewerPlugin.dll
 version: 1.0
