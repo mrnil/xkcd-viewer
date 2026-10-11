@@ -51,6 +51,7 @@ xkcdviewerPlugin/
 │   └── xkcdviewerPlugin.Tests/       # The test project. xUnit + Moq; mirrors the plugin's folders (Helpers/ → Helpers/*Tests.cs)
 │       ├── Actions/                  # Constructor smoke tests only (SDK glue is exempt)
 │       ├── Fixtures/                 # Real info.0.json responses captured from the API (see its README.md)
+│       ├── Package/                  # PackageVersionTests: the DLL's version matches the manifest (a copy of which is linked here)
 │       ├── ManualTimeProvider.cs     # A clock tests move by hand
 │       ├── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
 │       └── TestWait.cs               # Bounded wait for a background condition, instead of sleeping

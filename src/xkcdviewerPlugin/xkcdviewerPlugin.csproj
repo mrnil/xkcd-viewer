@@ -5,10 +5,13 @@
   <PropertyGroup>
     <RootNamespace>Loupedeck.xkcdviewerPlugin</RootNamespace>
 
-    <!-- Must match version: in package/metadata/LoupedeckPackage.yaml (see docs/ai/release-process.md). FileVersion
-         would otherwise default to four parts (1.0.0.0), and the product version would get "+<git commit>"
-         appended; both should read exactly as the manifest does. -->
-    <Version>1.0.0</Version>
+    <!-- The manifest's version: line is the only place the version is set; the DLL takes it from there, so the
+         packed plugin and its manifest can't disagree. CheckManifestVersion below fails the build if it isn't
+         three-part. FileVersion would otherwise default to four parts (1.0.0.0), and the product version would get
+         "+<git commit>" appended; both should read exactly as the manifest does. -->
+    <ManifestPath>$(MSBuildThisFileDirectory)package\metadata\LoupedeckPackage.yaml</ManifestPath>
+    <ManifestVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(ManifestPath)')), '(?m)(?&lt;=^version:[ \t]*)[^\s#]+'))</ManifestVersion>
+    <Version>$(ManifestVersion)</Version>
     <FileVersion>$(Version)</FileVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
@@ -38,6 +41,11 @@
     <EmbeddedResource Include="..\..\art\xkcdviewerlogo.svg" LogicalName="Loupedeck.xkcdviewerPlugin.Resources.Images.xkcdviewerlogo.svg" />
     <EmbeddedResource Include="..\..\art\xkcdviewerlogo-closed.svg" LogicalName="Loupedeck.xkcdviewerPlugin.Resources.Images.xkcdviewerlogo-closed.svg" />
   </ItemGroup>
+
+  <Target Name="CheckManifestVersion" BeforeTargets="BeforeBuild">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(ManifestVersion)', '^\d+\.\d+\.\d+$'))"
+           Text="LoupedeckPackage.yaml needs a three-part version: line (e.g. 1.0.0); found '$(ManifestVersion)'." />
+  </Target>
 
   <Target Name="CopyPackage" AfterTargets="PostBuildEvent">
     <Message Text="📦 Copying package files..." Importance="High" />

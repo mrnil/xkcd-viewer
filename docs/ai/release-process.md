@@ -20,7 +20,7 @@ In `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`:
 version: 1.0.0
 ```
 
-Also update `<Version>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`. The two must match, and both use the full three-part version.
+That's the only place to change it: the `.csproj` reads it, so the DLL and the package always carry the same version. It must be three-part; the build fails otherwise, and `PackageVersionTests` check the DLL against it.
 
 ### 2. Build Release Configuration
 
@@ -37,7 +37,7 @@ Add a `## [{VERSION}] - {DATE}` entry to the repo-root `CHANGELOG.md`, above the
 ### 4. Commit and Tag
 
 ```bash
-git add CHANGELOG.md src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml src/xkcdviewerPlugin/xkcdviewerPlugin.csproj
+git add CHANGELOG.md src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml
 git commit -m "chore(release): v{VERSION}"
 git tag -a v{VERSION} -m "Release v{VERSION}"
 ```
@@ -96,7 +96,7 @@ Semantic Versioning: **major** for breaking changes, **minor** for backward-comp
 
 - [ ] All code committed, all tests passing, build at zero warnings
 - [ ] Template placeholders gone from `LoupedeckPackage.yaml` (`description`, `author`, `copyright`)
-- [ ] Version updated in `LoupedeckPackage.yaml` and `.csproj`, and they match
+- [ ] Version updated in `LoupedeckPackage.yaml` (three-part; the `.csproj` follows it)
 - [ ] `supportedDevices` checked against the devices actually tested (see the SDK docs' supported-devices page)
 - [ ] CHANGELOG.md updated
 - [ ] Git tag created and pushed
@@ -108,4 +108,4 @@ Semantic Versioning: **major** for breaking changes, **minor** for backward-comp
 
 - **Pack fails**: check that the Release build succeeded and `bin/Release/bin` and `bin/Release/metadata` exist.
 - **Verify fails**: check the manifest keys against the SDK docs and that `pluginFileName` (`xkcdviewerPlugin.dll`) exists under `pluginFolderWin` (`bin`).
-- **Version mismatch**: update both version locations, rebuild Release, repack.
+- **Version mismatch** (`PackageVersionTests` fail, or the build says the version isn't three-part): fix `version:` in `LoupedeckPackage.yaml`, rebuild Release, repack. Don't add a `<Version>` to the `.csproj`: it would override the manifest.
