@@ -24,6 +24,12 @@ namespace Loupedeck.xkcdPlugin
 
         public static Int32 Next(Int32 current, Int32 latest)
         {
+            // Checked before adding, so a latest number of Int32.MaxValue from a bad response can't overflow.
+            if (current >= latest)
+            {
+                return current;
+            }
+
             var next = current + 1;
             if (next == Missing)
             {

@@ -48,6 +48,12 @@ namespace Loupedeck.xkcdPlugin.Tests
         }
 
         [Fact]
+        public void Next_AtTheLargestPossibleNumber_DoesNotOverflow()
+        {
+            Assert.Equal(Int32.MaxValue, ComicNumbers.Next(Int32.MaxValue, Int32.MaxValue));
+        }
+
+        [Fact]
         public void Next_OnlyThe404GapIsLeft_DoesNotMove()
         {
             Assert.Equal(403, ComicNumbers.Next(403, 404));
