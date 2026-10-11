@@ -7,13 +7,15 @@ xkcdviewerPlugin/
 ├── src/
 │   └── xkcdviewerPlugin/             # The plugin project
 │       ├── Actions/                  # Loupedeck SDK command/adjustment/folder classes
-│       │   └── ComicFolder.cs        # The xkcd folder: layout, key images, presses. Users place it by this name
+│       │   ├── ComicFolder.cs        # The Comic Browser folder: layout, key images, presses. Users place it by this name
+│       │   ├── LatestComicFolder.cs  # ComicFolder opened at the latest comic
+│       │   └── RandomComicFolder.cs  # ComicFolder opened at a random comic; top-row keys show another
 │       ├── Helpers/
 │       │   ├── BrowserLauncher.cs    # Opens a comic page (only https://xkcd.com/{num}/) in the default browser
 │       │   ├── ComicFit.cs           # Comic image → letterboxed picture or title card, and where it goes
-│       │   ├── ComicNumbers.cs       # Prev/Next comic numbers (stays within 1..latest)
+│       │   ├── ComicNumbers.cs       # Prev/Next and random comic numbers (stays within 1..latest)
 │       │   ├── DeviceGrid.cs         # DeviceType → grid columns, as observed on hardware; 3 for anything else
-│       │   ├── FolderLayout.cs       # The folder's keys (Prev, Next, padding, comic tiles) and their action names
+│       │   ├── FolderLayout.cs       # The folder's keys (Prev, Next, padding, comic tiles), their action names, ComicFolderMode
 │       │   ├── KeyContent.cs         # What each key shows, decided from the ComicView
 │       │   ├── KeyRenderer.cs        # Draws keys with BitmapBuilder (SDK-bound, thin; decisions live in tested helpers)
 │       │   ├── LruCache.cs           # Generic count-limited LRU; the folder caches comic areas in it
@@ -27,7 +29,7 @@ xkcdviewerPlugin/
 │       │   └── xkcdComic.cs          # A validated comic: number, display-ready title, image URL or null, page URL
 │       ├── Services/
 │       │   ├── ComicJson.cs          # info.0.json → xkcdComic; normalizes the title, drops disallowed images
-│       │   ├── ComicService.cs       # Current comic, caches, preloads ±2, retry delay; raises Changed
+│       │   ├── ComicService.cs       # Current comic, latest/random jumps, caches, preloading, retry delay; raises Changed
 │       │   ├── ImageCache.cs         # LRU of image bytes, limited by count and total size
 │       │   ├── IPluginLog.cs         # Logging interface services depend on
 │       │   ├── IxkcdClient.cs        # The xkcd API: latest, by number, image bytes. Null on any failure

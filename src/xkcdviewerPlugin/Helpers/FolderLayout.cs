@@ -4,6 +4,19 @@ namespace Loupedeck.xkcdviewerPlugin
     using System.Collections.Generic;
     using System.Globalization;
 
+    // Which comic a folder opens at, and what its top-row keys do. See docs/ai/product.md, "The folders".
+    public enum ComicFolderMode
+    {
+        // The last comic viewed. Prev / Next step through the comics.
+        Browse,
+
+        // The latest comic. Prev / Next as in Browse.
+        Latest,
+
+        // A random comic. Both top-row keys show another random comic.
+        Random,
+    }
+
     public enum FolderSlotKind
     {
         Previous,

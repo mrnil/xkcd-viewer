@@ -24,5 +24,27 @@ namespace Loupedeck.xkcdviewerPlugin
 
         // Checked before adding, so a latest number of Int32.MaxValue from a bad response can't overflow.
         public static Int32 Next(Int32 current, Int32 latest) => current >= latest ? current : current + 1;
+
+        // A random comic from First to latest, never the one to avoid (the comic already showing), so "show another"
+        // always shows another. randomBetween is Random.Next's contract: min inclusive, max exclusive. Picking from
+        // one number fewer and stepping over the avoided one keeps every other comic equally likely. Both ranges are
+        // written so a latest of Int32.MaxValue can't overflow.
+        public static Int32 PickRandom(Func<Int32, Int32, Int32> randomBetween, Int32 latest, Int32? avoid)
+        {
+            ArgumentNullException.ThrowIfNull(randomBetween);
+
+            if (latest <= First)
+            {
+                return First;
+            }
+
+            if (avoid is Int32 skip && skip >= First && skip <= latest)
+            {
+                var pick = randomBetween(First, latest);
+                return pick >= skip ? pick + 1 : pick;
+            }
+
+            return randomBetween(First - 1, latest) + 1;
+        }
     }
 }

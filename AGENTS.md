@@ -6,7 +6,7 @@ Instructions for AI coding assistants working in this repository (Claude Code, C
 
 `xkcdviewerPlugin`: a Logitech/Loupedeck hardware plugin (MX Creative Console, Loupedeck CT/Live) that shows the current xkcd comic split across the device's keys, with navigation keys beside it. It's built on the Logi Actions SDK in C#/.NET 10. The primary target is the MX Creative Keypad; see `docs/ai/product.md`. The folder lays itself out per device from the `DeviceType` the SDK passes in (keypad 3×3, Live S 5×3, CT 4×3), and assumes **3×3 for any other device**. These and the other folder behaviours were confirmed on hardware; see "Hardware facts" in `product.md` before changing the layout.
 
-The v1 folder is built (`src/xkcdviewerPlugin/Actions/ComicFolder.cs`) and awaiting hardware testing; `docs/ai/product.md` → "Hardware test checklist" lists what to check. **`ComicFolder`'s class name and namespace are what users' placed buttons are stored by**: don't rename them.
+The v1 folders are built (`src/xkcdviewerPlugin/Actions/`: `ComicFolder` is the Comic Browser, and `LatestComicFolder` / `RandomComicFolder` are it in another mode) and awaiting hardware testing; `docs/ai/product.md` → "Hardware test checklist" lists what to check. **The folder classes' names and namespace are what users' placed buttons are stored by**: don't rename them.
 
 ## Start here
 

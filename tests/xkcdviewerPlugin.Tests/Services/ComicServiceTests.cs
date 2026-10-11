@@ -1,6 +1,7 @@
 namespace Loupedeck.xkcdviewerPlugin.Tests
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -452,6 +453,137 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
         }
 
         [Fact]
+        public async Task ShowLatestAsync_FromALastViewedComic_ShowsTheLatestAndPreloadsTheTwoBefore()
+        {
+            var service = this.CreateService(353);
+            await service.StartAsync();
+
+            await service.ShowLatestAsync();
+
+            var view = service.View;
+            Assert.Equal(Latest, view.Num);
+            Assert.Equal(ComicViewState.Ready, view.State);
+            Assert.True(view.CanGoPrevious);
+            Assert.False(view.CanGoNext);
+            this.VerifyComicFetched(Latest - 2, Times.Once());
+        }
+
+        [Fact]
+        public async Task ShowLatestAsync_BeforeTheLatestIsKnown_ShowsNoOtherComicThenTheLatest()
+        {
+            var release = new TaskCompletionSource<xkcdComic>(TaskCreationOptions.RunContinuationsAsynchronously);
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).Returns(release.Task);
+            var service = this.CreateService(353);
+
+            var showing = service.ShowLatestAsync();
+
+            Assert.Null(service.View.Num);
+            Assert.Equal(ComicViewState.Loading, service.View.State);
+            release.SetResult(Comic(Latest));
+            await showing;
+            Assert.Equal(Latest, service.View.Num);
+            this.VerifyComicFetched(353, Times.Never());
+        }
+
+        [Fact]
+        public async Task ShowLatestAsync_LatestUnavailable_IsFailedWithNoComic()
+        {
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).ReturnsAsync((xkcdComic)null);
+            var service = this.CreateService(353);
+
+            await service.ShowLatestAsync();
+
+            Assert.Null(service.View.Num);
+            Assert.Equal(ComicViewState.Failed, service.View.State);
+        }
+
+        [Fact]
+        public async Task StartAsync_AfterShowLatestFailed_ShowsTheLastViewedComicAgain()
+        {
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).ReturnsAsync((xkcdComic)null);
+            var service = this.CreateService(353);
+            await service.ShowLatestAsync();
+
+            await service.StartAsync();
+
+            Assert.Equal(353, service.View.Num);
+        }
+
+        [Fact]
+        public async Task ShowRandomAsync_ShowsTheDrawnComicAndPreloadsOnlyTheNextDraw()
+        {
+            var service = this.CreateService(null, Draws(100, 200));
+            await service.ShowRandomAsync();
+
+            var view = service.View;
+            Assert.Equal(100, view.Num);
+            Assert.Equal(ComicViewState.Ready, view.State);
+            this.VerifyImageFetched(200, Times.Once());
+            foreach (var neighbour in new[] { 98, 99, 101, 102 })
+            {
+                this.VerifyComicFetched(neighbour, Times.Never());
+            }
+        }
+
+        [Fact]
+        public async Task ShowRandomAsync_Again_ShowsThePreloadedComicAtOnce()
+        {
+            var service = this.CreateService(null, Draws(100, 200, 300));
+            await service.ShowRandomAsync();
+            ComicView seen = null;
+            service.Changed += (sender, _) => seen ??= ((ComicService)sender).View;
+
+            var showing = service.ShowRandomAsync();
+
+            Assert.Equal(200, seen.Num);
+            Assert.Equal(ComicViewState.Ready, seen.State);
+            await showing;
+            this.VerifyComicFetched(200, Times.Once());
+            this.VerifyImageFetched(300, Times.Once());
+        }
+
+        [Fact]
+        public async Task ShowRandomAsync_NeverShowsTheComicAlreadyShowing()
+        {
+            // Every draw is the lowest number allowed, so only the stepping over the current comic keeps it from repeating.
+            var service = this.CreateService(1, (min, _) => min);
+            await service.StartAsync();
+
+            await service.ShowRandomAsync();
+
+            Assert.NotEqual(1, service.View.Num);
+        }
+
+        [Fact]
+        public async Task ShowRandomAsync_PicksBetweenTheFirstAndTheLatestComic()
+        {
+            var bounds = new ConcurrentBag<(Int32 Min, Int32 Max)>();
+            var service = this.CreateService(null, (min, max) =>
+            {
+                bounds.Add((min, max));
+                return min;
+            });
+
+            await service.ShowRandomAsync();
+
+            // PickRandom asks for one number fewer than there are comics, as it steps over the one showing.
+            Assert.All(bounds, range => Assert.True(range.Min >= ComicNumbers.First - 1 && range.Max <= Latest));
+            Assert.InRange(service.View.Num.Value, ComicNumbers.First, Latest);
+        }
+
+        [Fact]
+        public async Task PreviousAsync_AfterARandomComic_StepsBackAndPreloadsNeighboursAgain()
+        {
+            var service = this.CreateService(null, Draws(100, 200));
+            await service.ShowRandomAsync();
+
+            await service.PreviousAsync();
+
+            Assert.Equal(99, service.View.Num);
+            this.VerifyComicFetched(97, Times.Once());
+        }
+
+        [Fact]
         public void Constructor_NullArguments_Throw()
         {
             Assert.Throws<ArgumentNullException>(() => new ComicService(null, this._mockLog.Object, null));
@@ -470,8 +602,17 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
 
         private static xkcdComic Comic(Int32 num) => new xkcdComic(num, $"Comic {num}", new Uri($"https://imgs.xkcd.com/comics/c{num}.png"));
 
-        private ComicService CreateService(Int32? startNum) =>
-            new ComicService(this._mockClient.Object, this._mockLog.Object, startNum, this._time, RetryDelay);
+        // A random source that turns into the given comic numbers, in order. They must be ascending: PickRandom then
+        // adds one to every draw (stepping over the comic showing, or from the range starting at 0), so each draw is
+        // the number minus one.
+        private static Func<Int32, Int32, Int32> Draws(params Int32[] nums)
+        {
+            var next = 0;
+            return (_, _) => nums[Interlocked.Increment(ref next) - 1] - 1;
+        }
+
+        private ComicService CreateService(Int32? startNum, Func<Int32, Int32, Int32> randomBetween = null) =>
+            new ComicService(this._mockClient.Object, this._mockLog.Object, startNum, this._time, RetryDelay, randomBetween);
 
         private void VerifyComicFetched(Int32 num, Times times) =>
             this._mockClient.Verify(x => x.GetComicAsync(num, It.IsAny<CancellationToken>()), times);

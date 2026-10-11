@@ -1,6 +1,7 @@
 namespace Loupedeck.xkcdviewerPlugin.Tests
 {
     using System;
+    using System.Collections.Generic;
 
     using Xunit;
 
@@ -88,6 +89,65 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
         public void FormatSaved_RoundTripsThroughParseSaved()
         {
             Assert.Equal(3309, ComicNumbers.ParseSaved(ComicNumbers.FormatSaved(3309)));
+        }
+
+        [Fact]
+        public void PickRandom_NothingToAvoid_CoversEveryComicFromTheFirstToTheLatest()
+        {
+            var lowest = ComicNumbers.PickRandom((min, max) => min, Latest, null);
+            var highest = ComicNumbers.PickRandom((min, max) => max - 1, Latest, null);
+
+            Assert.Equal(ComicNumbers.First, lowest);
+            Assert.Equal(Latest, highest);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(5)]
+        [InlineData(10)]
+        public void PickRandom_EveryPossibleDraw_NeverPicksTheComicToAvoidAndCoversAllOthers(Int32 avoid)
+        {
+            const Int32 latest = 10;
+            var picks = new HashSet<Int32>();
+
+            for (var draw = 0; draw < latest - 1; draw++)
+            {
+                picks.Add(ComicNumbers.PickRandom((min, max) => min + draw, latest, avoid));
+            }
+
+            Assert.DoesNotContain(avoid, picks);
+            Assert.Equal(latest - 1, picks.Count);
+            Assert.All(picks, pick => Assert.InRange(pick, ComicNumbers.First, latest));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(Latest + 1)]
+        public void PickRandom_AvoidIsNotAComic_PicksFromEveryComic(Int32 avoid)
+        {
+            Assert.Equal(Latest, ComicNumbers.PickRandom((min, max) => max - 1, Latest, avoid));
+        }
+
+        [Theory]
+        [InlineData(1, null)]
+        [InlineData(1, 1)]
+        [InlineData(0, null)]
+        public void PickRandom_OnlyOneComic_IsTheFirstWithoutDrawing(Int32 latest, Int32? avoid)
+        {
+            Assert.Equal(ComicNumbers.First, ComicNumbers.PickRandom((_, _) => throw new InvalidOperationException("drew"), latest, avoid));
+        }
+
+        [Fact]
+        public void PickRandom_AtTheLargestPossibleLatest_DoesNotOverflow()
+        {
+            Assert.Equal(Int32.MaxValue, ComicNumbers.PickRandom((min, max) => max - 1, Int32.MaxValue, null));
+            Assert.Equal(Int32.MaxValue, ComicNumbers.PickRandom((min, max) => max - 1, Int32.MaxValue, 1));
+        }
+
+        [Fact]
+        public void PickRandom_NullRandomSource_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => ComicNumbers.PickRandom(null, Latest, null));
         }
     }
 }

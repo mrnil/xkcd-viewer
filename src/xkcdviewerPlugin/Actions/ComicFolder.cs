@@ -5,10 +5,13 @@ namespace Loupedeck.xkcdviewerPlugin
     using System.Collections.Generic;
     using System.Linq;
 
-    // The xkcd folder: Prev / Next on the top row and the current comic split across the 3x2 block below. Laid out
-    // per device (DeviceGrid, FolderLayout); what each key shows comes from KeyContent. See docs/ai/product.md.
+    // The Comic Browser folder: Prev / Next on the top row and the current comic split across the 3x2 block below.
+    // Laid out per device (DeviceGrid, FolderLayout); what each key shows comes from KeyContent. See docs/ai/product.md.
+    // LatestComicFolder and RandomComicFolder are this folder in another ComicFolderMode.
     //
-    // Users place this class by name, so renaming it or its namespace orphans their buttons.
+    // Users place this class (and its subclasses) by name, so renaming it or its namespace orphans their buttons.
+    // The other folders subclass it, rather than sharing an abstract base, because the SDK docs don't say whether the
+    // plugin service skips abstract action classes when it looks for actions.
     public class ComicFolder : PluginDynamicFolder
     {
         private readonly Object _areaLock = new Object();
@@ -19,11 +22,21 @@ namespace Loupedeck.xkcdviewerPlugin
             new LruCache<(Int32 Num, Int32 TileWidth, Int32 TileHeight), BitmapImage>(ComicService.MaxCachedImages, area => area?.Dispose());
 
         private readonly ConcurrentDictionary<String, Byte> _actionNames = new ConcurrentDictionary<String, Byte>();
+        private readonly ComicFolderMode _mode;
+        private readonly String _keyLabel;
         private ComicService _subscribedTo;
 
         public ComicFolder()
+            : this("Comic Browser", ComicFolderMode.Browse, null)
         {
-            this.DisplayName = "Comic Browser";
+        }
+
+        // keyLabel is drawn under the logo on the key that opens the folder; null for none.
+        protected ComicFolder(String displayName, ComicFolderMode mode, String keyLabel)
+        {
+            this._mode = mode;
+            this._keyLabel = keyLabel;
+            this.DisplayName = displayName;
             // Keep this: without a GroupName, Options+ files the folder under a generic "Control Center" group
             // (seen on hardware). PluginApi has no way to list it ungrouped.
             this.GroupName = "xkcd viewer";
@@ -50,7 +63,7 @@ namespace Loupedeck.xkcdviewerPlugin
         // An empty name stops the SDK shrinking the image to fit a caption underneath (hardware spike).
         public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) => String.Empty;
 
-        public override BitmapImage GetButtonImage(PluginImageSize imageSize) => KeyRenderer.Logo(imageSize);
+        public override BitmapImage GetButtonImage(PluginImageSize imageSize) => KeyRenderer.Logo(imageSize, this._keyLabel);
 
         public override Boolean Activate()
         {
@@ -63,7 +76,12 @@ namespace Loupedeck.xkcdviewerPlugin
                     this._subscribedTo = service;
                 }
 
-                _ = service.StartAsync();
+                _ = this._mode switch
+                {
+                    ComicFolderMode.Latest => service.ShowLatestAsync(),
+                    ComicFolderMode.Random => service.ShowRandomAsync(),
+                    _ => service.StartAsync(),
+                };
             }
 
             return base.Activate();
@@ -96,6 +114,9 @@ namespace Loupedeck.xkcdviewerPlugin
 
             switch (slot.Kind)
             {
+                case FolderSlotKind.Previous or FolderSlotKind.Next when this._mode == ComicFolderMode.Random:
+                    _ = service.ShowRandomAsync();
+                    break;
                 case FolderSlotKind.Previous:
                     _ = service.PreviousAsync();
                     break;
@@ -121,11 +142,12 @@ namespace Loupedeck.xkcdviewerPlugin
             try
             {
                 var view = service.View;
-                var content = KeyContent.For(slot, view);
+                var content = KeyContent.For(slot, view, this._mode);
                 return content.Kind switch
                 {
                     KeyContentKind.PreviousArrow => KeyRenderer.Arrow(false, content.Enabled, imageSize),
                     KeyContentKind.NextArrow => KeyRenderer.Arrow(true, content.Enabled, imageSize),
+                    KeyContentKind.ShowAnother => KeyRenderer.ShowAnother(imageSize),
                     KeyContentKind.ComicTile => this.DrawComicTile(view, content.TileIndex, imageSize),
                     KeyContentKind.TitleCardTile => KeyRenderer.TitleCardTile(content.Text, content.TileIndex, imageSize),
                     KeyContentKind.LoadingTile => KeyRenderer.StatusTile(content.Text, true, imageSize),

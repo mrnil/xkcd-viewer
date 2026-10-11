@@ -10,6 +10,9 @@ namespace Loupedeck.xkcdviewerPlugin
         PreviousArrow,
         NextArrow,
 
+        // The Random folder's top-row keys, in place of Prev / Next: another random comic.
+        ShowAnother,
+
         // One sixth of the comic picture, or of the title card if the picture turns out not to fit (ComicFit decides
         // that once the image is decoded).
         ComicTile,
@@ -30,13 +33,14 @@ namespace Loupedeck.xkcdviewerPlugin
         public const Int32 StatusTile = 1;
         public const Int32 NumberTile = 4;
 
-        public static KeyContent For(FolderSlot slot, ComicView view)
+        public static KeyContent For(FolderSlot slot, ComicView view, ComicFolderMode mode = ComicFolderMode.Browse)
         {
             ArgumentNullException.ThrowIfNull(slot);
             ArgumentNullException.ThrowIfNull(view);
 
             return slot.Kind switch
             {
+                FolderSlotKind.Previous or FolderSlotKind.Next when mode == ComicFolderMode.Random => new KeyContent(KeyContentKind.ShowAnother),
                 FolderSlotKind.Previous => new KeyContent(KeyContentKind.PreviousArrow, view.CanGoPrevious),
                 FolderSlotKind.Next => new KeyContent(KeyContentKind.NextArrow, view.CanGoNext),
                 FolderSlotKind.ComicTile => ForTile(slot.Index, view),

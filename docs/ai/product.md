@@ -104,13 +104,25 @@ What real responses showed (captured as test fixtures in `tests/xkcdviewerPlugin
 - **Prev / Next are preloaded, two either side.** Whenever the current comic changes, the two comics before and after it are fetched in the background, details and image, so even two quick presses usually show their comic at once. After one press only one comic is newly in range, so a step costs one comic fetch. Only one fetch per comic runs at a time, however many keys or presses ask for it.
 - **Comic details are kept for the whole session** (a published comic never changes, and each is about 200 bytes). **Image bytes are kept for the 7 most recently used comics** (decided 2026-10-11): the five preloaded plus one spare each way, so turning straight back after a step fetches nothing. A 16 MB total acts as a safety net for unusually large images; seven typical comics come to about 1 MB. Memory only: nothing is written to disk.
 - **A failed fetch is retried only after 30 s** (`PluginTimings.FailedLoadRetryDelay`), and only when the comic is needed again, so pressing Prev / Next while offline doesn't send a request each time. If a comic's details arrive but its image doesn't, it shows as the title card.
-- **The latest comic is fetched once per session.** It's where Next stops, and the starting comic on a first run. If that fetch fails, the last-viewed comic still shows, and Next asks for the latest again (after the 30 s wait) instead of moving.
+- **The latest comic is fetched once per session.** It's where Next stops, the starting comic on a first run, and the upper bound for random picks. If that fetch fails, the last-viewed comic still shows, and Next asks for the latest again (after the 30 s wait) instead of moving.
+- **Latest and random jumps** (`ShowLatestAsync`, `ShowRandomAsync`; decided 2026-10-11) need the latest comic first. Until it arrives they show no comic ("loading…", or "offline" if it fails) rather than the last-viewed one, which would look like the answer. Opening the Comic Browser afterwards still shows the last-viewed comic.
+- **A random comic preloads the next random pick**, not its neighbours: its neighbours are no likelier to be shown next than any other comic. The pick is any comic from 1 to the latest except the one showing (`ComicNumbers.PickRandom`), so "show another" never repeats the comic in front of you. Comic 404 can come up like any other. Pressing Prev / Next after a random comic (only possible from another folder) goes back to preloading neighbours.
 
 The cut tiles are cached by the folder itself (step 3), because they're SDK `BitmapImage`s.
 
-## The folder (step 3)
+## The folders (step 3)
 
-Decided 2026-10-11:
+Three folder actions, all in the **xkcd viewer** group and all the same folder underneath (`ComicFolder` in a `ComicFolderMode`; decided 2026-10-11):
+
+| Folder action | Class | Opens at | Top-row keys |
+|---------------|-------|----------|--------------|
+| **Comic Browser** | `ComicFolder` | The last comic viewed | Prev / Next |
+| **Latest Comic** | `LatestComicFolder` | The latest comic | Prev / Next |
+| **Random Comic** | `RandomComicFolder` | A random comic, new each time it opens | Both say "show another": another random comic |
+
+The Latest and Random keys show the logo with "latest" or "random" written in the blank strip under the drawing, so the three can be told apart. Whatever a folder shows becomes the last comic viewed, so the Comic Browser picks up where Latest or Random left off. The two new folders subclass `ComicFolder` rather than sharing an abstract base, because the SDK docs don't say whether abstract action classes are skipped.
+
+The rest of this section describes the Comic Browser; the other two differ only as in the table.
 
 - **Getting there:** the user places the **Comic Browser** folder action (in the **xkcd viewer** group in Options+; named 2026-10-11) on any key. That key shows the owner's own xkcdviewer logo (a pencil drawing, `art/xkcdviewer-logo.jpg`; it replaced the official xkcd logo on 2026-10-11, for licensing) on white, pre-scaled to the 116 px and 80 px key sizes by `art/make-icons.ps1`; other sizes scale the nearest one. The package icon is the same logo on a white rounded tile, because the line art alone vanishes on Options+'s black background. A comic thumbnail on it was ruled out: the owner has later plans it wouldn't suit. Pressing it opens the folder, which starts the service (`Activate()`), at the last comic viewed.
 - **Prev / Next:** a chevron, with no comic number. Dimmed when there's nowhere to go.
@@ -127,6 +139,8 @@ Decided 2026-10-11:
 - Loading and offline placeholders (disconnect the network)
 - The last-viewed comic survives a plugin restart
 - A tile press opens the right page
+- Latest Comic opens at the latest; Random Comic opens at a different comic each time, and both "show another" keys change it (quickly, as the next one is preloaded)
+- The "latest" / "random" labels on the folder keys are legible at 80 px and clear of the drawing, and "show another" fits its key
 
 ## Comic shapes
 
@@ -141,18 +155,18 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file). Before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
-3. **Checking for new comics**: on hold (2026-10-11) while the owner thinks it over. Today the latest comic is fetched once per session and never re-checked, so a comic published while the plugin runs only appears after a restart. The proposal was to re-check when the folder opens and when Next is pressed on the newest comic, at most every 5 minutes, with no background timer.
+3. **Checking for new comics**: on hold (2026-10-11) while the owner thinks it over. Today the latest comic is fetched once per session and never re-checked, so a comic published while the plugin runs only appears after a restart. Latest Comic makes this more visible: it opens at the latest comic *as of the session start*. The proposal was to re-check when the folder opens and when Next is pressed on the newest comic, at most every 5 minutes, with no background timer.
 
 ## v1 scope
 
-- The folder with the 3×2 comic block and the Prev / Next row, laid out per device as above
+- The folder with the 3×2 comic block and the Prev / Next row, laid out per device as above, placeable as Comic Browser, Latest Comic or Random Comic (see "The folders")
 - The last comic viewed on open (the latest on a first run); Prev/Next by number (comic 404 included: it's a joke, see "Data"); a comic tile press opens it in the browser
 - Comics, images and sliced tiles cached in memory, with Prev / Next preloaded (see "Which comic, and caching")
 - A sensible placeholder while loading and when offline
 
 ## Later (not committed)
 
-- Use the spare top-row keys on wider grids (random comic, alt text)
+- Use the spare top-row keys on wider grids (alt text)
 - Alt text view
 - Favourites
 - A dial for fast scrolling where one is available

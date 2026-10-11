@@ -21,6 +21,31 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
             Assert.Equal(new KeyContent(KeyContentKind.NextArrow, canGoNext), KeyContent.For(FolderSlot.Next, view));
         }
 
+        [Theory]
+        [InlineData(ComicFolderMode.Browse)]
+        [InlineData(ComicFolderMode.Latest)]
+        public void For_ArrowsOutsideTheRandomFolder_ArePrevAndNext(ComicFolderMode mode)
+        {
+            Assert.Equal(KeyContentKind.PreviousArrow, KeyContent.For(FolderSlot.Previous, _ready, mode).Kind);
+            Assert.Equal(KeyContentKind.NextArrow, KeyContent.For(FolderSlot.Next, _ready, mode).Kind);
+        }
+
+        [Fact]
+        public void For_ArrowsInTheRandomFolder_AreBothShowAnother()
+        {
+            var view = _ready with { CanGoPrevious = false, CanGoNext = false };
+
+            Assert.Equal(new KeyContent(KeyContentKind.ShowAnother), KeyContent.For(FolderSlot.Previous, view, ComicFolderMode.Random));
+            Assert.Equal(new KeyContent(KeyContentKind.ShowAnother), KeyContent.For(FolderSlot.Next, view, ComicFolderMode.Random));
+        }
+
+        [Fact]
+        public void For_TilesInTheRandomFolder_AreTheComicAsInTheOtherFolders()
+        {
+            Assert.Equal(KeyContent.For(FolderSlot.ComicTile(4), _ready), KeyContent.For(FolderSlot.ComicTile(4), _ready, ComicFolderMode.Random));
+            Assert.Equal(KeyContentKind.Blank, KeyContent.For(FolderSlot.Padding(0), _ready, ComicFolderMode.Random).Kind);
+        }
+
         [Fact]
         public void For_Padding_IsBlank()
         {

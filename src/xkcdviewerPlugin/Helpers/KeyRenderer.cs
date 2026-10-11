@@ -23,9 +23,10 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
-        // The key that opens the folder: the xkcdviewer logo, pre-scaled by art/make-icons.ps1 to the two key sizes seen on
-        // hardware so it's never resampled on the device at those sizes. Any other size scales the nearest one.
-        public static BitmapImage Logo(PluginImageSize imageSize)
+        // The key that opens a folder: the xkcdviewer logo, pre-scaled by art/make-icons.ps1 to the two key sizes seen on
+        // hardware so it's never resampled on the device at those sizes. Any other size scales the nearest one. A label
+        // ("latest", "random") goes in the blank strip under the drawing, so the three folder keys can be told apart.
+        public static BitmapImage Logo(PluginImageSize imageSize, String label = null)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
@@ -41,6 +42,12 @@ namespace Loupedeck.xkcdviewerPlugin
                 {
                     PluginLog.Error(ex, "Failed to draw the folder logo - showing the wordmark instead");
                     builder.DrawText("xkcd", _ink, builder.Height / 3);
+                }
+
+                if (!String.IsNullOrEmpty(label))
+                {
+                    var top = builder.Height * 4 / 5;
+                    builder.DrawText(label, 0, top, builder.Width, builder.Height - top, _ink, builder.Height / 7);
                 }
 
                 return builder.ToImage();
@@ -71,6 +78,18 @@ namespace Loupedeck.xkcdviewerPlugin
                 var tail = pointsRight ? width * 0.40f : width * 0.60f;
                 builder.DrawLine(tail, height * 0.28f, tip, height * 0.5f, color, stroke);
                 builder.DrawLine(tip, height * 0.5f, tail, height * 0.72f, color, stroke);
+                return builder.ToImage();
+            }
+        }
+
+        // The Random folder's "show another" key: words, like the status tiles, rather than a symbol the device's font
+        // may not have.
+        public static BitmapImage ShowAnother(PluginImageSize imageSize)
+        {
+            using (var builder = new BitmapBuilder(imageSize))
+            {
+                builder.Clear(BitmapColor.Black);
+                builder.DrawText("show\nanother", _arrow, builder.Height / 6);
                 return builder.ToImage();
             }
         }
