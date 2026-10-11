@@ -6,10 +6,13 @@
 # paper is made transparent and the pencil turned into black ink of matching strength, then the logo is put on
 # clean white "paper" again in every output (line art alone vanishes on Options+'s black background).
 #
-#   src/package/metadata/Icon256x256.png      Package icon. SDK rules: 256x256 PNG, graphic within the centred
-#                                             192x192, transparent around it, legible on black and on white.
-#   src/Resources/Images/FolderButton116.png  The key that opens the folder, at the two key sizes seen on
-#   src/Resources/Images/FolderButton80.png   hardware (PluginImageSize.Width116 and Width90). Full white keys.
+#   src/xkcdviewerPlugin/package/metadata/Icon256x256.png
+#       Package icon. SDK rules: 256x256 PNG, graphic within the centred 192x192, transparent around it, legible on
+#       black and on white.
+#   src/xkcdviewerPlugin/Resources/Images/FolderButton116.png
+#   src/xkcdviewerPlugin/Resources/Images/FolderButton80.png
+#       The key that opens the folder, at the two key sizes seen on hardware (PluginImageSize.Width116 and Width90).
+#       Full white keys.
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -127,9 +130,9 @@ function New-Icon($ink, [String] $path, [Int32] $size, [System.Drawing.Rectangle
 $ink = ConvertTo-Ink $source
 try
 {
-    New-Icon $ink (Join-Path $root 'src/package/metadata/Icon256x256.png') 256 ([System.Drawing.Rectangle]::new(32, 32, 192, 192)) 28 10
-    New-Icon $ink (Join-Path $root 'src/Resources/Images/FolderButton116.png') 116 ([System.Drawing.Rectangle]::new(0, 0, 116, 116)) 0 4
-    New-Icon $ink (Join-Path $root 'src/Resources/Images/FolderButton80.png') 80 ([System.Drawing.Rectangle]::new(0, 0, 80, 80)) 0 3
+    New-Icon $ink (Join-Path $root 'src/xkcdviewerPlugin/package/metadata/Icon256x256.png') 256 ([System.Drawing.Rectangle]::new(32, 32, 192, 192)) 28 10
+    New-Icon $ink (Join-Path $root 'src/xkcdviewerPlugin/Resources/Images/FolderButton116.png') 116 ([System.Drawing.Rectangle]::new(0, 0, 116, 116)) 0 4
+    New-Icon $ink (Join-Path $root 'src/xkcdviewerPlugin/Resources/Images/FolderButton80.png') 80 ([System.Drawing.Rectangle]::new(0, 0, 80, 80)) 0 3
 }
 finally
 {

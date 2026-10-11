@@ -13,7 +13,7 @@
 
 ## Key Dependencies
 
-### Plugin Project (`src/xkcdviewerPlugin.csproj`)
+### Plugin Project (`src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`)
 
 | Package | Version | Purpose |
 |---------|---------|---------|
@@ -31,14 +31,14 @@ No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 1
 | `Moq` | 4.20.72 | Mocks (`IPluginLog` so far) |
 | `coverlet.collector` | 6.0.4 | `dotnet test --collect:"XPlat Code Coverage"` |
 
-The project has its **own** `<Reference Include="PluginApi">` pointing at the same `PluginApiDir` as the main project. A plain file `<Reference>` doesn't flow through a `ProjectReference` at compile time, so without it the build breaks as soon as test code touches a `PluginApi` type (e.g. `DeviceType`). It also sets `EnforceCodeStyleInBuild`.
+The `PluginApi` reference, `PluginApiDir`, `TargetFramework`, `LangVersion` and `EnforceCodeStyleInBuild` are set once, in the repo-root `Directory.Build.props`, so both projects get them. The test project needs the `PluginApi` reference too: a plain file `<Reference>` doesn't flow through a `ProjectReference` at compile time, so without it the build breaks as soon as test code touches a `PluginApi` type (e.g. `DeviceType`).
 
 ## SDK Plugin API Location
 
 - **Windows**: `C:\Program Files\Logi\LogiPluginService\PluginApi.dll`
 - **macOS**: `/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/PluginApi.dll`
 
-`src/xkcdviewerPlugin.csproj` resolves this through `PluginApiDir`. A Logi Options+ update can bump the `PluginApi` version and its target framework: if the build suddenly fails with `CS1705`, that is why.
+The root `Directory.Build.props` resolves this through `PluginApiDir`. A Logi Options+ update can bump the `PluginApi` version and its target framework: if the build suddenly fails with `CS1705`, that is why.
 
 ## Code Style: EditorConfig Enforced Rules
 
@@ -106,8 +106,8 @@ LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
 
 Update the version in both places for every release:
 
-1. `src/package/metadata/LoupedeckPackage.yaml`: `version:`
-2. `src/xkcdviewerPlugin.csproj`: `<Version>` (add it on the first release; it isn't there yet)
+1. `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`: `version:`
+2. `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`: `<Version>` (add it on the first release; it isn't there yet)
 
 ## CI/CD
 

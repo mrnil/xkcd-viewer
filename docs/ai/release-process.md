@@ -13,13 +13,13 @@ How to create and publish a new release of the xkcd plugin.
 
 ### 1. Update Version Number
 
-In `src/package/metadata/LoupedeckPackage.yaml`:
+In `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`:
 
 ```yaml
 version: 1.0.0
 ```
 
-Also update `<Version>` in `src/xkcdviewerPlugin.csproj` (add it on the first release). The two must match.
+Also update `<Version>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj` (add it on the first release). The two must match.
 
 ### 2. Build Release Configuration
 
@@ -36,7 +36,7 @@ Add a `## [{VERSION}] - {DATE}` entry at the top, in [Keep a Changelog](https://
 ### 4. Commit and Tag
 
 ```bash
-git add CHANGELOG.md src/package/metadata/LoupedeckPackage.yaml src/xkcdviewerPlugin.csproj
+git add CHANGELOG.md src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml src/xkcdviewerPlugin/xkcdviewerPlugin.csproj
 git commit -m "chore(release): v{VERSION}"
 git tag -a v{VERSION} -m "Release v{VERSION}"
 ```

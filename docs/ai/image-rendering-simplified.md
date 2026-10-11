@@ -1,6 +1,6 @@
 # Image Rendering
 
-Button images are drawn with small static helper classes, not a factory/store/data-model abstraction. Neither helper exists yet in this repo. Create them in `src/Helpers/` the first time an action needs a drawn image, using the API shape below, and add only the methods actually used.
+Button images are drawn with small static helper classes, not a factory/store/data-model abstraction. Neither helper exists yet in this repo. Create them in `src/xkcdviewerPlugin/Helpers/` the first time an action needs a drawn image, using the API shape below, and add only the methods actually used.
 
 ## Two Signature Families: Pick by SDK Base Class
 
@@ -62,7 +62,7 @@ ButtonImageHelper.Icon("Random.svg");                       // correct
 ButtonImageHelper.Icon("Loupedeck.xkcdviewerPlugin.Random.svg");  // wrong - and breaks if the assembly is renamed
 ```
 
-Icons live in `src/Resources/Icons/`, each with its own `<EmbeddedResource>` entry in `src/xkcdviewerPlugin.csproj`. Name status icon sets `<CommandName><State>.svg`.
+Icons live in `src/xkcdviewerPlugin/Resources/Icons/`, each with its own `<EmbeddedResource>` entry in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`. Name status icon sets `<CommandName><State>.svg`.
 
 ## Accessibility
 

@@ -200,9 +200,9 @@ Embedded resources are looked up by **file name only** (`PluginResources.FindFil
 var icon = PluginResources.ReadImage("Random.svg");
 ```
 
-The file must be an `<EmbeddedResource>` in `src/xkcdviewerPlugin.csproj`.
+The file must be an `<EmbeddedResource>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`.
 
-## Package Metadata (`src/package/metadata/LoupedeckPackage.yaml`)
+## Package Metadata (`src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`)
 
 The keys the manifest actually uses. The file's own comments explain each key.
 
@@ -247,8 +247,8 @@ Source: the `csharp/haptics/*` pages of the SDK docs. New in Plugin API 6.2.1 (L
 Mechanism (plugin events plus a mapping file; there's no haptic API as such):
 
 1. Declare the capability: `pluginCapabilities: - HasHapticMapping` in `LoupedeckPackage.yaml`.
-2. List the events in `src/package/events/DefaultEventSource.yaml` (`events:` entries with `name`, `displayName`, optional `description`). Names start with a Latin letter or `_`, continue with letters/digits/`_`, are case-sensitive, and must match exactly across the code and both YAML files.
-3. Map events to waveforms in `src/package/events/extra/eventMapping.yaml`: `haptics:`, then per event a `DEFAULT: <waveform>` and optionally a device-specific key (`MX Master 4: <waveform>`). Always provide `DEFAULT`.
+2. List the events in `src/xkcdviewerPlugin/package/events/DefaultEventSource.yaml` (`events:` entries with `name`, `displayName`, optional `description`). Names start with a Latin letter or `_`, continue with letters/digits/`_`, are case-sensitive, and must match exactly across the code and both YAML files.
+3. Map events to waveforms in `src/xkcdviewerPlugin/package/events/extra/eventMapping.yaml`: `haptics:`, then per event a `DEFAULT: <waveform>` and optionally a device-specific key (`MX Master 4: <waveform>`). Always provide `DEFAULT`.
 4. In code: `this.PluginEvents.AddEvent(name, displayName, description)` in `Plugin.Load()`, then `this.PluginEvents.RaiseEvent(name)`. Do both the YAML and the `AddEvent` call, as the SDK tutorial does.
 5. Waveforms: `sharp_state_change`, `damp_state_change`, `sharp_collision`, `damp_collision`, `subtle_collision`, `happy_alert`, `angry_alert`, `completed`, `square`, `wave`, `firework`, `mad`, `knock`, `jingle`, `ringing`.
 6. The docs' advice: subtle waveforms for frequent events, and don't trigger haptics too often.

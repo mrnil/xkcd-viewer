@@ -6,7 +6,7 @@ A Logi Actions SDK plugin that shows the current xkcd comic **across the keys** 
 
 It's an at-a-glance view. xkcd is text-heavy, and speech bubbles and labels will usually be unreadable at key size, so reading a comic properly means opening it in the browser, which is one key press away.
 
-Everything under "Hardware facts" was **confirmed on real devices** (MX Creative Keypad, Loupedeck Live S, Loupedeck CT) with a throwaway spike on branch `spike/keypad-grid`, 2026-09-26/27. That branch's `src/Actions/GridSpikeFolder.cs` is a working reference for every mechanism below. Don't merge it; build the real folder fresh, with tests.
+Everything under "Hardware facts" was **confirmed on real devices** (MX Creative Keypad, Loupedeck Live S, Loupedeck CT) with a throwaway spike on branch `spike/keypad-grid`, 2026-09-26/27. That branch's `src/xkcdviewerPlugin/Actions/GridSpikeFolder.cs` is a working reference for every mechanism below. Don't merge it; build the real folder fresh, with tests.
 
 ## Layout
 
@@ -40,7 +40,7 @@ There is **no API for the number of slots on a page**, but the SDK passes the ac
 
 Confirmed on hardware for the three listed devices. Other aliases exist (`LoupedeckLive` = `Loupedeck30`, `RazerStreamController` = `Loupedeck40`, `RazerStreamControllerX` = `Loupedeck60`, `MxCreativeDialpad` = `Loupedeck71`), but their grids haven't been observed, so they use the 3×3 fallback until someone tests one. Log the `DeviceType` whenever the fallback is used.
 
-The per-device table is `src/Helpers/DeviceGrid.cs` (`IsKnown` tells the folder when to log the fallback). The slot list it produces (controls, padding, comic tiles) and the action names are `src/Helpers/FolderLayout.cs`, which takes only a column count.
+The per-device table is `src/xkcdviewerPlugin/Helpers/DeviceGrid.cs` (`IsKnown` tells the folder when to log the fallback). The slot list it produces (controls, padding, comic tiles) and the action names are `src/xkcdviewerPlugin/Helpers/FolderLayout.cs`, which takes only a column count.
 
 ### Key order and paging
 
@@ -83,7 +83,7 @@ Build the scaled source once per comic and tile size. `ComicFolder` caches that 
 
 ## Data
 
-The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.com/{num}/info.0.json`, through `IxkcdClient` (`src/Services/`). Decode the image bytes with `BitmapImage.FromArray(bytes)`. See `secure-coding.md` → "This Plugin" for how to treat those responses.
+The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.com/{num}/info.0.json`, through `IxkcdClient` (`src/xkcdviewerPlugin/Services/`). Decode the image bytes with `BitmapImage.FromArray(bytes)`. See `secure-coding.md` → "This Plugin" for how to treat those responses.
 
 What real responses showed (captured as test fixtures in `tests/xkcdviewerPlugin.Tests/Fixtures/`):
 
@@ -94,7 +94,7 @@ What real responses showed (captured as test fixtures in `tests/xkcdviewerPlugin
 
 ## Which comic, and caching
 
-`ComicService` (`src/Services/`) holds which comic is showing and everything fetched so far. Decided 2026-10-11:
+`ComicService` (`src/xkcdviewerPlugin/Services/`) holds which comic is showing and everything fetched so far. Decided 2026-10-11:
 
 - **The folder opens at the last comic viewed.** The service takes it as a starting number and raises `Changed` whenever the comic changes, so the plugin can save it in the plugin settings and restore it next session (step 3). On a first run, or if the saved number isn't a comic, it opens at the latest. A saved number beyond the latest falls back to the latest.
 - **Prev / Next are preloaded, two either side.** Whenever the current comic changes, the two comics before and after it are fetched in the background, details and image, so even two quick presses usually show their comic at once. After one press only one comic is newly in range, so a step costs one comic fetch. Only one fetch per comic runs at a time, however many keys or presses ask for it.
@@ -130,7 +130,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 - **Tall or square comics**: fit into the area and letterbox (black bars). Wasted space is acceptable.
 - **Very large or very tall comics** (e.g. multi-panel epics, interactive comics): even the thumbnail is meaningless. Show the title and number across the tiles instead, with "open in browser" still working.
-- Deciding which case applies is `src/Helpers/ComicFit.cs`, from the image's width and height. A comic gets the title card if it would be shrunk below **0.2×** to fit, or if its shape would cover less than **a quarter** of the area (taller than about 3:8, or wider than 6:1). Both thresholds are first guesses: check them on hardware against real comics and adjust.
+- Deciding which case applies is `src/xkcdviewerPlugin/Helpers/ComicFit.cs`, from the image's width and height. A comic gets the title card if it would be shrunk below **0.2×** to fit, or if its shape would cover less than **a quarter** of the area (taller than about 3:8, or wider than 6:1). Both thresholds are first guesses: check them on hardware against real comics and adjust.
 - A comic smaller than the area is scaled up to fit it.
 
 ## Still open

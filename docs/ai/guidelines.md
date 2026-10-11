@@ -269,7 +269,7 @@ public class LatestComicCommand : PluginDynamicCommand, IComicAwareCommand
 
 ### Adding a New Notification Type
 
-1. Add the interface (e.g. `src/Services/Notifications.cs`)
+1. Add the interface (e.g. `src/xkcdviewerPlugin/Services/Notifications.cs`)
 2. Add `NotifyXxx()` to the command coordinator using `this.NotifyEach<TInterface>(nameof(TInterface.OnXxx), c => c.OnXxx(...))`, with each command's callback isolated in its own try/catch
 3. Call it from the plugin class where the event originates
 4. Implement the interface in the relevant commands
@@ -344,12 +344,12 @@ Centralise delays, timeouts, refresh intervals and cache lifetimes in one static
 
 ### New Command
 
-1. Create the class in `src/Actions/`
+1. Create the class in `src/xkcdviewerPlugin/Actions/`
 2. Inherit from the right SDK base (see `sdk-quick-reference.md`)
 3. Pass display name, description and group to the base constructor
 4. Guard `actionParameter` in `RunCommand` if the command is parameterized
 5. Render from already-loaded state only
 6. Pull any pure logic out into a tested helper (`structure.md` pattern 5)
-7. Embed icons under `src/Resources/Icons/` as `<EmbeddedResource>` in the `.csproj`
+7. Embed icons under `src/xkcdviewerPlugin/Resources/Icons/` as `<EmbeddedResource>` in the `.csproj`
 8. Add a constructor smoke test
 9. Update `structure.md`'s layout tree

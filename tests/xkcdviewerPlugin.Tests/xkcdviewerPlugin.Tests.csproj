@@ -1,15 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- TargetFramework, LangVersion, code style enforcement and the PluginApi reference come from the repo-root
+       Directory.Build.props. -->
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
     <RootNamespace>Loupedeck.xkcdviewerPlugin.Tests</RootNamespace>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-
-    <PluginApiDir Condition="$(OS) == 'Windows_NT'">C:\Program Files\Logi\LogiPluginService\</PluginApiDir>
-    <PluginApiDir Condition="$(OS) != 'Windows_NT'">/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/</PluginApiDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,21 +15,13 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
-  <!-- A file reference doesn't flow through the ProjectReference at compile time, so tests that touch PluginApi
-       types (e.g. DeviceType) need their own. -->
-  <ItemGroup>
-    <Reference Include="PluginApi">
-      <HintPath>$(PluginApiDir)PluginApi.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
   <!-- Real responses captured from the live API; see Fixtures/README.md. -->
   <ItemGroup>
     <None Include="Fixtures\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\xkcdviewerPlugin.csproj" />
+    <ProjectReference Include="..\..\src\xkcdviewerPlugin\xkcdviewerPlugin.csproj" />
   </ItemGroup>
 
 </Project>

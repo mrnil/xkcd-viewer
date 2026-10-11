@@ -1,7 +1,0 @@
-<Project>
-    <PropertyGroup>
-        <LangVersion>latest</LangVersion>
-        <!-- Anchored to this file, not $(SolutionDir): SolutionDir is undefined when the .csproj is built directly. -->
-        <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\obj\</BaseIntermediateOutputPath>
-    </PropertyGroup>
-</Project>

@@ -1,36 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- TargetFramework, LangVersion, code style enforcement and the PluginApi reference come from the repo-root
+       Directory.Build.props. -->
   <PropertyGroup>
-    <!-- PluginApi.dll 6.4.1+ is built against .NET 10; a net8.0 target fails to resolve it (CS1705). -->
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
     <RootNamespace>Loupedeck.xkcdviewerPlugin</RootNamespace>
 
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
-    <PluginApiDir Condition="$(OS) == 'Windows_NT'">C:\Program Files\Logi\LogiPluginService\</PluginApiDir>
-    <PluginApiDir Condition="$(OS) != 'Windows_NT'">/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/</PluginApiDir>
-
     <PluginDir Condition="$(OS) == 'Windows_NT'">$(LocalAppData)\Logi\LogiPluginService\Plugins\</PluginDir>
     <PluginDir Condition="$(OS) != 'Windows_NT'">~/Library/Application\ Support/Logi/LogiPluginService/Plugins/</PluginDir>
 
-    <BaseOutputPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\bin\'))</BaseOutputPath>
+    <!-- The plugin's output goes to the repo-root bin/, where the .link file and LogiPluginTool pack expect it. -->
+    <BaseOutputPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\bin\'))</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\bin\</OutputPath>
 
     <PluginShortName>xkcdviewer</PluginShortName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="PluginApi">
-      <HintPath>$(PluginApiDir)PluginApi.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="xkcdviewerPlugin.Tests" />
