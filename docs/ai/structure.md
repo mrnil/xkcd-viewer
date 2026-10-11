@@ -50,7 +50,7 @@ xkcdviewerPlugin/
 │   ├── xkcdviewer-logo.jpg           # Source logo: the owner's own pencil drawing (1024x1024 JPG, on paper)
 │   └── make-icons.ps1                # Regenerates the package icon and folder key images from it; edit this, not the PNGs
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
-├── .vscode/                          # Attach-to-LogiPluginService debug config + build/pack tasks
+├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
 ├── Directory.Build.props             # Settings shared by both projects: TargetFramework, LangVersion, code style, PluginApi reference
 ├── xkcdviewerPlugin.sln

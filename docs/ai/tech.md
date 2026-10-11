@@ -78,7 +78,7 @@ dotnet build xkcdviewerPlugin.sln -c Release
 dotnet clean xkcdviewerPlugin.sln
 ```
 
-VS Code: the `.vscode/tasks.json` tasks run the same commands, and the "Attach to Logi Plugin Service" launch config debugs the running plugin.
+VS Code: the `.vscode/tasks.json` tasks run the same commands, and the "Attach to Logi Plugin Service" launch config debugs the running plugin. `.vscode/settings.json` sets `dotnet.defaultSolution` so C# Dev Kit always opens `xkcdviewerPlugin.sln`. Without it, Dev Kit keeps loading whichever solution it opened last, which broke after the `xkcdPlugin` → `xkcdviewerPlugin` rename (`MSB1009`/`MSB4025` for the old paths). If the solution is ever renamed, update this setting too.
 
 ## Tests
 
