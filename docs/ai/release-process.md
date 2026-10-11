@@ -20,7 +20,7 @@ In `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`:
 version: 1.0.0
 ```
 
-The manifest says `version: 1.0` today; use the full three-part version from the first release on. Also update `<Version>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj` (add it on the first release; it isn't there yet). The two must match.
+Also update `<Version>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`. The two must match, and both use the full three-part version.
 
 ### 2. Build Release Configuration
 
@@ -32,7 +32,7 @@ Output: `bin/Release/bin/` with only `xkcdviewerPlugin.dll`, its `.deps.json` an
 
 ### 3. Update CHANGELOG.md
 
-There's no `CHANGELOG.md` yet: create it at the repo root for the first release. Add a `## [{VERSION}] - {DATE}` entry at the top, in [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format (`### Added` / `### Changed` / `### Fixed` / `### Security`).
+Add a `## [{VERSION}] - {DATE}` entry to the repo-root `CHANGELOG.md`, above the previous one, with a matching link at the bottom, in [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format (`### Added` / `### Changed` / `### Fixed` / `### Security`).
 
 ### 4. Commit and Tag
 
@@ -57,7 +57,7 @@ LogiPluginTool verify ./xkcdviewer-v{VERSION}.lplug4
 LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
 ```
 
-Check the version, display name and supported platforms. The package should be well under 1 MB (about 64 KB at 1.0); several MB means `PluginApi.dll` and its dependencies have been bundled again (see `tech.md`).
+Check the version, display name and supported platforms. The package should be well under 1 MB (about 64 KB at 1.0.0); several MB means `PluginApi.dll` and its dependencies have been bundled again (see `tech.md`).
 
 ### 7. Test Install
 

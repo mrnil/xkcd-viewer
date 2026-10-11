@@ -109,7 +109,7 @@ LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
 Update the version in both places for every release:
 
 1. `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`: `version:`
-2. `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`: `<Version>` (add it on the first release; it isn't there yet)
+2. `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`: `<Version>`
 
 ## CI/CD
 

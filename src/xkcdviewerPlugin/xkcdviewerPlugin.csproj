@@ -5,6 +5,9 @@
   <PropertyGroup>
     <RootNamespace>Loupedeck.xkcdviewerPlugin</RootNamespace>
 
+    <!-- Must match version: in package/metadata/LoupedeckPackage.yaml (see docs/ai/release-process.md). -->
+    <Version>1.0.0</Version>
+
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
 
