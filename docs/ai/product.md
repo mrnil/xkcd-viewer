@@ -125,7 +125,22 @@ Decided 2026-10-11 (not built yet). xkcd publishes on **Monday, Wednesday and Fr
 - **On load, always ask for the latest.** If it's newer than the latest known when the plugin last ran (to be saved in the plugin settings, like `LastViewedComic`), that counts as a new comic found, exactly as if a poll had found it. This also covers comics published outside the window or while the computer was off.
 - **Key presses still ask xkcd directly:** Latest Comic and holding Next are unchanged (see "Which comic, and caching"); they're spread out by people pressing keys at different times.
 - **No setting to turn polling off.**
-- **What a new comic does** (e.g. how the folder key shows there's a new comic to see): the owner will specify it next. Until then, a new comic just raises the latest known, as now.
+- **What a new comic does**: see "The new-comic signal".
+
+## The new-comic signal
+
+Decided 2026-10-11 (not built yet; whether the folder key can be redrawn is being tested, see below).
+
+- **Unread:** there's an unread comic while the newest comic published is newer than the **newest comic shown**, which is saved in the plugin settings. On a first run nothing is unread: the latest at that moment counts as shown.
+- **Shown** means it appeared on the keypad, as its picture or as its title card, by any route: Next, Latest Comic, a hold on Next, or Random Comic happening to land on it. Opening it in the browser doesn't count, and nor does seeing its number while it's loading or offline.
+- **When a new comic is found** (by polling, or by the check at load finding one newer than the newest shown): the **Comic Browser** and **Latest Comic** folder keys flash between their normal look and green for **30 s**, then stay green until nothing is unread. Random Comic is unchanged. A key turned green at load after a restart, with nothing newly found, is solid green, not flashing.
+- **"new" label:** a green key also shows "new", so the signal doesn't rely on colour alone. On Latest Comic it replaces the "latest" label in the strip under the logo.
+- **Green:** xkcd.com itself has no green; its accents are blue-greys (`#96A8C8`, `#6E7B91`). Provisionally `#15B01A`, "green" in xkcd's colour-name survey; the owner to confirm.
+- **Opening a green folder:** both Comic Browser and Latest Comic open at the **first unread comic**, the one after the newest shown, even if several are unread (Latest Comic then deliberately doesn't open at the newest). Once nothing is unread they open as usual.
+- **Inside the folder:** while something is unread, the Next chevron flashes green (30 s) then stays green, like the folder keys. **Tapping** a green Next skips the normal step and goes to the first unread comic. **Holding** it still jumps to the very newest comic.
+- **Redrawing the folder key:** the SDK has no documented call for it. `Plugin.OnActionImageChanged` with the folder's `CommandName` or `Name` didn't re-invoke `GetButtonImage`; telling the service the plugin's actions changed (`PluginActionsChanged(true, false)`, protected on `Plugin`) did, within about 150 ms (2026-10-11, branch `spike/folder-key-flash`). Whether that looks right on the device, once a second for 30 s, is still to be seen.
+
+Still to decide: whether a green key means a green background behind the logo or a green frame (as in the spike), whether "new" on the Comic Browser key goes in a label strip like Latest's, and what to do if the flash test fails on the device (solid green only, or a separate "new comic" key).
 
 ## The folders
 
@@ -173,7 +188,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install, so before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
-3. **What a new comic does**: polling is decided (see "Checking for new comics"); the action when it finds one, such as marking the folder key, is waiting on the owner.
+3. **The new-comic signal**: mostly decided (see "The new-comic signal"); waiting on the device test of redrawing the folder key, and the few points listed at the end of that section.
 4. **Folder key captions** (owner, 2026-10-11): the placed folder keys (Comic Browser, Latest, Random) should show no display-name caption, so the logo and its "latest" / "random" label are clearer. The keys *inside* the folder already return `String.Empty` from `GetCommandDisplayName`; the folder key itself is drawn by `GetButtonImage`, and how to hide its caption is not yet known. Check the SDK docs (`llms.txt`) and the device before changing it.
 5. **SVG logo on the device**: the folder keys now draw the logo from its SVG (done 2026-10-11). Check its stroke weight at 80 px on the keypad; the SVG's strokes render slightly thinner than the old pre-made PNGs did.
 
