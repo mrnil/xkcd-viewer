@@ -193,10 +193,16 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 - Deciding which case applies is `src/xkcdviewerPlugin/Helpers/ComicFit.cs`, from the image's width and height. A comic gets the title card if it would be shrunk below **0.2×** to fit, or if its shape would cover less than **a quarter** of the area (taller than about 3:8, or wider than 6:1). Both thresholds are first guesses: check them on hardware against real comics and adjust.
 - A comic smaller than the area is scaled up to fit it.
 
+## Manifest: devices and platforms
+
+Settled 2026-10-12, by the owner, from the Streaming Assistant plugin (`OBSStudioForLogi`), which installs and works on both the MX Creative Console and Loupedeck devices:
+
+- **`supportedDevices` doesn't decide whether the keypad gets the plugin.** Streaming Assistant lists only `LoupedeckCt` and `LoupedeckLive`, no MX or `LogitechCreativeFamily` entry, and works on the MX keypad. So `LoupedeckCtFamily` (`0xFF00` in `DeviceTypeAliases`) stays as it is. `LogitechCreativeFamily` (`0xFF0000`, which holds `MxCreativeKeypad` `0x10000`) is accepted by `LogiPluginTool` if it's ever wanted, but isn't needed.
+- **`pluginFolderMac` must stay set.** Without it, Logi Options+ and Loupedeck ignore the plugin on macOS when it's installed, so it can't even be tested there. It's set even though the plugin hasn't been run on macOS yet; the README says macOS is untested.
+
 ## Still open
 
-1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install. A packed `.lplug4` passes `LogiPluginTool verify` (2026-10-11), so what's left before the first release is a packaged install (`LogiPluginTool install`, after `dotnet clean`) to confirm the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`. The manifest also sets `pluginFolderMac`, but the plugin hasn't been built or run on macOS.
-2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
+1. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
 
 ## v1 scope
 

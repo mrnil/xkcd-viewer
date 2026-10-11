@@ -97,7 +97,7 @@ Semantic Versioning: **major** for breaking changes, **minor** for backward-comp
 - [ ] All code committed, all tests passing, build at zero warnings
 - [ ] Template placeholders gone from `LoupedeckPackage.yaml` (`description`, `author`, `copyright`)
 - [ ] Version updated in `LoupedeckPackage.yaml` (three-part; the `.csproj` follows it)
-- [ ] `supportedDevices` checked against the devices actually tested (see the SDK docs' supported-devices page)
+- [ ] Installed from the `.lplug4` on each device tested (MX keypad, Live S, CT). `supportedDevices` doesn't gate the MX keypad; see `product.md` → "Manifest: devices and platforms"
 - [ ] CHANGELOG.md updated
 - [ ] Git tag created and pushed
 - [ ] `.lplug4` packed, verified, metadata checked, test-installed

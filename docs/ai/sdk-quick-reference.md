@@ -235,7 +235,7 @@ version: 1.0.0
 author: ...
 copyright: ...
 pluginFolderWin: bin
-pluginFolderMac: bin            # set, but the plugin hasn't been built or run on macOS yet
+pluginFolderMac: bin            # required: without it macOS ignores the plugin, even for testing (product.md)
 supportedDevices:
     - LoupedeckCtFamily
 pluginCapabilities:              # e.g. HasHapticMapping (see Haptics)
