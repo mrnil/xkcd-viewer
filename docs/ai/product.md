@@ -158,6 +158,8 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install, so before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
 3. **Checking for new comics while browsing**: on hold (2026-10-11) while the owner thinks it over. Latest Comic and holding Next always ask xkcd for the newest comic (decided 2026-10-11), but plain browsing still fetches the latest once per session, so tapping Next on the newest comic won't find one published since, until one of those asks again. The proposal was to re-check when the folder opens and when Next is pressed on the newest comic, at most every 5 minutes, with no background timer.
+4. **Folder key captions** (owner, 2026-10-11): the placed folder keys (Comic Browser, Latest, Random) should show no display-name caption, so the logo and its "latest" / "random" label are clearer. The keys *inside* the folder already return `String.Empty` from `GetCommandDisplayName`; the folder key itself is drawn by `GetButtonImage`, and how to hide its caption is not yet known. Check the SDK docs (`llms.txt`) and the device before changing it.
+5. **SVG button images** (owner, 2026-10-11): the owner's other projects use SVG images for action buttons. Here the folder key logo is pre-rendered PNGs (`art/make-icons.ps1` → `Resources/Images/FolderButton*.png`). Consider drawing from the SVG instead, if the SDK supports SVG for these images, so every key size is sharp and there's no generation step.
 
 ## v1 scope
 
@@ -168,6 +170,8 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 ## Later (not committed)
 
+- **Free the keypad's top row for the comic** (owner, 2026-10-11): use the MX Creative Keypad's own physical buttons, and/or an adjustment (dial) for navigation, as Prev / Next and other actions, so more of the 3×3 display shows the comic. The SDK's Back key in slot 0 can't be removed (see "Navigation"), so check what's possible before designing: whether a folder can receive those buttons, and whether a dial can drive it.
+- **A bigger comic on bigger devices** (owner, 2026-10-11): the Live S (5×3) and CT (4×3) could show the comic over more keys than 3×2, to make it more readable. The rule that text must not cross a seam, and the Back key in slot 0, still apply.
 - Use the spare top-row keys on wider grids (alt text)
 - Alt text view
 - Favourites
