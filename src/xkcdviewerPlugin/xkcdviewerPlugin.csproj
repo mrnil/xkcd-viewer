@@ -25,10 +25,10 @@
     <InternalsVisibleTo Include="xkcdviewerPlugin.Tests" />
   </ItemGroup>
 
-  <!-- Generated from art/xkcdviewerlogo.svg by art/make-icons.ps1; regenerate rather than edit. -->
+  <!-- The logo is embedded straight from art/, so the SVG there stays the only copy. KeyRenderer.Logo draws it at
+       whatever size each key asks for. -->
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Images\FolderButton116.png" />
-    <EmbeddedResource Include="Resources\Images\FolderButton80.png" />
+    <EmbeddedResource Include="..\..\art\xkcdviewerlogo.svg" LogicalName="Loupedeck.xkcdviewerPlugin.Resources.Images.xkcdviewerlogo.svg" />
   </ItemGroup>
 
   <Target Name="CopyPackage" AfterTargets="PostBuildEvent">

@@ -81,7 +81,7 @@ src/xkcdviewerPlugin/          The plugin (Logi Actions SDK, C# / .NET 10)
   Helpers/, Models/            Layout, fitting, title cards, key rendering
   package/metadata/            The plugin manifest and package icon
 tests/xkcdviewerPlugin.Tests/  xUnit tests, with real API responses as fixtures
-art/                           The logo source and the script that generates the icons
+art/                           The logo (drawn on the keys from SVG) and the script that makes the package icon
 docs/ai/                       Design notes, decisions, hardware findings and coding rules
 ```
 

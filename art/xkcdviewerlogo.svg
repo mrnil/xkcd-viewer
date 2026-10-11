@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <!-- Transparent background, scaled for legibility from 80px to 512px -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="84 116 332 332" width="100%" height="100%">
+  <!-- Transparent background, scaled for legibility from 80px to 512px. The plugin draws this file on its keys
+       (KeyRenderer.Logo), so the viewBox is cropped to the drawing plus a small margin: the strokes span about
+       x 94-406 and y 127-436 of the original 500 x 500 canvas. -->
   <g fill="none" stroke="#111111" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
     
     <!-- Left Eye Contour (organic, slightly asymmetrical hand-drawn oval) -->

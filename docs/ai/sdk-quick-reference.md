@@ -202,6 +202,23 @@ var icon = PluginResources.ReadImage("Random.svg");
 
 The file must be an `<EmbeddedResource>` in `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj`.
 
+### Drawing an SVG Inside a Composed Key
+
+Returning an SVG `BitmapImage` as a key's whole image is fine. To draw an SVG *into* a `BitmapBuilder` (with a label, a coloured background, and so on), render it at the exact size with `VectorImage`, which is public in `PluginApi.dll` but not in the SDK docs:
+
+```csharp
+var vector = new VectorImage();
+if (vector.Load(svgXml))
+{
+    using (var image = vector.ToBitmap(size, size))
+    {
+        builder.DrawImage(image, x, y);
+    }
+}
+```
+
+`BitmapImage.FromSvg(xml)` drawn scaled with `DrawImage(image, x, y, width, height)` came out **blank** (tested 2026-10-11, rendering with `PluginApi.dll` outside the service): it reports a size of −1 × −1, even when the SVG sets `width` / `height`. `KeyRenderer.Logo` is the working example.
+
 ## Package Metadata (`src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`)
 
 The keys the manifest actually uses. The file's own comments explain each key.

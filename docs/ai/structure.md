@@ -37,7 +37,6 @@ xkcdviewerPlugin/
 │       │   ├── xkcdClient.cs         # HttpClient implementation: no redirects, timeout, size caps
 │       │   └── xkcdUrls.cs           # Every URL requested or opened is built or checked here
 │       ├── package/metadata/         # LoupedeckPackage.yaml (manifest) + Icon256x256.png (generated, see art/)
-│       ├── Resources/Images/         # FolderButton116.png / FolderButton80.png: the folder key's logo (generated, see art/)
 │       ├── xkcdviewerPlugin.cs       # Main plugin class (Plugin subclass)
 │       ├── xkcdviewerApplication.cs  # ClientApplication subclass (unused: this is a universal plugin)
 │       ├── xkcdviewerPlugin.csproj
@@ -50,9 +49,9 @@ xkcdviewerPlugin/
 │       ├── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
 │       └── TestWait.cs               # Bounded wait for a background condition, instead of sleeping
 ├── art/
-│   ├── xkcdviewerlogo.svg            # Source logo: the owner's own (eyes over a hand-lettered "xkcd")
+│   ├── xkcdviewerlogo.svg            # The logo: the owner's own (eyes over a hand-lettered "xkcd"). Embedded in the plugin, which draws the folder keys from it
 │   ├── xkcdviewer-logo.jpg           # The earlier logo, a pencil drawing; no longer used
-│   └── make-icons.ps1                # Regenerates the package icon and folder key images from the SVG (needs Edge or Chrome); edit this, not the PNGs
+│   └── make-icons.ps1                # Regenerates the package icon (a PNG) from the SVG (needs Edge or Chrome); edit the SVG, not the PNG
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
@@ -75,7 +74,7 @@ src/xkcdviewerPlugin/
 ├── Services/                         # Business logic + the xkcd HTTP client behind an interface. No SDK types. Tested.
 ├── Models/                           # Plain data (e.g. the comic DTO). No SDK types.
 ├── Helpers/                          # Static helpers. Pure ones are fully tested; SDK-bound renderers are thin.
-└── Resources/                        # Embedded assets (Images/*.png so far), one <EmbeddedResource> entry each in the .csproj.
+└── Resources/                        # Embedded assets, one <EmbeddedResource> entry each in the .csproj. None yet: the logo is embedded from art/.
 ```
 
 Create a folder when its first file arrives, not ahead of time. Once one feature area needs several files, give it a same-named subfolder with a matching namespace suffix (`Services.Comics`), rather than filling a flat folder with unrelated files.

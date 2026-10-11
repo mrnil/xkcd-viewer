@@ -1,18 +1,16 @@
-# Regenerates every icon from art/xkcdviewerlogo.svg (the owner's own logo: eyes over a hand-lettered "xkcd"). Run
+# Regenerates the package icon from art/xkcdviewerlogo.svg (the owner's own logo: eyes over a hand-lettered "xkcd"). Run
 # from the repo root on Windows (PowerShell 7):
 #   pwsh art/make-icons.ps1
 #
 # System.Drawing can't read SVG, so headless Microsoft Edge (or Chrome) rasterises it onto white first. The white is
 # then made transparent and the strokes turned into solid black ink, keeping their anti-aliased edges, and the logo is
-# put on clean white "paper" again in every output (line art alone vanishes on Options+'s black background).
+# put on clean white "paper" again (line art alone vanishes on Options+'s black background).
 #
 #   src/xkcdviewerPlugin/package/metadata/Icon256x256.png
 #       Package icon. SDK rules: 256x256 PNG, graphic within the centred 192x192, transparent around it, legible on
 #       black and on white.
-#   src/xkcdviewerPlugin/Resources/Images/FolderButton116.png
-#   src/xkcdviewerPlugin/Resources/Images/FolderButton80.png
-#       The key that opens the folder, at the two key sizes seen on hardware (PluginImageSize.Width116 and Width90).
-#       Full white keys.
+#
+# The folder keys don't need generating: the plugin embeds the SVG and draws it at each key's size (KeyRenderer.Logo).
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -166,8 +164,6 @@ finally
 try
 {
     New-Icon $ink (Join-Path $root 'src/xkcdviewerPlugin/package/metadata/Icon256x256.png') 256 ([System.Drawing.Rectangle]::new(32, 32, 192, 192)) 28 10
-    New-Icon $ink (Join-Path $root 'src/xkcdviewerPlugin/Resources/Images/FolderButton116.png') 116 ([System.Drawing.Rectangle]::new(0, 0, 116, 116)) 0 4
-    New-Icon $ink (Join-Path $root 'src/xkcdviewerPlugin/Resources/Images/FolderButton80.png') 80 ([System.Drawing.Rectangle]::new(0, 0, 80, 80)) 0 3
 }
 finally
 {

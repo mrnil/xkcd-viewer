@@ -23,10 +23,15 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
-        // The key that opens a folder: the xkcdviewer logo, pre-scaled by art/make-icons.ps1 to the two key sizes seen on
-        // hardware so it's never resampled on the device at those sizes. Any other size scales the nearest one. A label
-        // ("latest", "random") goes in a strip along the bottom, so the three folder keys can be told apart; the logo
-        // fills the key, so it's shrunk into the space above the strip.
+        // The logo's SVG source, read from the embedded resource on first use.
+        private static readonly Lazy<String> _logoSvg = new Lazy<String>(() => PluginResources.ReadTextFile("xkcdviewerlogo.svg"));
+
+        // The key that opens a folder: the xkcdviewer logo (art/xkcdviewerlogo.svg), drawn from the SVG at exactly the
+        // size it's shown at, so it's sharp at every key size. A label ("latest", "random") goes in a strip along the
+        // bottom, so the three folder keys can be told apart; the logo is then shrunk into the space above the strip.
+        //
+        // VectorImage.ToBitmap renders the SVG at a given size. BitmapImage.FromSvg isn't used: drawn scaled into a
+        // BitmapBuilder it came out blank (tested 2026-10-11), because it reports no size of its own.
         public static BitmapImage Logo(PluginImageSize imageSize, String label = null)
         {
             using (var builder = new BitmapBuilder(imageSize))
@@ -35,17 +40,16 @@ namespace Loupedeck.xkcdviewerPlugin
                 var labelTop = builder.Height * 4 / 5;
                 try
                 {
-                    using (var logo = PluginResources.ReadImage(builder.Width <= 80 ? "FolderButton80.png" : "FolderButton116.png"))
+                    var size = String.IsNullOrEmpty(label) ? Math.Min(builder.Width, builder.Height) : Math.Min(builder.Width, labelTop);
+                    var vector = new VectorImage();
+                    if (!vector.Load(_logoSvg.Value))
                     {
-                        if (String.IsNullOrEmpty(label))
-                        {
-                            builder.DrawImage(logo, 0, 0, builder.Width, builder.Height);
-                        }
-                        else
-                        {
-                            var size = Math.Min(builder.Width, labelTop);
-                            builder.DrawImage(logo, (builder.Width - size) / 2, 0, size, size);
-                        }
+                        throw new InvalidOperationException("The logo SVG didn't load");
+                    }
+
+                    using (var logo = vector.ToBitmap(size, size))
+                    {
+                        builder.DrawImage(logo, (builder.Width - size) / 2, 0);
                     }
                 }
                 catch (Exception ex)
