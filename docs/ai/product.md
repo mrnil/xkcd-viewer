@@ -173,7 +173,7 @@ The rest of this section describes the Comic Browser; the other two differ only 
 
 ### Hardware test checklist
 
-- The new-comic signal: the New Comic key (closed eyes; on a new comic it flashes green with "new" for 30 s, then stays green; a press opens the first unread comic, or the latest when nothing is unread), and the Comic Browser's Next chevron (green while something is unread; a tap goes to the first unread comic, a hold to the newest). A real check first runs on the next release day; the log says when ("Next check for a new comic at ...")
+- The new-comic signal: the New Comic key (closed eyes; on a new comic it flashes green with "new" for 30 s, then stays green; a press opens the first unread comic, or the latest when nothing is unread), and the Comic Browser's Next chevron (green while something is unread; a tap goes to the first unread comic, a hold to the newest). Confirmed on the keypad 2026-10-11 with two comics faked as unread. Still to see: a real new comic found by a scheduled check, on the next release day; the log says when ("Next check for a new comic at ...")
 - The layout on each device (keypad 3×3, Live S 5×3, CT 4×3), and the folder key's logo (legible at 80 px?)
 - Prev/Next feel instant; the chevrons dim at the first and latest comics
 - Real comics in tiles: ordinary strips, tall ones (#1732), huge ones (#657), interactive ones (#1663 → title card), and #404. This tunes the `ComicFit` thresholds and `TitleCardLayout`'s 9×3 text size
