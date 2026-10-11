@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="105 44 290 290" width="100%" height="100%">
+  <!-- The package icon's drawing: just the logo's eyes, with no lettering (owner, 2026-10-11). art/make-icons.ps1
+       turns it into Icon256x256.png; the keys keep the full logo, art/xkcdviewerlogo.svg. The paths are the logo's
+       eyes, untranslated, so the two stay identical; the viewBox is square around them. -->
+  <g fill="none" stroke="#111111" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Left eye contour (organic, slightly asymmetrical hand-drawn oval) -->
+    <path d="M 130 190
+             C 125 120, 225 115, 230 185
+             C 235 255, 135 260, 130 190 Z" />
+
+    <!-- Right eye contour -->
+    <path d="M 270 185
+             C 265 115, 365 120, 370 190
+             C 375 260, 275 255, 270 185 Z" />
+
+    <!-- Solid hand-drawn inked pupils (glancing right / forward) -->
+    <circle cx="195" cy="188" r="22" fill="#111111" stroke="none" />
+    <circle cx="335" cy="188" r="22" fill="#111111" stroke="none" />
+
+  </g>
+</svg>

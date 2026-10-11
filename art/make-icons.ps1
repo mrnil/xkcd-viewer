@@ -1,5 +1,5 @@
-# Regenerates the package icon from art/xkcdviewerlogo.svg (the owner's own logo: a hand-lettered "xkcd" over
-# "viewer", eyes underneath). Run from the repo root on Windows (PowerShell 7):
+# Regenerates the package icon from art/xkcdviewer-icon.svg: just the eyes of the owner's logo, with no lettering
+# (owner, 2026-10-11). Run from the repo root on Windows (PowerShell 7):
 #   pwsh art/make-icons.ps1
 #
 # System.Drawing can't read SVG, so headless Microsoft Edge (or Chrome) rasterises it onto white first. The white is
@@ -10,13 +10,14 @@
 #       Package icon. SDK rules: 256x256 PNG, graphic within the centred 192x192, transparent around it, legible on
 #       black and on white.
 #
-# The folder keys don't need generating: the plugin embeds the SVG and draws it at each key's size (KeyRenderer.Logo).
+# The folder keys don't need generating: the plugin embeds the full logo, art/xkcdviewerlogo.svg ("xkcd" / "viewer" /
+# eyes), and draws it at each key's size (KeyRenderer.Logo).
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path -Parent $PSScriptRoot
-$source = Join-Path $PSScriptRoot 'xkcdviewerlogo.svg'
+$source = Join-Path $PSScriptRoot 'xkcdviewer-icon.svg'
 
 # Darkness (0 = white, 255 = black) below this is background; at or above $SolidInk it's full ink. Between, the ink
 # fades in, which keeps the strokes' anti-aliased edges.

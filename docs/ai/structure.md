@@ -57,8 +57,9 @@ xkcdviewerPlugin/
 ├── art/
 │   ├── xkcdviewerlogo.svg            # The logo: the owner's own ("xkcd" over "viewer", hand-lettered, eyes underneath). Embedded in the plugin, which draws the folder keys from it
 │   ├── xkcdviewerlogo-closed.svg     # The same logo with its eyes closed: the New Comic key with nothing new
+│   ├── xkcdviewer-icon.svg           # The package icon's drawing: the logo's eyes only, no lettering
 │   ├── xkcdviewer-logo.jpg           # The earlier logo, a pencil drawing; no longer used
-│   └── make-icons.ps1                # Regenerates the package icon (a PNG) from the SVG (needs Edge or Chrome); edit the SVG, not the PNG
+│   └── make-icons.ps1                # Regenerates the package icon (a PNG) from xkcdviewer-icon.svg (needs Edge or Chrome); edit the SVG, not the PNG
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
