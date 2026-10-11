@@ -174,7 +174,7 @@ The rest of this section describes the Comic Browser; the other two differ only 
 - The last-viewed comic survives a plugin restart
 - A tile press opens the right page
 - Latest Comic opens at the newest comic; Random Comic opens at a different comic each time, and its one "show another" key changes it (quickly, as the next one is preloaded)
-- The "latest" / "random" banners on the folder keys are legible at 80 px, and "show another" fits its key
+- "show another" fits its key (the folder keys' logo, margin and "latest" / "random" banners were confirmed on the keypad 2026-10-11: sharp, clear of the edges, readable)
 - Prev / Next: a tap steps exactly one comic (not two: if the SDK also calls `RunCommand`, a press could count twice); holding 2 s jumps to #1 / the newest while still held; letting go after the jump doesn't step. On the Live S / CT touch keys, check that a tap still steps, and whether a hold arrives at all
 
 ## Comic shapes
