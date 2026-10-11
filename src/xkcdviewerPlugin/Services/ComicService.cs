@@ -85,6 +85,10 @@ namespace Loupedeck.xkcdviewerPlugin
         // loading or failed, or Prev / Next became possible.
         public event EventHandler Changed;
 
+        // Raised with the latest comic's number each time xkcd answers a request for it, by any route (opening a
+        // folder, a jump, or RefreshLatestAsync). The NewComicTracker listens. Raised on a background thread.
+        public event EventHandler<Int32> LatestKnown;
+
         public ComicView View
         {
             get
@@ -128,6 +132,44 @@ namespace Loupedeck.xkcdviewerPlugin
         public Task ShowRandomAsync() => this.JumpAsync(Jump.Random);
 
         public Task PreviousAsync() => this.MoveAsync(current => ComicNumbers.Previous(current));
+
+        // Shows a given comic (the first unread one, for the green Next chevron), kept within 1..latest. Does nothing
+        // before the latest comic is known.
+        public Task ShowComicAsync(Int32 num)
+        {
+            Int32 latest;
+            lock (this._lock)
+            {
+                if (!this._latestNum.HasValue)
+                {
+                    return Task.CompletedTask;
+                }
+
+                latest = this._latestNum.Value;
+            }
+
+            return this.MoveAsync(_ => Math.Clamp(num, ComicNumbers.First, latest));
+        }
+
+        // Asks xkcd for the latest comic without changing what's showing, for the new-comic check. Returns the latest
+        // comic, or null if this request failed (or one failed less than the retry delay ago, so none was sent).
+        public async Task<xkcdComic> RefreshLatestAsync()
+        {
+            Task load;
+            lock (this._lock)
+            {
+                load = this.EnsureLatestAsyncLocked(refresh: true);
+            }
+
+            await load.ConfigureAwait(false);
+
+            lock (this._lock)
+            {
+                return !this._latestFailedUntil.HasValue && this._latestNum is Int32 latest && this._comics.TryGetValue(latest, out var comic)
+                    ? comic
+                    : null;
+            }
+        }
 
         // Before the latest comic is known there's no telling whether a next one exists, so Next asks for the
         // latest comic again (once the failure wait has passed) instead of moving.
@@ -450,6 +492,10 @@ namespace Loupedeck.xkcdviewerPlugin
             }
 
             this.RaiseChanged();
+            if (latest != null)
+            {
+                this.RaiseLatestKnown(latest.Num);
+            }
 
             if (landed)
             {
@@ -493,6 +539,27 @@ namespace Loupedeck.xkcdviewerPlugin
             if (isCurrent)
             {
                 this.RaiseChanged();
+            }
+        }
+
+        private void RaiseLatestKnown(Int32 latest)
+        {
+            var handlers = this.LatestKnown;
+            if (handlers == null)
+            {
+                return;
+            }
+
+            foreach (EventHandler<Int32> handler in handlers.GetInvocationList())
+            {
+                try
+                {
+                    handler(this, latest);
+                }
+                catch (Exception ex)
+                {
+                    this._log.Error($"A LatestKnown handler failed: {ex.Message}");
+                }
             }
         }
 

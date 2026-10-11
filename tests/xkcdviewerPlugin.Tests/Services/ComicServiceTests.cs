@@ -694,6 +694,109 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
         }
 
         [Fact]
+        public async Task RefreshLatestAsync_ReturnsTheLatest_AndLeavesTheComicShowing()
+        {
+            var service = this.CreateService(353);
+            await service.StartAsync();
+
+            var latest = await service.RefreshLatestAsync();
+
+            Assert.Equal(Comic(Latest), latest);
+            Assert.Equal(353, service.View.Num);
+        }
+
+        [Fact]
+        public async Task RefreshLatestAsync_AsksXkcdEveryTime()
+        {
+            var service = this.CreateService(353);
+
+            await service.RefreshLatestAsync();
+            await service.RefreshLatestAsync();
+
+            this._mockClient.Verify(x => x.GetLatestAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RefreshLatestAsync_WhenAskingFails_ReturnsNull()
+        {
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).ReturnsAsync((xkcdComic)null);
+            var service = this.CreateService(353);
+
+            Assert.Null(await service.RefreshLatestAsync());
+        }
+
+        [Fact]
+        public async Task RefreshLatestAsync_AfterAnEarlierSuccess_StillReturnsNullWhenThisOneFails()
+        {
+            var service = this.CreateService(353);
+            await service.RefreshLatestAsync();
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).ReturnsAsync((xkcdComic)null);
+
+            Assert.Null(await service.RefreshLatestAsync());
+        }
+
+        [Fact]
+        public async Task LatestKnown_IsRaisedWithTheLatestNumber_WhicheverWayItWasAskedFor()
+        {
+            var service = this.CreateService(353);
+            var seen = new ConcurrentQueue<Int32>();
+            service.LatestKnown += (_, latest) => seen.Enqueue(latest);
+
+            await service.RefreshLatestAsync();
+            await service.ShowLatestAsync();
+
+            Assert.Equal(new[] { Latest, Latest }, seen);
+        }
+
+        [Fact]
+        public async Task LatestKnown_IsNotRaisedWhenAskingFails()
+        {
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).ReturnsAsync((xkcdComic)null);
+            var service = this.CreateService(353);
+            var raised = false;
+            service.LatestKnown += (_, _) => raised = true;
+
+            await service.RefreshLatestAsync();
+
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public async Task ShowComicAsync_ShowsThatComic()
+        {
+            var service = this.CreateService(353);
+            await service.StartAsync();
+
+            await service.ShowComicAsync(Latest - 5);
+
+            Assert.Equal(Latest - 5, service.View.Num);
+            Assert.Equal(ComicViewState.Ready, service.View.State);
+        }
+
+        [Theory]
+        [InlineData(Latest + 3, Latest)]
+        [InlineData(0, 1)]
+        public async Task ShowComicAsync_OutsideTheComics_StopsAtTheEnd(Int32 asked, Int32 shown)
+        {
+            var service = this.CreateService(353);
+            await service.StartAsync();
+
+            await service.ShowComicAsync(asked);
+
+            Assert.Equal(shown, service.View.Num);
+        }
+
+        [Fact]
+        public async Task ShowComicAsync_BeforeTheLatestIsKnown_DoesNothing()
+        {
+            var service = this.CreateService(353);
+
+            await service.ShowComicAsync(400);
+
+            Assert.Equal(353, service.View.Num);
+        }
+
+        [Fact]
         public void Constructor_NullArguments_Throw()
         {
             Assert.Throws<ArgumentNullException>(() => new ComicService(null, this._mockLog.Object, null));

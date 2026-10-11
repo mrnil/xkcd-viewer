@@ -113,7 +113,7 @@ The cut tiles are cached by the folder itself, because they're SDK `BitmapImage`
 
 ## Checking for new comics
 
-Decided 2026-10-11 (not built yet). xkcd publishes on **Monday, Wednesday and Friday** (#3280–#3309, 3 Aug to 9 Oct 2026, had no gaps), but the API gives only a date. The one release time measured, from the latest `info.0.json`'s nginx ETag (`"<hex mtime>-<hex size>"`), was #3309 at 20:37 UTC (16:37 Eastern) on its listed date. `info.0.json` is CDN-cached for 5 minutes (`Cache-Control: max-age=300`).
+Decided and built 2026-10-11: `ReleaseSchedule` (when), `NewComicPoller` (the loop), `ComicService.RefreshLatestAsync` (the request). xkcd publishes on **Monday, Wednesday and Friday** (#3280–#3309, 3 Aug to 9 Oct 2026, had no gaps), but the API gives only a date. The one release time measured, from the latest `info.0.json`'s nginx ETag (`"<hex mtime>-<hex size>"`), was #3309 at 20:37 UTC (16:37 Eastern) on its listed date. `info.0.json` is CDN-cached for 5 minutes (`Cache-Control: max-age=300`).
 
 **The plugin checks once an hour, on release days and in US afternoon hours**, while it's loaded, whether the folder is open or not. The aim is to find a new comic within about two hours without many installations asking xkcd at the same moment:
 
@@ -129,7 +129,7 @@ Decided 2026-10-11 (not built yet). xkcd publishes on **Monday, Wednesday and Fr
 
 ## The new-comic signal
 
-Decided 2026-10-11 (not built yet; whether the folder key can be redrawn is being tested, see below).
+Decided and built 2026-10-11: `NewComicTracker` (what's unread, the flash), `NewComicCommand` (the New Comic key), and the Comic Browser's Next key (`KeyContent`, `ComicFolder`). The plugin saves `NewestShownComic` and `LatestKnownComic` in its settings, beside `LastViewedComic`; `NewComicLookChanged` tells the keys to redraw, every 0.5 s while flashing.
 
 - **Unread:** there's an unread comic while the newest comic published is newer than the **newest comic shown**, which is saved in the plugin settings. On a first run nothing is unread: the latest at that moment counts as shown.
 - **Shown** means it appeared on the keypad, as its picture or as its title card, by any route: Next, Latest Comic, a hold on Next, or Random Comic happening to land on it. Opening it in the browser doesn't count, and nor does seeing its number while it's loading or offline.
@@ -173,6 +173,7 @@ The rest of this section describes the Comic Browser; the other two differ only 
 
 ### Hardware test checklist
 
+- The new-comic signal: the New Comic key (plain logo; on a new comic it flashes green with "new" for 30 s, then stays green; a press opens the first unread comic, or the latest when nothing is unread), and the Comic Browser's Next chevron (green while something is unread; a tap goes to the first unread comic, a hold to the newest). A real check first runs on the next release day; the log says when ("Next check for a new comic at ...")
 - The layout on each device (keypad 3×3, Live S 5×3, CT 4×3), and the folder key's logo (legible at 80 px?)
 - Prev/Next feel instant; the chevrons dim at the first and latest comics
 - Real comics in tiles: ordinary strips, tall ones (#1732), huge ones (#657), interactive ones (#1663 → title card), and #404. This tunes the `ComicFit` thresholds and `TitleCardLayout`'s 9×3 text size
@@ -203,6 +204,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 - The last comic viewed on open (the latest on a first run); Prev/Next by number (comic 404 included: it's a joke, see "Data"), held 2 s to jump to the first / newest; a comic tile press opens it in the browser
 - Comics, images and sliced tiles cached in memory, with Prev / Next preloaded (see "Which comic, and caching")
 - A sensible placeholder while loading and when offline
+- New comics noticed on release days, shown on a New Comic key and the Comic Browser's green Next chevron (see "Checking for new comics" and "The new-comic signal")
 
 ## Later (not committed)
 

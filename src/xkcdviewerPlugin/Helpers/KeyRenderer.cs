@@ -11,6 +11,13 @@ namespace Loupedeck.xkcdviewerPlugin
         private static readonly BitmapColor _ink = BitmapColor.Black;
         private static readonly BitmapColor _letterbox = BitmapColor.Black;
         private static readonly BitmapColor _arrow = BitmapColor.White;
+
+        // The new-comic green: "green" in xkcd's colour-name survey (xkcd.com itself has none). Owner's choice.
+        private const String NewComicGreen = "#15B01A";
+        private static readonly BitmapColor _newComicGreen = new BitmapColor(0x15, 0xB0, 0x1A);
+
+        // The "new" banner on a green key is near-black, like the logo's ink, so it stands out from the green.
+        private const String NewBannerFill = "#111111";
         private static readonly BitmapColor _arrowDisabled = new BitmapColor(70, 70, 70);
         private static readonly BitmapColor _loading = new BitmapColor(255, 200, 0);
         private static readonly BitmapColor _offline = new BitmapColor(128, 128, 128);
@@ -33,11 +40,13 @@ namespace Loupedeck.xkcdviewerPlugin
         //
         // VectorImage.ToBitmap renders an SVG at a given size. BitmapImage.FromSvg isn't used: drawn scaled into a
         // BitmapBuilder it came out blank (tested 2026-10-11), because it reports no size of its own.
-        public static BitmapImage Logo(PluginImageSize imageSize, String label = null)
+        //
+        // green draws the key on the new-comic green instead of white paper, for the New Comic key.
+        public static BitmapImage Logo(PluginImageSize imageSize, String label = null, Boolean green = false)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
-                builder.Clear(_paper);
+                builder.Clear(green ? _newComicGreen : _paper);
                 try
                 {
                     var margin = builder.Width / 10;
@@ -57,7 +66,7 @@ namespace Loupedeck.xkcdviewerPlugin
                 {
                     try
                     {
-                        using (var banner = RenderSvg(LogoBanner.Svg(label), builder.Width, builder.Height))
+                        using (var banner = RenderSvg(LogoBanner.Svg(label, green ? NewBannerFill : LogoBanner.DefaultFill), builder.Width, builder.Height))
                         {
                             builder.DrawImage(banner, 0, 0);
                         }
@@ -91,14 +100,15 @@ namespace Loupedeck.xkcdviewerPlugin
 
         // A chevron, drawn from SVG (Chevron) rather than as an arrow glyph, which the device's font may not have. Its
         // character fallback only shows if the SVG fails to render.
-        public static BitmapImage Arrow(Boolean pointsRight, Boolean enabled, PluginImageSize imageSize)
+        // green is the Comic Browser's Next chevron while a new comic is unread.
+        public static BitmapImage Arrow(Boolean pointsRight, Boolean enabled, PluginImageSize imageSize, Boolean green = false)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
                 builder.Clear(BitmapColor.Black);
                 try
                 {
-                    using (var chevron = RenderSvg(Chevron.Svg(pointsRight, enabled ? Chevron.Enabled : Chevron.Disabled), builder.Width, builder.Height))
+                    using (var chevron = RenderSvg(Chevron.Svg(pointsRight, green ? NewComicGreen : enabled ? Chevron.Enabled : Chevron.Disabled), builder.Width, builder.Height))
                     {
                         builder.DrawImage(chevron, 0, 0);
                     }

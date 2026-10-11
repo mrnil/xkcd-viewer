@@ -30,6 +30,37 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
             Assert.Equal(KeyContentKind.NextArrow, KeyContent.For(FolderSlot.Next, _ready, mode).Kind);
         }
 
+        [Theory]
+        [InlineData(NewComicLook.Green, true)]
+        [InlineData(NewComicLook.Normal, false)]
+        public void For_ComicBrowsersNext_WithAComicUnread_IsEnabledAndGreenInTheGreenPhase(NewComicLook look, Boolean green)
+        {
+            var atTheLatest = _ready with { CanGoNext = false };
+
+            Assert.Equal(
+                new KeyContent(KeyContentKind.NextArrow, Enabled: true, Green: green),
+                KeyContent.For(FolderSlot.Next, atTheLatest, ComicFolderMode.Browse, hasUnread: true, look));
+        }
+
+        [Theory]
+        [InlineData(ComicFolderMode.Latest)]
+        [InlineData(ComicFolderMode.Random)]
+        public void For_OtherFoldersNext_IgnoresUnreadComics(ComicFolderMode mode)
+        {
+            var content = KeyContent.For(FolderSlot.Next, _ready, mode, hasUnread: true, NewComicLook.Green);
+
+            Assert.False(content.Green);
+            Assert.Equal(KeyContent.For(FolderSlot.Next, _ready, mode), content);
+        }
+
+        [Fact]
+        public void For_ComicBrowsersPrev_IgnoresUnreadComics()
+        {
+            Assert.Equal(
+                KeyContent.For(FolderSlot.Previous, _ready),
+                KeyContent.For(FolderSlot.Previous, _ready, ComicFolderMode.Browse, hasUnread: true, NewComicLook.Green));
+        }
+
         [Fact]
         public void For_ArrowsInTheRandomFolder_AreOneShowAnotherKeyInPlaceOfNext()
         {

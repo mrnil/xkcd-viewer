@@ -24,7 +24,7 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
             var comic = await this.CreateClient(handler).GetLatestAsync();
 
             Assert.Equal("https://xkcd.com/info.0.json", Assert.Single(handler.Requests).RequestUri.ToString());
-            Assert.Equal(new xkcdComic(3309, "Dogcatcher", new Uri("https://imgs.xkcd.com/comics/dogcatcher.png")), comic);
+            Assert.Equal(new xkcdComic(3309, "Dogcatcher", new Uri("https://imgs.xkcd.com/comics/dogcatcher.png"), new DateOnly(2026, 10, 9)), comic);
         }
 
         [Fact]

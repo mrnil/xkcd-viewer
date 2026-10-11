@@ -9,6 +9,7 @@ xkcdviewerPlugin/
 │       ├── Actions/                  # Loupedeck SDK command/adjustment/folder classes
 │       │   ├── ComicFolder.cs        # The Comic Browser folder: layout, key images, presses. Users place it by this name
 │       │   ├── LatestComicFolder.cs  # ComicFolder opened at the latest comic
+│       │   ├── NewComicCommand.cs    # The New Comic key: flashes / turns green on a new comic; opens it in the browser
 │       │   └── RandomComicFolder.cs  # ComicFolder opened at a random comic; one "show another" key
 │       ├── Helpers/
 │       │   ├── BrowserLauncher.cs    # Opens a comic page (only https://xkcd.com/{num}/) in the default browser
@@ -25,17 +26,20 @@ xkcdviewerPlugin/
 │       │   ├── PluginLog.cs          # SDK-provided static logging facade
 │       │   ├── PluginLogAdapter.cs   # IPluginLog over PluginLog, for injecting into services
 │       │   ├── PluginResources.cs    # Embedded resource access helper (filename-only lookup)
-│       │   ├── PluginTimings.cs      # Timeouts and intervals: HTTP timeout, failed-load retry delay, hold-to-jump
+│       │   ├── PluginTimings.cs      # Timeouts and intervals: HTTP timeout, failed-load retry delay, hold-to-jump, new-comic flash
+│       │   ├── ReleaseSchedule.cs    # When to check for a new comic: release days, US Eastern afternoon, per-install minute
 │       │   └── TitleCardLayout.cs    # Splits "#num" and the title across the six tiles, no word crossing a seam
 │       ├── Models/
 │       │   ├── ComicView.cs          # What the folder draws: current comic, Loading/Ready/Failed, image, Prev/Next possible
-│       │   └── xkcdComic.cs          # A validated comic: number, display-ready title, image URL or null, page URL
+│       │   └── xkcdComic.cs          # A validated comic: number, display-ready title, image URL or null, publish date or null, page URL
 │       ├── Services/
 │       │   ├── ComicJson.cs          # info.0.json → xkcdComic; normalizes the title, drops disallowed images
 │       │   ├── ComicService.cs       # Current comic, latest/random jumps, caches, preloading, retry delay; raises Changed
 │       │   ├── ImageCache.cs         # LRU of image bytes, limited by count and total size
 │       │   ├── IPluginLog.cs         # Logging interface services depend on
 │       │   ├── IxkcdClient.cs        # The xkcd API: latest, by number, image bytes. Null on any failure
+│       │   ├── NewComicPoller.cs     # Checks for a new comic at load, then at ReleaseSchedule's times
+│       │   ├── NewComicTracker.cs    # What's unread (newest shown vs latest known), the flash, saved across sessions
 │       │   ├── xkcdClient.cs         # HttpClient implementation: no redirects, timeout, size caps
 │       │   └── xkcdUrls.cs           # Every URL requested or opened is built or checked here
 │       ├── package/metadata/         # LoupedeckPackage.yaml (manifest) + Icon256x256.png (generated, see art/)

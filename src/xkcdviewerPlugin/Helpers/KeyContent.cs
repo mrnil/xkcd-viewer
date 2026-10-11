@@ -26,14 +26,23 @@ namespace Loupedeck.xkcdviewerPlugin
     }
 
     // What one key of the folder shows, decided from the service's ComicView. Drawing it is the folder's job.
-    public sealed record KeyContent(KeyContentKind Kind, Boolean Enabled = true, Int32 TileIndex = 0, String Text = "")
+    // Green is set on the Comic Browser's Next chevron while a new comic is unread (and in the green half of a flash).
+    public sealed record KeyContent(KeyContentKind Kind, Boolean Enabled = true, Int32 TileIndex = 0, String Text = "", Boolean Green = false)
     {
         // The status text goes on the middle tile of the top row, and the comic number below it, so neither
         // crosses a seam.
         public const Int32 StatusTile = 1;
         public const Int32 NumberTile = 4;
 
-        public static KeyContent For(FolderSlot slot, ComicView view, ComicFolderMode mode = ComicFolderMode.Browse)
+        // hasUnread and newComicLook come from the NewComicTracker. Only the Comic Browser shows them: its Next chevron
+        // leads to the first unread comic, so it's enabled even on the latest comic known before, and green in the
+        // tracker's green phases.
+        public static KeyContent For(
+            FolderSlot slot,
+            ComicView view,
+            ComicFolderMode mode = ComicFolderMode.Browse,
+            Boolean hasUnread = false,
+            NewComicLook newComicLook = NewComicLook.Normal)
         {
             ArgumentNullException.ThrowIfNull(slot);
             ArgumentNullException.ThrowIfNull(view);
@@ -42,6 +51,8 @@ namespace Loupedeck.xkcdviewerPlugin
             {
                 FolderSlotKind.Previous when mode == ComicFolderMode.Random => new KeyContent(KeyContentKind.Blank),
                 FolderSlotKind.Next when mode == ComicFolderMode.Random => new KeyContent(KeyContentKind.ShowAnother),
+                FolderSlotKind.Next when mode == ComicFolderMode.Browse && hasUnread =>
+                    new KeyContent(KeyContentKind.NextArrow, Enabled: true, Green: newComicLook == NewComicLook.Green),
                 FolderSlotKind.Previous => new KeyContent(KeyContentKind.PreviousArrow, view.CanGoPrevious),
                 FolderSlotKind.Next => new KeyContent(KeyContentKind.NextArrow, view.CanGoNext),
                 FolderSlotKind.ComicTile => ForTile(slot.Index, view),

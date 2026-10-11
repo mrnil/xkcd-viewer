@@ -50,7 +50,7 @@ namespace Loupedeck.xkcdviewerPlugin
 
             var imageUrl = Uri.TryCreate(wire.Img, UriKind.Absolute, out var parsed) && xkcdUrls.IsAllowedImage(parsed) ? parsed : null;
 
-            comic = new xkcdComic(num, title, imageUrl);
+            comic = new xkcdComic(num, title, imageUrl, ParseDate(wire.Year, wire.Month, wire.Day));
             problem = null;
             return true;
         }
@@ -88,6 +88,20 @@ namespace Loupedeck.xkcdviewerPlugin
             return Truncate(builder.ToString());
         }
 
+        // year, month and day are strings in xkcd's JSON ("2026", "10", "9"). Anything that isn't a real date is null:
+        // the date only decides when to stop checking for new comics, so a bad one must not break the comic.
+        internal static DateOnly? ParseDate(String year, String month, String day)
+        {
+            return Int32.TryParse(year, NumberStyles.None, CultureInfo.InvariantCulture, out var y)
+                && Int32.TryParse(month, NumberStyles.None, CultureInfo.InvariantCulture, out var m)
+                && Int32.TryParse(day, NumberStyles.None, CultureInfo.InvariantCulture, out var d)
+                && y is >= 2005 and <= 9999
+                && m is >= 1 and <= 12
+                && d >= 1 && d <= DateTime.DaysInMonth(y, m)
+                    ? new DateOnly(y, m, d)
+                    : null;
+        }
+
         private static String Truncate(String text)
         {
             if (text.Length <= MaxTitleLength)
@@ -118,6 +132,15 @@ namespace Loupedeck.xkcdviewerPlugin
 
             [JsonPropertyName("img")]
             public String Img { get; set; }
+
+            [JsonPropertyName("year")]
+            public String Year { get; set; }
+
+            [JsonPropertyName("month")]
+            public String Month { get; set; }
+
+            [JsonPropertyName("day")]
+            public String Day { get; set; }
         }
     }
 }

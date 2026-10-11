@@ -14,5 +14,14 @@ namespace Loupedeck.xkcdviewerPlugin
 
         // How long Prev / Next must be held to jump to the first / newest comic instead of stepping (owner's choice).
         public static readonly TimeSpan HoldToJump = TimeSpan.FromSeconds(2);
+
+        // When a new comic is found, the New Comic key and the Comic Browser's Next chevron flash between green and
+        // their usual look for this long, switching every NewComicFlashInterval, then stay green (owner's choice).
+        public static readonly TimeSpan NewComicFlash = TimeSpan.FromSeconds(30);
+        public static readonly TimeSpan NewComicFlashInterval = TimeSpan.FromMilliseconds(500);
+
+        // The new-comic check waits for its next slot in steps no longer than this, rechecking the clock each time, so
+        // a computer waking from sleep isn't left waiting on a timer that stopped counting.
+        public static readonly TimeSpan NewComicCheckWaitStep = TimeSpan.FromMinutes(15);
     }
 }

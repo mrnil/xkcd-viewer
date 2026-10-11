@@ -36,6 +36,7 @@ namespace Loupedeck.xkcdviewerPlugin
         private readonly ComicFolderMode _mode;
         private readonly String _keyLabel;
         private ComicService _subscribedTo;
+        private xkcdviewerPlugin _lookSubscribedTo;
 
         public ComicFolder()
             : this("Comic Browser", ComicFolderMode.Browse, null)
@@ -91,6 +92,13 @@ namespace Loupedeck.xkcdviewerPlugin
                     this._subscribedTo = service;
                 }
 
+                // Only the Comic Browser's Next chevron shows the new-comic signal (owner's choice).
+                if (this._mode == ComicFolderMode.Browse && this._lookSubscribedTo == null && xkcdviewerPlugin.Instance is { } plugin)
+                {
+                    plugin.NewComicLookChanged += this.OnNewComicLookChanged;
+                    this._lookSubscribedTo = plugin;
+                }
+
                 _ = this._mode switch
                 {
                     ComicFolderMode.Latest => service.ShowLatestAsync(),
@@ -135,7 +143,7 @@ namespace Loupedeck.xkcdviewerPlugin
                     break;
                 case FolderSlotKind.Previous or FolderSlotKind.Next
                     when this._mode != ComicFolderMode.Random && !this._keysWithButtonEvents.ContainsKey(actionParameter):
-                    Step(service, slot.Kind);
+                    this.Step(service, slot.Kind);
                     break;
                 case FolderSlotKind.ComicTile when service.View.Num is Int32 num:
                     BrowserLauncher.OpenComicPage(xkcdUrls.Page(num), xkcdviewerPlugin.Instance.ServiceLog);
@@ -218,7 +226,7 @@ namespace Loupedeck.xkcdviewerPlugin
             var service = xkcdviewerPlugin.Instance?.Comics;
             if (this._hold.Release(actionParameter) && service != null)
             {
-                Step(service, kind);
+                this.Step(service, kind);
             }
         }
 
@@ -235,11 +243,19 @@ namespace Loupedeck.xkcdviewerPlugin
             try
             {
                 var view = service.View;
-                var content = KeyContent.For(slot, view, this._mode);
+                var newComics = xkcdviewerPlugin.Instance?.NewComics;
+                var content = KeyContent.For(slot, view, this._mode, newComics?.HasUnread == true, newComics?.Look ?? NewComicLook.Normal);
+
+                // The comic is on the keypad once its picture or title card is drawn: that's what counts as seen.
+                if (content.Kind is KeyContentKind.ComicTile or KeyContentKind.TitleCardTile && view.Num is Int32 shown)
+                {
+                    newComics?.MarkShown(shown);
+                }
+
                 return content.Kind switch
                 {
                     KeyContentKind.PreviousArrow => KeyRenderer.Arrow(false, content.Enabled, imageSize),
-                    KeyContentKind.NextArrow => KeyRenderer.Arrow(true, content.Enabled, imageSize),
+                    KeyContentKind.NextArrow => KeyRenderer.Arrow(true, content.Enabled, imageSize, content.Green),
                     KeyContentKind.ShowAnother => KeyRenderer.ShowAnother(imageSize),
                     KeyContentKind.ComicTile => this.DrawComicTile(view, content.TileIndex, imageSize),
                     KeyContentKind.TitleCardTile => KeyRenderer.TitleCardTile(content.Text, content.TileIndex, imageSize),
@@ -278,8 +294,12 @@ namespace Loupedeck.xkcdviewerPlugin
             return KeyRenderer.TitleCardTile(text, tileIndex, imageSize);
         }
 
-        private static void Step(ComicService service, FolderSlotKind kind) =>
-            _ = kind == FolderSlotKind.Next ? service.NextAsync() : service.PreviousAsync();
+        // In the Comic Browser, while a new comic is unread, Next (the green chevron) goes to the first unread comic
+        // instead of the next one. Holding Next still jumps to the newest (Jump).
+        private void Step(ComicService service, FolderSlotKind kind) =>
+            _ = kind == FolderSlotKind.Previous ? service.PreviousAsync()
+                : this._mode == ComicFolderMode.Browse && xkcdviewerPlugin.Instance?.NewComics?.FirstUnread is Int32 firstUnread ? service.ShowComicAsync(firstUnread)
+                : service.NextAsync();
 
         // Next jumps to the newest comic published, Prev to comic #1.
         private static Task Jump(ComicService service, FolderSlotKind kind) =>
@@ -314,10 +334,24 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
+        // Just the Next keys: they're the only ones the new-comic signal changes.
+        private void OnNewComicLookChanged(Object sender, EventArgs e)
+        {
+            foreach (var name in this._actionNames.Keys)
+            {
+                if (FolderSlot.TryParse(name, out var slot) && slot.Kind == FolderSlotKind.Next)
+                {
+                    this.CommandImageChanged(name);
+                }
+            }
+        }
+
         private void Unsubscribe()
         {
             this._subscribedTo?.Changed -= this.OnComicChanged;
             this._subscribedTo = null;
+            this._lookSubscribedTo?.NewComicLookChanged -= this.OnNewComicLookChanged;
+            this._lookSubscribedTo = null;
         }
     }
 }
