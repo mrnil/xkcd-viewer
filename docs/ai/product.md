@@ -155,7 +155,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 ## Still open
 
-1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file). Before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
+1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install, so before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
 3. **Checking for new comics while browsing**: on hold (2026-10-11) while the owner thinks it over. Latest Comic and holding Next always ask xkcd for the newest comic (decided 2026-10-11), but plain browsing still fetches the latest once per session, so tapping Next on the newest comic won't find one published since, until one of those asks again. The proposal was to re-check when the folder opens and when Next is pressed on the newest comic, at most every 5 minutes, with no background timer.
 
