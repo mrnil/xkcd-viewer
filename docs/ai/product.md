@@ -140,7 +140,9 @@ Decided 2026-10-11 (not built yet; whether the folder key can be redrawn is bein
 - **Inside the folder:** while something is unread, the Next chevron flashes green (30 s) then stays green, like the folder keys. **Tapping** a green Next skips the normal step and goes to the first unread comic. **Holding** it still jumps to the very newest comic.
 - **Redrawing the folder key:** the SDK has no documented call for it. `Plugin.OnActionImageChanged` with the folder's `CommandName` or `Name` didn't re-invoke `GetButtonImage`; telling the service the plugin's actions changed (`PluginActionsChanged(true, false)`, protected on `Plugin`) did, within about 150 ms (2026-10-11, branch `spike/folder-key-flash`). Whether that looks right on the device, once a second for 30 s, is still to be seen.
 
-Still to decide: whether a green key means a green background behind the logo or a green frame (as in the spike), whether "new" on the Comic Browser key goes in a label strip like Latest's, and what to do if the flash test fails on the device (solid green only, or a separate "new comic" key).
+A green key is a **green background** behind the black logo, not a frame (owner, 2026-10-11). The logo SVG has a transparent background, so it draws straight onto the green (checked off-device).
+
+Still to decide: whether "new" on the Comic Browser key goes in a label strip like Latest's, and what to do if the flash test fails on the device (solid green only, or a separate "new comic" key).
 
 ## The folders
 
