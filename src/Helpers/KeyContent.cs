@@ -4,7 +4,7 @@ namespace Loupedeck.xkcdviewerPlugin
 
     public enum KeyContentKind
     {
-        // Padding: the device's default empty key.
+        // Padding: drawn as a plain black key (a null image would show "action not available").
         Blank,
 
         PreviousArrow,

@@ -47,6 +47,16 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
+        // A padding key, or any key that has nothing to show. Plain black, like an unlit key.
+        public static BitmapImage Blank(PluginImageSize imageSize)
+        {
+            using (var builder = new BitmapBuilder(imageSize))
+            {
+                builder.Clear(BitmapColor.Black);
+                return builder.ToImage();
+            }
+        }
+
         // A chevron drawn with lines rather than an arrow glyph, which the device's font may not have.
         public static BitmapImage Arrow(Boolean pointsRight, Boolean enabled, PluginImageSize imageSize)
         {

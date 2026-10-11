@@ -22,7 +22,7 @@ MX Creative Keypad (3×3)        Loupedeck Live S (5×3)              Loupedeck 
 - **Back**: inserted by the SDK. We don't return it.
 - **Prev / Next**: the previous and next comic.
 - **Comic tiles `c0`–`c5`**: pressing **any** of them opens the current comic in the browser (`https://xkcd.com/{num}/`). Decided 2026-09-27: there's no dedicated "Open" key.
-- **`--`**: blank padding keys that keep the 3×2 block in one piece on wider grids. They show the device's default empty-key grey, not a drawn colour, which is fine. (`GetCommandImage` returns null for them.)
+- **`--`**: blank padding keys that keep the 3×2 block in one piece on wider grids. They're drawn as plain black keys. **A folder key must never get a null image**: on the Live S and CT, returning null for the padding keys showed the device's "action not available" warning triangle (seen on hardware 2026-10-11). So every fallback in `GetCommandImage` draws a blank key instead.
 - **Dial** (where the device has one): fast scrolling through comics. Later.
 
 ## Hardware facts

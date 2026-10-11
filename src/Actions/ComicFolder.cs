@@ -108,10 +108,12 @@ namespace Loupedeck.xkcdviewerPlugin
 
         public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
         {
+            // Never return null: a folder key without an image shows the device's "action not available" warning
+            // triangle (seen on the Live S / CT padding keys). Every fallback draws a blank key instead.
             var service = xkcdviewerPlugin.Instance?.Comics;
             if (service == null || !FolderSlot.TryParse(actionParameter, out var slot))
             {
-                return null;
+                return KeyRenderer.Blank(imageSize);
             }
 
             try
@@ -126,15 +128,13 @@ namespace Loupedeck.xkcdviewerPlugin
                     KeyContentKind.TitleCardTile => KeyRenderer.TitleCardTile(content.Text, content.TileIndex, imageSize),
                     KeyContentKind.LoadingTile => KeyRenderer.StatusTile(content.Text, true, imageSize),
                     KeyContentKind.OfflineTile => KeyRenderer.StatusTile(content.Text, false, imageSize),
-
-                    // Padding: null leaves the device's default empty key.
-                    _ => null,
+                    _ => KeyRenderer.Blank(imageSize),
                 };
             }
             catch (Exception ex)
             {
                 PluginLog.Error(ex, $"Failed to draw key '{actionParameter}' at {imageSize}");
-                return null;
+                return KeyRenderer.Blank(imageSize);
             }
         }
 
