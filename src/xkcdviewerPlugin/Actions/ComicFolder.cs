@@ -11,8 +11,9 @@ namespace Loupedeck.xkcdviewerPlugin
     // LatestComicFolder and RandomComicFolder are this folder in another ComicFolderMode.
     //
     // Tapping Prev / Next steps one comic; holding one for PluginTimings.HoldToJump jumps to the first / newest comic
-    // instead (KeyHold tells the two apart). That needs the button's press and release, so Prev / Next are handled
-    // in ProcessButtonEvent2; RunCommand still steps for a key that never sends those events.
+    // instead (KeyHold tells the two apart). That needs the key's press and release, so Prev / Next are handled in
+    // ProcessButtonEvent2 (the MX Keypad's physical keys) and ProcessTouchEvent (the Live S / CT touch keys, which send
+    // no button events); RunCommand still steps for a key that sends neither.
     //
     // Users place this class (and its subclasses) by name, so renaming it or its namespace orphans their buttons.
     // The other folders subclass it, rather than sharing an abstract base, because the SDK docs don't say whether the
@@ -28,8 +29,8 @@ namespace Loupedeck.xkcdviewerPlugin
 
         private readonly ConcurrentDictionary<String, Byte> _actionNames = new ConcurrentDictionary<String, Byte>();
 
-        // Prev / Next keys that send press and release events. RunCommand leaves those to ProcessButtonEvent2, so a
-        // press can't step twice if the SDK calls both.
+        // Prev / Next keys that send press and release events, as buttons or touches. RunCommand leaves those to
+        // ProcessButtonEvent2 / ProcessTouchEvent, so a press can't step twice if the SDK calls both.
         private readonly ConcurrentDictionary<String, Byte> _keysWithButtonEvents = new ConcurrentDictionary<String, Byte>();
         private readonly KeyHold _hold = new KeyHold();
         private readonly ComicFolderMode _mode;
@@ -154,23 +155,71 @@ namespace Loupedeck.xkcdviewerPlugin
                 return false;
             }
 
-            this._keysWithButtonEvents[actionParameter] = 0;
             switch (buttonEvent.EventType)
             {
                 case DeviceButtonEventType.Press:
-                    _ = this.JumpIfHeldAsync(actionParameter, this._hold.Press(actionParameter), slot.Kind);
+                    this.OnPress(actionParameter, slot.Kind);
                     break;
-                case DeviceButtonEventType.Release when this._hold.Release(actionParameter):
-                    var service = xkcdviewerPlugin.Instance?.Comics;
-                    if (service != null)
-                    {
-                        Step(service, slot.Kind);
-                    }
-
+                case DeviceButtonEventType.Release:
+                    this.OnRelease(actionParameter, slot.Kind);
                     break;
             }
 
             return true;
+        }
+
+        // The Live S and CT keys are touch screens: they send no button events, so a hold never reached
+        // ProcessButtonEvent2 (seen on hardware 2026-10-11). Their touches say when a finger goes down (Press) and lifts
+        // (TouchUp, plus LongRelease after a long touch). The device also decides on its own that a touch is a hold: it
+        // sends LongPress about 0.5 s in, with haptic feedback, so the jump happens then, matching what the user feels,
+        // rather than after the keypad's 2 s. Every touch on Prev / Next is handled here, Tap and DoubleTap included, so
+        // quick taps each step once rather than becoming a jump.
+        public override Boolean ProcessTouchEvent(String actionParameter, DeviceTouchEvent touchEvent)
+        {
+            if (this._mode == ComicFolderMode.Random
+                || touchEvent == null
+                || !FolderSlot.TryParse(actionParameter, out var slot)
+                || slot.Kind is not (FolderSlotKind.Previous or FolderSlotKind.Next))
+            {
+                return false;
+            }
+
+            switch (touchEvent.EventType)
+            {
+                case DeviceTouchEventType.Press:
+                    this.OnPress(actionParameter, slot.Kind);
+                    break;
+                case DeviceTouchEventType.LongPress when this._hold.TryHoldNow(actionParameter):
+                    var service = xkcdviewerPlugin.Instance?.Comics;
+                    if (service != null)
+                    {
+                        _ = Jump(service, slot.Kind);
+                    }
+
+                    break;
+                case DeviceTouchEventType.TouchUp or DeviceTouchEventType.LongRelease:
+                    this.OnRelease(actionParameter, slot.Kind);
+                    break;
+            }
+
+            return true;
+        }
+
+        private void OnPress(String actionParameter, FolderSlotKind kind)
+        {
+            this._keysWithButtonEvents[actionParameter] = 0;
+            _ = this.JumpIfHeldAsync(actionParameter, this._hold.Press(actionParameter), kind);
+        }
+
+        // A release that ends a tap steps; one after a hold (the jump has happened) or with no press does nothing, so a
+        // touch that sends both TouchUp and LongRelease still steps at most once.
+        private void OnRelease(String actionParameter, FolderSlotKind kind)
+        {
+            var service = xkcdviewerPlugin.Instance?.Comics;
+            if (this._hold.Release(actionParameter) && service != null)
+            {
+                Step(service, kind);
+            }
         }
 
         public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
@@ -232,6 +281,10 @@ namespace Loupedeck.xkcdviewerPlugin
         private static void Step(ComicService service, FolderSlotKind kind) =>
             _ = kind == FolderSlotKind.Next ? service.NextAsync() : service.PreviousAsync();
 
+        // Next jumps to the newest comic published, Prev to comic #1.
+        private static Task Jump(ComicService service, FolderSlotKind kind) =>
+            kind == FolderSlotKind.Next ? service.ShowLatestAsync() : service.ShowFirstAsync();
+
         // Fires while the key is still down, so the jump shows before the user lets go.
         private async Task JumpIfHeldAsync(String actionParameter, Int64 pressId, FolderSlotKind kind)
         {
@@ -244,7 +297,7 @@ namespace Loupedeck.xkcdviewerPlugin
                     return;
                 }
 
-                await (kind == FolderSlotKind.Next ? service.ShowLatestAsync() : service.ShowFirstAsync()).ConfigureAwait(false);
+                await Jump(service, kind).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

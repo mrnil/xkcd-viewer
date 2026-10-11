@@ -41,6 +41,19 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
+        // For a device that recognises the hold itself (the Live S / CT touch keys send a LongPress about 0.5 s into a
+        // touch): true once, if the key is down and not yet released or held, and makes the press a hold now, without
+        // waiting for the delay.
+        public Boolean TryHoldNow(String key)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+
+            lock (this._lock)
+            {
+                return this._waiting.Remove(key);
+            }
+        }
+
         // True when the press was a tap: released before it became a hold. False after a hold, or with no press.
         public Boolean Release(String key)
         {
