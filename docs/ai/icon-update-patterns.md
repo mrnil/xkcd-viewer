@@ -13,6 +13,8 @@ How to get a button or dial redrawn when state changes. The SDK caches what it d
 
 `CommandImageChanged` exists **only** on `PluginDynamicFolder`. Many examples online use it on commands, and that doesn't compile.
 
+**A folder's own key can't be redrawn.** The image `GetButtonImage` returns for the key that opens a folder stays as first drawn: there's no refresh call for it, and re-listing the plugin's actions to force one flashed a warning triangle on the keypad and still showed the old image (`product.md` → "The new-comic signal"). Anything that must change goes on a `PluginDynamicCommand` key instead, as the New Comic key does.
+
 **Redraw only what changed.** Re-listing (`ParametersChanged`, `ButtonActionNamesChanged`) rebuilds every button, so use it only when the *set* of buttons changes, not to redraw one.
 
 ## Selection Change (update the old and the new)
@@ -62,7 +64,7 @@ It's fine to redraw immediately to show a "loading…" state, as long as a secon
 
 ## Event-Driven Refresh
 
-When the plugin raises an event after its state has already changed, redraw directly, with no delay:
+When the plugin raises an event after its state has already changed, redraw directly, with no delay. In this plugin, `NewComicCommand` redraws on `xkcdviewerPlugin.NewComicLookChanged` and `ComicFolder` on `ComicService.Changed`:
 
 ```csharp
 public void OnComicChanged() => this.ActionImageChanged();

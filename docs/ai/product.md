@@ -91,7 +91,7 @@ The data comes from `https://xkcd.com/info.0.json` (latest) and `https://xkcd.co
 
 What real responses showed (captured as test fixtures in `tests/xkcdviewerPlugin.Tests/Fixtures/`):
 
-- `num` is a JSON number. `month`, `day` and `year` are strings. Nothing uses the dates yet.
+- `num` is a JSON number. `month`, `day` and `year` are strings. They're parsed into `xkcdComic.Published` (null if missing or invalid), which only the new-comic check uses: it stops checking once the latest comic is dated today (see "Checking for new comics").
 - `title` can hold HTML tags (#472) and entities (#259). `safe_title` is clean but can lose characters (#259's "Clichd"). So the title shown is `title` with tags stripped and entities decoded, falling back to `safe_title`, then to `#num`.
 - Interactive comics (#1608, #1663) have `img` set to `https://imgs.xkcd.com/comics/` with no file name. They load with no image and get the title card.
 - Comic 404 is a joke: `https://xkcd.com/404/info.0.json` answers HTTP 404 with an HTML page, and that answer *is* the comic. Prev/Next step onto it like any other number. `xkcdClient` turns that one HTTP 404 into comic 404 (title "404 Not Found", no image, so it gets the title card, and pressing a tile opens `https://xkcd.com/404/`). That is the only place an HTTP 404 counts as success: a 404 for any other comic, the latest comic or an image is a failure.
@@ -122,7 +122,7 @@ Decided and built 2026-10-11: `ReleaseSchedule` (when), `NewComicPoller` (the lo
 - **Minute:** each installation checks at one random minute and second past the hour, chosen **each time the plugin loads** and kept until it unloads. Each install then asks steadily once an hour, and installs are spread across the hour.
 - **Stop once found:** once the latest comic known is dated today (Eastern), no more checks until the next release day. Most release days then cost one to four requests.
 - **No retries:** a failed check (offline, xkcd down) does nothing more; the next hour's slot is the next try.
-- **On load, always ask for the latest.** If it's newer than the latest known when the plugin last ran (to be saved in the plugin settings, like `LastViewedComic`), that counts as a new comic found, exactly as if a poll had found it. This also covers comics published outside the window or while the computer was off.
+- **On load, always ask for the latest.** If it's newer than the latest known when the plugin last ran (saved in the plugin settings as `LatestKnownComic`, beside `LastViewedComic`), that counts as a new comic found, exactly as if a poll had found it. This also covers comics published outside the window or while the computer was off.
 - **Key presses still ask xkcd directly:** Latest Comic and holding Next are unchanged (see "Which comic, and caching"); they're spread out by people pressing keys at different times.
 - **No setting to turn polling off.**
 - **What a new comic does**: see "The new-comic signal".
@@ -195,7 +195,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 ## Still open
 
-1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install, so before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
+1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install. A packed `.lplug4` passes `LogiPluginTool verify` (2026-10-11), so what's left before the first release is a packaged install (`LogiPluginTool install`, after `dotnet clean`) to confirm the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`. The manifest also sets `pluginFolderMac`, but the plugin hasn't been built or run on macOS.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
 
 ## v1 scope

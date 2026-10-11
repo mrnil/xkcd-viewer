@@ -37,16 +37,18 @@ This is an accepted tradeoff, not a gap to close. Test only constructor wiring (
 
 ```csharp
 [Fact]
-public async Task GetComicAsync_WhenClientReturnsComic_ReturnsIt()
+public async Task ShowComicAsync_ShowsThatComic()
 {
-    // Arrange
-    this._mockClient.Setup(x => x.GetComicAsync(353)).ReturnsAsync(new xkcdComic { Num = 353, Title = "Python" });
+    // Arrange: the mock client answers for comics 1..Latest (set up in the test class's constructor)
+    var service = this.CreateService(353);
+    await service.StartAsync();
 
     // Act
-    var result = await this._service.GetComicAsync(353);
+    await service.ShowComicAsync(Latest - 5);
 
     // Assert
-    Assert.Equal("Python", result.Title);
+    Assert.Equal(Latest - 5, service.View.Num);
+    Assert.Equal(ComicViewState.Ready, service.View.State);
 }
 ```
 
@@ -62,27 +64,27 @@ For every service method, test:
 
 The class that calls `https://xkcd.com` directly needs a fake `HttpMessageHandler`, not a mock of itself. Mocking `IxkcdClient` tests the *caller*, and never runs the client's own URL building, status handling or JSON mapping.
 
-1. Give the client a second, `internal` constructor that takes an `HttpClient`. Production code uses the public constructor with a single shared static `HttpClient`. `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj` exposes internals to the test project with `<InternalsVisibleTo Include="xkcdviewerPlugin.Tests" />`, so internal members don't have to be made public for testing. `xkcdClient` is the worked example.
+1. Give the client a second, `internal` constructor that takes an `HttpClient` (and here the `IPluginLog`). Production code uses the public constructor with a single shared static `HttpClient`. `src/xkcdviewerPlugin/xkcdviewerPlugin.csproj` exposes internals to the test project with `<InternalsVisibleTo Include="xkcdviewerPlugin.Tests" />`, so internal members don't have to be made public for testing. `xkcdClient` is the worked example.
 2. Write a small `StubHttpMessageHandler` that records every `HttpRequestMessage` and returns a response supplied by the test.
 3. Assert on the recorded request (URL) and the parsed result. Cover what a mock can't: the exact URL for "latest" vs a numbered comic, 404 handling, malformed or missing JSON fields, and that the wire JSON maps onto the model.
 
 ```csharp
 var handler = new StubHttpMessageHandler(request =>
     new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
-var client = new xkcdClient(new HttpClient(handler));
+var client = new xkcdClient(new HttpClient(handler), this._mockLog.Object);
 
 var comic = await client.GetComicAsync(353);
 
 Assert.Equal("https://xkcd.com/353/info.0.json", handler.Requests[0].RequestUri.ToString());
 ```
 
-Keep realistic JSON fixtures, captured from the live API, in the test project instead of hand-written approximations.
+Keep realistic JSON fixtures, captured from the live API, in the test project instead of hand-written approximations (`tests/xkcdviewerPlugin.Tests/Fixtures/`, loaded through `Fixture.cs`).
 
 ### Async and Timing
 
 - **Wait for outcomes, don't sleep for them.** When the code under test exposes a completion signal (a returned `Task`, an event, a callback), await it or poll it with a bounded helper, e.g. `TestWait.UntilAsync(condition, because)`, which fails with what it was waiting for. A fixed `Thread.Sleep` is either too short (flaky) or too long (slow).
-- **If fire-and-forget `Task.Run` is unavoidable**, keep any wait a named constant (`PluginTimings.TestAsyncDelay`), never a magic number.
-- **Make time injectable.** Anything with a delay, timeout, cache expiry or "check every N minutes" should take its durations (or a clock) as constructor parameters, so tests run in milliseconds.
+- **If fire-and-forget `Task.Run` is unavoidable**, wait with `TestWait.UntilAsync` (bounded, named by what it waits for), never a fixed sleep with a magic number.
+- **Make time injectable.** Anything with a delay, timeout, cache expiry or "check every N minutes" should take its durations (or a clock) as constructor parameters, so tests run in milliseconds. `NewComicPoller` and `NewComicTracker` take a `TimeProvider`, which tests drive with `ManualTimeProvider`; `ReleaseSchedule` takes "now" and the time zone as arguments.
 - **Repeat before trusting.** Run a new concurrency test in a loop (`for i in $(seq 1 10); do dotnet test --no-build --filter ...; done`). A race that fails 1 run in 5 won't show up in one green run.
 
 ## Intentionally Not Unit-Tested

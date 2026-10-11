@@ -2,6 +2,8 @@
 
 Templates for the common Logi Actions SDK shapes. For anything not covered here, consult the SDK docs index (<https://logitech.github.io/actions-sdk-docs/llms.txt>, see `AGENTS.md`) rather than guessing.
 
+The templates are illustrations of each SDK shape: members such as `CurrentComic`, `ButtonTextRenderer`, `Navigate` or `Favourites` don't exist in this plugin. For the real thing, see `src/xkcdviewerPlugin/Actions/` (`ComicFolder` for a folder, `NewComicCommand` for an image-only command) and `KeyRenderer` for drawing.
+
 The SDK discovers actions by reflection: any non-abstract `PluginDynamicCommand` / `PluginDynamicAdjustment` / `PluginDynamicFolder` / `ActionEditorCommand` subclass in the assembly with a public parameterless constructor appears in the action list. There is no registration file.
 
 ## Command Display Modes
@@ -145,7 +147,7 @@ public class xkcdviewerPlugin : Plugin
         PluginLog.Init(this.Log);
         PluginResources.Init(this.Assembly);
 
-        // Construct services here, but do no I/O.
+        // No I/O here. This plugin also creates its services in Load, not here, so actions must null-check them.
     }
 
     public override void Load()
@@ -160,7 +162,7 @@ public class xkcdviewerPlugin : Plugin
 }
 ```
 
-Plugin settings (small key/value persistence): `this.SetPluginSetting(key, value, backupOnline)` / `this.TryGetPluginSetting(key, out var value)` on `Plugin`. Wrap them behind an interface for services so the services stay testable.
+Plugin settings (small key/value persistence): `this.SetPluginSetting(key, value, backupOnline)` / `this.TryGetPluginSetting(key, out var value)` on `Plugin`. Keep them out of the services so the services stay testable: here the services take saved values as constructor arguments and raise events, and `xkcdviewerPlugin` reads and writes the settings (`LastViewedComic`, `NewestShownComic`, `LatestKnownComic`).
 
 ## Common Patterns
 
@@ -233,15 +235,15 @@ version: 1.0
 author: ...
 copyright: ...
 pluginFolderWin: bin
-#pluginFolderMac: bin           # uncomment to ship for macOS
+pluginFolderMac: bin            # set, but the plugin hasn't been built or run on macOS yet
 supportedDevices:
     - LoupedeckCtFamily
 pluginCapabilities:              # e.g. HasHapticMapping (see Haptics)
 minimumLoupedeckVersion: 6.0
 license: MIT
 licenseUrl: https://opensource.org/licenses/MIT
-#supportPageUrl: ...
-#homePageUrl: ...
+supportPageUrl: https://github.com/mrnil/xkcd-viewer/issues
+homePageUrl: https://github.com/mrnil/xkcd-viewer
 ```
 
 Don't add keys from memory. Check the SDK docs' distribution/manifest pages first, and run `LogiPluginTool verify` afterwards.
@@ -276,7 +278,7 @@ A mismatched event name fails silently: the mouse just never buzzes. When haptic
 
 ## Known Device Gotchas
 
-These were found on real devices in a sibling plugin project. Neither is in the SDK docs.
+None of these is in the SDK docs. The first two were found on real devices in a sibling plugin project; the rest on this plugin's own hardware tests.
 
 ### An image-only command needs `IsWidget`, even with parameters
 

@@ -1,6 +1,6 @@
 # Refactoring Patterns
 
-When and how to split a growing Logi Actions SDK plugin. None of this applies yet: use it once `xkcdviewerPlugin.cs` or a service shows the warning signs below.
+When and how to split a growing Logi Actions SDK plugin. Use it once `xkcdviewerPlugin.cs` or a service shows the warning signs below. The plugin class is still small (about 160 lines). `ComicService` (about 590 lines) is past the size sign, though it has one responsibility (which comic is showing, and fetching and caching for it), so check it against the other signs before adding much more to it. The connection-manager material doesn't apply: xkcd is a stateless HTTP API.
 
 ## God Class Refactoring
 

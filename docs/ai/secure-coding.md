@@ -65,5 +65,5 @@ The plugin reads a public, unauthenticated API (`https://xkcd.com/.../info.0.jso
 * Treat every JSON field as untrusted: numbers may be missing or out of range, and `title` / `alt` / `transcript` can be long and contain any Unicode, newlines or HTML entities. Validate, truncate and normalize before rendering or logging
 * Only fetch images over `https://` from xkcd's own hosts (`imgs.xkcd.com`), never from an arbitrary URL taken from the payload without checking it
 * Put a timeout on every request, and a maximum size on downloaded images, before decoding
-* Cache responses (a published comic never changes) and poll for new comics rarely, at most every few minutes, rather than on every render or press
+* Cache responses (a published comic never changes) and poll for new comics rarely, never on a render. A press asks only when the user asked for the newest comic (Latest Comic, holding Next). This plugin's background check runs at most once an hour, only on release days and US Eastern afternoons, at a random minute per installation, and stops once it has found the day's comic (`product.md` → "Checking for new comics")
 * Open links in the browser only for `https://xkcd.com/...` URLs the plugin built itself

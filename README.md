@@ -16,7 +16,9 @@ This is an unofficial fan project. It isn't made by or affiliated with xkcd or R
   | **Latest Comic** | The newest comic published |
   | **Random Comic** | A random comic, with a "show another" key |
 
-- **Prev / Next**: tap to step one comic; **hold for 2 seconds** to jump to the first comic (Prev) or the newest (Next). The chevrons dim when there's nowhere further to go.
+- **A New Comic key** (a command action in the same group): the logo with its eyes closed, until a new comic is published. Then it flashes green with "new" for 30 seconds and stays green until you've seen the comic on the keypad. Pressing it opens the new comic (or, with nothing new, the latest) on xkcd.com.
+- **Prev / Next**: tap to step one comic; **hold for 2 seconds** (or until the touch keys' long-press buzz on the Live S / CT) to jump to the first comic (Prev) or the newest (Next). The chevrons dim when there's nowhere further to go. In the Comic Browser, Next turns green while there's a new comic, and a tap on it goes straight to the first one you haven't seen.
+- **Notices new comics**: xkcd publishes on Mondays, Wednesdays and Fridays, so on those days the plugin asks xkcd once an hour, in the US afternoon and evening, whether a new comic is out, and stops once it finds one. It also asks each time it starts.
 - **Open in the browser**: pressing any comic tile opens `https://xkcd.com/{number}/`.
 - **Awkward comics get a title card**: comics that are interactive, very tall or very large, and wouldn't make sense as a six-key thumbnail, show their number and title instead.
 - **Fast**: the comics either side of the current one are fetched in advance, so Prev / Next usually change at once.
@@ -42,13 +44,13 @@ MX Creative Keypad         Loupedeck Live S                  Loupedeck CT
 
 ## Status
 
-The v1 features are built and being tested on hardware. There's no packaged release yet, so for now you install it by building it from source (below). What's left to check before a release is in [`docs/ai/product.md`](docs/ai/product.md), under "Hardware test checklist" and "Still open".
+The v1 features are built and being tested on hardware. There's no published release yet, so for now you install it by building it from source (below), or by packing your own `.lplug4` from a Release build (see [`docs/ai/release-process.md`](docs/ai/release-process.md)). What's left to check before a release is in [`docs/ai/product.md`](docs/ai/product.md), under "Hardware test checklist" and "Still open".
 
 ## Building and running
 
 You'll need:
 
-- Windows (macOS isn't set up yet)
+- Windows. The package manifest is ready for macOS, but the plugin hasn't been built or tried there yet
 - [Logi Options+](https://www.logitech.com/software/logi-options-plus.html), which installs the Logi Plugin Service and its `PluginApi.dll`
 - The .NET 10 SDK
 
@@ -68,7 +70,7 @@ Packaging and release steps are in [`docs/ai/release-process.md`](docs/ai/releas
 
 ## How it works
 
-The plugin reads xkcd's public JSON API (`https://xkcd.com/info.0.json` and `https://xkcd.com/{number}/info.0.json`), downloads the comic image, fits it into a 3:2 area and cuts that into one tile per key. Everything is cached in memory only, and nothing is written to disk apart from the number of the last comic viewed.
+The plugin reads xkcd's public JSON API (`https://xkcd.com/info.0.json` and `https://xkcd.com/{number}/info.0.json`), downloads the comic image, fits it into a 3:2 area and cuts that into one tile per key. Everything is cached in memory only. The only things written to disk are three comic numbers, in the plugin's Logi settings: the last comic viewed, the newest comic shown on the keypad, and the newest comic known to exist (the last two drive the New Comic key).
 
 Every response from xkcd is treated as untrusted. Only `xkcd.com` and `imgs.xkcd.com` URLs are requested or opened, redirects aren't followed, and responses are size-capped. See [`docs/ai/secure-coding.md`](docs/ai/secure-coding.md).
 
@@ -76,9 +78,9 @@ Every response from xkcd is treated as untrusted. Only `xkcd.com` and `imgs.xkcd
 
 ```text
 src/xkcdviewerPlugin/          The plugin (Logi Actions SDK, C# / .NET 10)
-  Actions/                     The folder actions: Comic Browser, Latest Comic, Random Comic
-  Services/                    The xkcd client, the comic service and its caches
-  Helpers/, Models/            Layout, fitting, title cards, key rendering
+  Actions/                     The folder actions (Comic Browser, Latest Comic, Random Comic) and the New Comic key
+  Services/                    The xkcd client, the comic service and its caches, the new-comic check
+  Helpers/, Models/            Layout, fitting, title cards, key rendering, the release-day schedule
   package/metadata/            The plugin manifest and package icon
 tests/xkcdviewerPlugin.Tests/  xUnit tests, with real API responses as fixtures
 art/                           The logo (drawn on the keys from SVG), the eyes-only package icon and the script that makes it

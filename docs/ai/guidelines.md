@@ -178,19 +178,20 @@ Check current state before operations that need a specific state, e.g. ignore a 
 
 ### Constructor Shape
 
-Pass display name, description and group to the base constructor. Keep the constructor to cheap wiring with no I/O:
+Pass display name, description and group to the base constructor. Every action goes in the **"xkcd viewer"** group (a folder sets `GroupName` instead; see `product.md` → "Action group"). Keep the constructor to cheap wiring with no I/O:
 
 ```csharp
-public class LatestComicCommand : PluginDynamicCommand
+public class NewComicCommand : PluginDynamicCommand
 {
-    public LatestComicCommand()
-        : base(displayName: "Latest Comic", description: "Shows the latest xkcd", groupName: "Comics")
+    public NewComicCommand()
+        : base("New Comic", "Shows when a new xkcd comic is out; press to read it", "xkcd viewer", DeviceType.All)
     {
+        this.IsWidget = true;
     }
 }
 ```
 
-When commands need events from the plugin (see "Notification Interface Pattern" below), they also self-register: `xkcdviewerPlugin.Instance?.RegisterCommand(this);`. Add a static `Instance` to a command only when another class actually needs to call it.
+Subscribe to plugin or service events in `OnLoad` (a folder: `Activate`) and unsubscribe in `OnUnload` (a folder: `Deactivate` and `Unload`), not in the constructor: the plugin's services don't exist until `Load`. See `structure.md` pattern 3. Add a static `Instance` to a command only when another class actually needs to call it.
 
 ### Null Guard in RunCommand
 
@@ -215,12 +216,12 @@ protected override void RunCommand(String actionParameter)
 ```csharp
 protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
 {
-    var comic = xkcdviewerPlugin.Instance?.CurrentComic;
-    return comic == null
-        ? ButtonTextRenderer.RenderText("xkcd\nloading…", imageSize)
-        : ButtonTextRenderer.RenderText(comic.Title, imageSize);
+    var green = xkcdviewerPlugin.Instance?.NewComics?.Look == NewComicLook.Green;
+    return green ? KeyRenderer.Logo(imageSize, "new", green: true) : KeyRenderer.Logo(imageSize, eyesClosed: true);
 }
 ```
+
+`ComicFolder` does the same with `ComicService.View`: a `ComicView` snapshot (comic, Loading / Ready / Failed, image bytes, whether Prev / Next can move) that `KeyContent` turns into what each key shows.
 
 ### Targeted Refresh
 
@@ -242,10 +243,17 @@ See `image-rendering-simplified.md`: small static helpers, not a factory/store a
 
 ### Colour Conventions
 
-- Green (`BitmapColor.Green`): active, healthy
-- Red (`BitmapColor.Red`): error
-- Yellow (`new BitmapColor(255, 200, 0)`): warning, loading
-- Grey (`new BitmapColor(128, 128, 128)`): idle, offline
+The colours are private fields of `KeyRenderer`:
+
+- Black on white (paper and ink): the logo and title cards, like xkcd itself
+- Black: letterboxing, padding keys, and the background of the chevrons and status tiles
+- Green (`#15B01A`, xkcd's colour survey "green"): the new-comic signal
+- Yellow (`new BitmapColor(255, 200, 0)`): loading
+- Grey (`new BitmapColor(128, 128, 128)`): offline
+- Dark grey (`new BitmapColor(70, 70, 70)`): a dimmed chevron, with nowhere to go
+- xkcd's blue-grey: the "latest" / "random" banners (`LogoBanner`)
+
+There's no error red: a failure shows as "offline" or the title card.
 
 Colour is never the only signal: pair it with text or an icon shape so colour-blind users get the same information.
 
@@ -253,7 +261,7 @@ Colour is never the only signal: pair it with text or an icon shape so colour-bl
 
 ## Notification Interface Pattern
 
-Introduce this when more than one command must react to the same plugin event. Commands declare which events they care about by implementing interfaces:
+**Not used yet.** Today the plugin and `ComicService` raise plain C# events that the two or three interested actions subscribe to (see `structure.md` pattern 3), which is enough. Move to this pattern only if many actions come to need many events. Commands then declare which events they care about by implementing interfaces:
 
 ```csharp
 public interface IComicAwareCommand
@@ -261,7 +269,7 @@ public interface IComicAwareCommand
     void OnComicChanged();
 }
 
-public class LatestComicCommand : PluginDynamicCommand, IComicAwareCommand
+public class ComicNumberCommand : PluginDynamicCommand, IComicAwareCommand
 {
     public void OnComicChanged() => this.ActionImageChanged();
 }
@@ -291,7 +299,7 @@ public class ComicServiceTests
     {
         this._mockClient = new Mock<IxkcdClient>();
         this._mockLog = new Mock<IPluginLog>();
-        this._service = new ComicService(this._mockClient.Object, this._mockLog.Object);
+        this._service = new ComicService(this._mockClient.Object, this._mockLog.Object, startNum: null);
     }
 }
 ```
@@ -346,10 +354,10 @@ Centralise delays, timeouts, refresh intervals and cache lifetimes in one static
 
 1. Create the class in `src/xkcdviewerPlugin/Actions/`
 2. Inherit from the right SDK base (see `sdk-quick-reference.md`)
-3. Pass display name, description and group to the base constructor
+3. Pass display name, description and the "xkcd viewer" group to the base constructor
 4. Guard `actionParameter` in `RunCommand` if the command is parameterized
 5. Render from already-loaded state only
 6. Pull any pure logic out into a tested helper (`structure.md` pattern 5)
-7. Embed icons under `src/xkcdviewerPlugin/Resources/Icons/` as `<EmbeddedResource>` in the `.csproj`
-8. Add a constructor smoke test
+7. Draw its image with `KeyRenderer`; embed any new asset under `src/xkcdviewerPlugin/Resources/` as an `<EmbeddedResource>` in the `.csproj` (see `image-rendering-simplified.md`)
+8. Add a constructor smoke test (`tests/xkcdviewerPlugin.Tests/Actions/`)
 9. Update `structure.md`'s layout tree

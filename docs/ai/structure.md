@@ -99,8 +99,8 @@ Group commands by SDK base class: `PluginDynamicCommand` (buttons), `PluginDynam
 
 The current files are listed in the layout tree above. Two kinds live here:
 
-- **Pure helpers** (`ComicFit`, `ComicNumbers`, `DeviceGrid`, `FolderLayout`, `KeyContent`, `KeyHold`, `LruCache`, `TitleCardLayout`): no SDK calls in their logic, fully tested.
-- **SDK- or OS-bound helpers** (`KeyRenderer`, `PluginLog`, `PluginResources`, `BrowserLauncher`): kept thin, with every decision pushed into a pure helper. All drawing goes through `KeyRenderer` (see `image-rendering-simplified.md`), and all delays and timeouts are in `PluginTimings`.
+- **Pure helpers** (`Chevron`, `ComicFit`, `ComicNumbers`, `DeviceGrid`, `FolderLayout`, `KeyContent`, `KeyHold`, `LogoBanner`, `LruCache`, `ReleaseSchedule`, `TitleCardLayout`, plus the `PluginTimings` constants): no SDK calls in their logic, fully tested. `Chevron` and `LogoBanner` only build SVG text; `KeyRenderer` draws it.
+- **SDK- or OS-bound helpers** (`KeyRenderer`, `PluginLog`, `PluginLogAdapter`, `PluginResources`, `BrowserLauncher`): kept thin, with every decision pushed into a pure helper. All drawing goes through `KeyRenderer` (see `image-rendering-simplified.md`), and all delays and timeouts are in `PluginTimings`.
 
 ## Architectural Patterns
 
@@ -119,17 +119,18 @@ Dependencies point one way: Actions → Plugin → Services. Services never refe
 
 ### 2. Singleton Instance
 
-`xkcdviewerPlugin.Instance` is set in the plugin's constructor; the services (`Comics`, `ServiceLog`) are created in `Load()`. Actions reach them through `xkcdviewerPlugin.Instance?.Comics`. Always null-propagate: actions can be constructed before the plugin is fully initialized.
+`xkcdviewerPlugin.Instance` is set in the plugin's constructor. `ServiceLog` exists from construction; the services (`Comics`, a `ComicService`, and `NewComics`, a `NewComicTracker`) and the `NewComicPoller` are created in `Load()` and stopped in `Unload()`. Actions reach them through `xkcdviewerPlugin.Instance?.Comics` / `?.NewComics`. Always null-propagate: actions can be constructed before `Load` runs.
 
-### 3. Command Registry / Self-Registration (introduce when needed)
+The plugin also saves the three comic numbers that must survive a restart (`LastViewedComic`, `NewestShownComic`, `LatestKnownComic`) in its plugin settings, locally only, when the services report a change.
 
-Once more than one command must react to the same event (e.g. "new comic available"), commands register themselves in their constructor and a coordinator dispatches by interface, with per-command exception isolation:
+### 3. Telling Actions About Changes: Plain Events
 
-```csharp
-this.NotifyEach<IComicAwareCommand>(nameof(IComicAwareCommand.OnComicChanged), c => c.OnComicChanged(comic));
-```
+Actions learn about changes from ordinary C# events. `NewComicCommand` subscribes in `OnLoad` and unsubscribes in `OnUnload`; `ComicFolder` subscribes only while it's open (`Activate`) and unsubscribes in `Deactivate` and `Unload`:
 
-Add notification interfaces as real needs appear; don't design the hierarchy up front. See `refactoring-patterns.md` and `guidelines.md` → "Notification Interface Pattern".
+- `ComicService.Changed`: the comic showing, or its state, changed. `ComicFolder` redraws its keys.
+- `xkcdviewerPlugin.NewComicLookChanged`: the new-comic signal changed (something became unread or read, or the 0.5 s flash moved on). `NewComicCommand` and the Comic Browser (for its Next chevron) redraw. It lives on the plugin, not the tracker, because it must exist before `Load` creates the tracker; the plugin catches and logs a handler that throws, so it never reaches the timer or the service.
+
+Two subscribers per event don't need more than that. If many actions come to need many events, consider a command registry with notification interfaces (`refactoring-patterns.md`, `guidelines.md` → "Notification Interface Pattern"), but don't build it ahead of the need.
 
 ### 4. Async Result → Synchronous Render
 
@@ -143,15 +144,17 @@ The `Actions/` exemption covers SDK glue (`GetCommandImage`, `RunCommand`, `AddP
 
 ```text
 bin/
-├── Debug/bin/        ← DLL + dependencies (hot-reload via .link file)
+├── Debug/bin/        ← xkcdviewerPlugin.dll, .deps.json, .pdb only (hot-reload via .link file)
 ├── Debug/metadata/   ← copied from src/xkcdviewerPlugin/package/
 ├── Release/bin/
 └── Release/metadata/
 src/xkcdviewerPlugin/obj/   ← intermediate files (each project keeps its own obj/)
 ```
 
+`PluginApi.dll` and the libraries it depends on aren't copied: Logi Plugin Service supplies them at runtime (`Private=false` in `Directory.Build.props`, for the plugin project only; the tests run outside the service and get their own copy).
+
 Post-build writes `%LocalAppData%\Logi\LogiPluginService\Plugins\xkcdviewerPlugin.link` (pointing at `bin/<Configuration>/`) and triggers `loupedeck:plugin/xkcdviewer/reload`. `dotnet clean` deletes the link.
 
 ## Package Format
 
-`.lplug4`: created with `LogiPluginTool pack`, checked with `LogiPluginTool verify`. The manifest is `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`.
+`.lplug4`: created with `LogiPluginTool pack`, checked with `LogiPluginTool verify` (about 64 KB; see `release-process.md`). The manifest is `src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml`.
