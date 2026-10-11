@@ -11,5 +11,8 @@ namespace Loupedeck.xkcdviewerPlugin
         // After a comic (or the latest comic) fails to load, don't ask xkcd for it again until this has passed,
         // so pressing Prev / Next back and forth while offline doesn't send a request each time.
         public static readonly TimeSpan FailedLoadRetryDelay = TimeSpan.FromSeconds(30);
+
+        // How long Prev / Next must be held to jump to the first / newest comic instead of stepping (owner's choice).
+        public static readonly TimeSpan HoldToJump = TimeSpan.FromSeconds(2);
     }
 }

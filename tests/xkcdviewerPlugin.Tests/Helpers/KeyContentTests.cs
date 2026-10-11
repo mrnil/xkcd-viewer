@@ -31,11 +31,11 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
         }
 
         [Fact]
-        public void For_ArrowsInTheRandomFolder_AreBothShowAnother()
+        public void For_ArrowsInTheRandomFolder_AreOneShowAnotherKeyInPlaceOfNext()
         {
             var view = _ready with { CanGoPrevious = false, CanGoNext = false };
 
-            Assert.Equal(new KeyContent(KeyContentKind.ShowAnother), KeyContent.For(FolderSlot.Previous, view, ComicFolderMode.Random));
+            Assert.Equal(new KeyContent(KeyContentKind.Blank), KeyContent.For(FolderSlot.Previous, view, ComicFolderMode.Random));
             Assert.Equal(new KeyContent(KeyContentKind.ShowAnother), KeyContent.For(FolderSlot.Next, view, ComicFolderMode.Random));
         }
 

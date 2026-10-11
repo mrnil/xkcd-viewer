@@ -4,10 +4,15 @@ namespace Loupedeck.xkcdviewerPlugin
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     // The Comic Browser folder: Prev / Next on the top row and the current comic split across the 3x2 block below.
     // Laid out per device (DeviceGrid, FolderLayout); what each key shows comes from KeyContent. See docs/ai/product.md.
     // LatestComicFolder and RandomComicFolder are this folder in another ComicFolderMode.
+    //
+    // Tapping Prev / Next steps one comic; holding one for PluginTimings.HoldToJump jumps to the first / newest comic
+    // instead (KeyHold tells the two apart). That needs the button's press and release, so Prev / Next are handled
+    // in ProcessButtonEvent2; RunCommand still steps for a key that never sends those events.
     //
     // Users place this class (and its subclasses) by name, so renaming it or its namespace orphans their buttons.
     // The other folders subclass it, rather than sharing an abstract base, because the SDK docs don't say whether the
@@ -22,6 +27,11 @@ namespace Loupedeck.xkcdviewerPlugin
             new LruCache<(Int32 Num, Int32 TileWidth, Int32 TileHeight), BitmapImage>(ComicService.MaxCachedImages, area => area?.Dispose());
 
         private readonly ConcurrentDictionary<String, Byte> _actionNames = new ConcurrentDictionary<String, Byte>();
+
+        // Prev / Next keys that send press and release events. RunCommand leaves those to ProcessButtonEvent2, so a
+        // press can't step twice if the SDK calls both.
+        private readonly ConcurrentDictionary<String, Byte> _keysWithButtonEvents = new ConcurrentDictionary<String, Byte>();
+        private readonly KeyHold _hold = new KeyHold();
         private readonly ComicFolderMode _mode;
         private readonly String _keyLabel;
         private ComicService _subscribedTo;
@@ -90,6 +100,7 @@ namespace Loupedeck.xkcdviewerPlugin
         public override Boolean Deactivate()
         {
             this.Unsubscribe();
+            this._hold.Clear();
             return base.Deactivate();
         }
 
@@ -114,19 +125,48 @@ namespace Loupedeck.xkcdviewerPlugin
 
             switch (slot.Kind)
             {
-                case FolderSlotKind.Previous or FolderSlotKind.Next when this._mode == ComicFolderMode.Random:
+                case FolderSlotKind.Next when this._mode == ComicFolderMode.Random:
                     _ = service.ShowRandomAsync();
                     break;
-                case FolderSlotKind.Previous:
-                    _ = service.PreviousAsync();
-                    break;
-                case FolderSlotKind.Next:
-                    _ = service.NextAsync();
+                case FolderSlotKind.Previous or FolderSlotKind.Next
+                    when this._mode != ComicFolderMode.Random && !this._keysWithButtonEvents.ContainsKey(actionParameter):
+                    Step(service, slot.Kind);
                     break;
                 case FolderSlotKind.ComicTile when service.View.Num is Int32 num:
                     BrowserLauncher.OpenComicPage(xkcdUrls.Page(num), xkcdviewerPlugin.Instance.ServiceLog);
                     break;
             }
+        }
+
+        // Prev / Next only, outside the Random folder; every other key returns false and gets the SDK's usual
+        // handling (RunCommand). Returning true marks the event as handled.
+        public override Boolean ProcessButtonEvent2(String actionParameter, DeviceButtonEvent2 buttonEvent)
+        {
+            if (this._mode == ComicFolderMode.Random
+                || buttonEvent == null
+                || !FolderSlot.TryParse(actionParameter, out var slot)
+                || slot.Kind is not (FolderSlotKind.Previous or FolderSlotKind.Next))
+            {
+                return false;
+            }
+
+            this._keysWithButtonEvents[actionParameter] = 0;
+            switch (buttonEvent.EventType)
+            {
+                case DeviceButtonEventType.Press:
+                    _ = this.JumpIfHeldAsync(actionParameter, this._hold.Press(actionParameter), slot.Kind);
+                    break;
+                case DeviceButtonEventType.Release when this._hold.Release(actionParameter):
+                    var service = xkcdviewerPlugin.Instance?.Comics;
+                    if (service != null)
+                    {
+                        Step(service, slot.Kind);
+                    }
+
+                    break;
+            }
+
+            return true;
         }
 
         public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
@@ -183,6 +223,29 @@ namespace Loupedeck.xkcdviewerPlugin
 
             var text = TitleCardLayout.Layout(view.Comic.Num, view.Comic.Title)[tileIndex];
             return KeyRenderer.TitleCardTile(text, tileIndex, imageSize);
+        }
+
+        private static void Step(ComicService service, FolderSlotKind kind) =>
+            _ = kind == FolderSlotKind.Next ? service.NextAsync() : service.PreviousAsync();
+
+        // Fires while the key is still down, so the jump shows before the user lets go.
+        private async Task JumpIfHeldAsync(String actionParameter, Int64 pressId, FolderSlotKind kind)
+        {
+            try
+            {
+                await Task.Delay(PluginTimings.HoldToJump).ConfigureAwait(false);
+                var service = xkcdviewerPlugin.Instance?.Comics;
+                if (service == null || !this._hold.TryHold(actionParameter, pressId))
+                {
+                    return;
+                }
+
+                await (kind == FolderSlotKind.Next ? service.ShowLatestAsync() : service.ShowFirstAsync()).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error(ex, $"Failed to handle holding '{actionParameter}'");
+            }
         }
 
         // All keys at once: the hardware spike showed they update together, with no visible tearing.

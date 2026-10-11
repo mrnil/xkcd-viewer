@@ -9,12 +9,14 @@ namespace Loupedeck.xkcdviewerPlugin
     // changes, the PreloadDistance comics either side of it are fetched in the background, so Prev / Next are usually
     // instant, even when pressed twice quickly.
     //
-    // The latest comic is fetched once per session: it's where Next stops, it's the starting comic when there's
-    // no last-viewed one, and it bounds the random picks. It isn't checked again for newer comics.
+    // The latest comic is where Next stops, the starting comic when there's no last-viewed one, and the bound for
+    // random picks. Browsing fetches it once per session; ShowLatestAsync asks xkcd again every time, so it always
+    // lands on the newest comic published.
     //
-    // ShowLatestAsync and ShowRandomAsync jump to a comic chosen from the latest one. Until the latest is known they
-    // show no comic (loading, or offline if it fails) rather than an unrelated one. Showing a random comic preloads
-    // the next random pick instead of the neighbours, so "show another" is usually instant too.
+    // ShowLatestAsync and ShowRandomAsync jump to a comic chosen from the latest one. Until that answer arrives they
+    // show no comic (loading, or offline if it fails) rather than an unrelated one; if asking again fails, the latest
+    // already known will do. Showing a random comic preloads the next random pick instead of the neighbours, so
+    // "show another" is usually instant too. Every jump becomes the current comic, which is also the last viewed.
     //
     // Thread-safe. SDK callbacks can call in from any thread; Changed is raised on a background thread.
     public sealed class ComicService
@@ -74,6 +76,7 @@ namespace Loupedeck.xkcdviewerPlugin
         private enum Jump
         {
             None,
+            First,
             Latest,
             Random,
         }
@@ -114,8 +117,12 @@ namespace Loupedeck.xkcdviewerPlugin
             return Task.WhenAll(this.EnsureLatestAsync(), this.LoadCurrentAndNeighboursAsync());
         }
 
-        // Shows the latest comic, with Prev / Next from there. Its neighbours are preloaded as usual.
+        // Shows the newest comic published (asking xkcd again first), with Prev / Next from there. Its neighbours are
+        // preloaded as usual.
         public Task ShowLatestAsync() => this.JumpAsync(Jump.Latest);
+
+        // Shows comic 1, with Prev / Next from there.
+        public Task ShowFirstAsync() => this.JumpAsync(Jump.First);
 
         // Shows a random comic other than the current one, and preloads the next random pick.
         public Task ShowRandomAsync() => this.JumpAsync(Jump.Random);
@@ -143,15 +150,31 @@ namespace Loupedeck.xkcdviewerPlugin
             lock (this._lock)
             {
                 this._showingRandom = jump == Jump.Random;
-                if (this._latestNum.HasValue)
+
+                // Comic 1 needs nothing first. A random pick needs some latest comic to bound it; the latest jump
+                // needs a fresh one.
+                var waitForLatest = false;
+                if (jump == Jump.Latest || (jump == Jump.Random && !this._latestNum.HasValue))
                 {
+                    latestLoad = this.EnsureLatestAsyncLocked(refresh: true);
+                    waitForLatest = this._latestLoad != null;
+                }
+
+                if (waitForLatest)
+                {
+                    this._waitingToJump = jump;
+                }
+                else if (jump == Jump.First || this._latestNum.HasValue)
+                {
+                    // Also the latest jump within the failure wait: the latest already known is the best answer.
                     this._waitingToJump = Jump.None;
                     this.JumpLocked(jump);
+                    latestLoad = null;
                 }
                 else
                 {
+                    // Failed recently and nothing known: offline until asked again after the wait.
                     this._waitingToJump = jump;
-                    latestLoad = this.EnsureLatestAsyncLocked();
                 }
             }
 
@@ -163,6 +186,12 @@ namespace Loupedeck.xkcdviewerPlugin
 
         private void JumpLocked(Jump jump)
         {
+            if (jump == Jump.First)
+            {
+                this._currentNum = ComicNumbers.First;
+                return;
+            }
+
             var latest = this._latestNum.Value;
             if (jump == Jump.Latest)
             {
@@ -348,9 +377,10 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
-        private Task EnsureLatestAsyncLocked()
+        // refresh asks xkcd again even when a latest comic is already known.
+        private Task EnsureLatestAsyncLocked(Boolean refresh = false)
         {
-            if (this._latestNum.HasValue)
+            if (this._latestNum.HasValue && !refresh)
             {
                 return Task.CompletedTask;
             }
@@ -381,17 +411,28 @@ namespace Loupedeck.xkcdviewerPlugin
                 this._log.Error($"Failed to load the latest comic: {ex.Message}");
             }
 
+            var landed = latest != null;
             lock (this._lock)
             {
                 this._latestLoad = null;
                 if (latest == null)
                 {
                     this._latestFailedUntil = this._timeProvider.GetUtcNow() + this._retryDelay;
+
+                    // Asking again failed, but an earlier answer is still a comic to show.
+                    if (this._waitingToJump != Jump.None && this._latestNum.HasValue)
+                    {
+                        this.JumpLocked(this._waitingToJump);
+                        this._waitingToJump = Jump.None;
+                        landed = true;
+                    }
                 }
                 else
                 {
                     this._latestFailedUntil = null;
-                    this._latestNum = latest.Num;
+
+                    // xkcd's numbers only grow; never let a stale answer pull Next's limit back.
+                    this._latestNum = Math.Max(this._latestNum ?? latest.Num, latest.Num);
                     this._comics[latest.Num] = latest;
 
                     if (this._waitingToJump != Jump.None)
@@ -410,7 +451,7 @@ namespace Loupedeck.xkcdviewerPlugin
 
             this.RaiseChanged();
 
-            if (latest != null)
+            if (landed)
             {
                 await this.LoadCurrentAndNeighboursAsync();
             }

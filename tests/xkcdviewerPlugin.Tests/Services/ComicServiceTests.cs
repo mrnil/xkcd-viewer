@@ -510,6 +510,116 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
         }
 
         [Fact]
+        public async Task ShowLatestAsync_ComicPublishedSinceTheSessionStarted_ShowsTheNewOne()
+        {
+            this._mockClient.SetupSequence(x => x.GetLatestAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Comic(Latest))
+                .ReturnsAsync(Comic(Latest + 1));
+            var service = this.CreateService(353);
+            await service.StartAsync();
+
+            await service.ShowLatestAsync();
+
+            Assert.Equal(Latest + 1, service.View.Num);
+            Assert.False(service.View.CanGoNext);
+            this.VerifyImageFetched(Latest + 1, Times.Once());
+        }
+
+        [Fact]
+        public async Task NextAsync_AfterShowLatestFoundANewComic_StopsAtTheNewOne()
+        {
+            this._mockClient.SetupSequence(x => x.GetLatestAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Comic(Latest))
+                .ReturnsAsync(Comic(Latest + 1));
+            var service = this.CreateService(Latest);
+            await service.StartAsync();
+            await service.ShowLatestAsync();
+            await service.PreviousAsync();
+
+            await service.NextAsync();
+            await service.NextAsync();
+
+            Assert.Equal(Latest + 1, service.View.Num);
+        }
+
+        [Fact]
+        public async Task ShowLatestAsync_AskingAgainFails_ShowsTheLatestAlreadyKnown()
+        {
+            this._mockClient.SetupSequence(x => x.GetLatestAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Comic(Latest))
+                .ReturnsAsync((xkcdComic)null);
+            var service = this.CreateService(353);
+            await service.StartAsync();
+
+            await service.ShowLatestAsync();
+
+            Assert.Equal(Latest, service.View.Num);
+            Assert.Equal(ComicViewState.Ready, service.View.State);
+        }
+
+        [Fact]
+        public async Task ShowLatestAsync_SoonAfterAskingFailed_ShowsTheLatestAlreadyKnownWithoutAskingAgain()
+        {
+            this._mockClient.SetupSequence(x => x.GetLatestAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Comic(Latest))
+                .ReturnsAsync((xkcdComic)null);
+            var service = this.CreateService(353);
+            await service.StartAsync();
+            await service.ShowLatestAsync();
+            await service.PreviousAsync();
+
+            await service.ShowLatestAsync();
+
+            Assert.Equal(Latest, service.View.Num);
+            this._mockClient.Verify(x => x.GetLatestAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task ShowLatestAsync_AnOlderAnswer_DoesNotPullTheLatestBack()
+        {
+            this._mockClient.SetupSequence(x => x.GetLatestAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Comic(Latest))
+                .ReturnsAsync(Comic(Latest - 10));
+            var service = this.CreateService(353);
+            await service.StartAsync();
+
+            await service.ShowLatestAsync();
+
+            Assert.Equal(Latest, service.View.Num);
+        }
+
+        [Fact]
+        public async Task ShowFirstAsync_ShowsComicOneWithoutWaitingForTheLatest()
+        {
+            var release = new TaskCompletionSource<xkcdComic>(TaskCreationOptions.RunContinuationsAsynchronously);
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).Returns(release.Task);
+            var service = this.CreateService(353);
+
+            await service.ShowFirstAsync();
+
+            var view = service.View;
+            Assert.Equal(ComicNumbers.First, view.Num);
+            Assert.Equal(ComicViewState.Ready, view.State);
+            Assert.False(view.CanGoPrevious);
+            this.VerifyComicFetched(ComicNumbers.First, Times.Once());
+        }
+
+        [Fact]
+        public async Task ShowFirstAsync_WhileAJumpWaitsForTheLatest_WinsOverIt()
+        {
+            var release = new TaskCompletionSource<xkcdComic>(TaskCreationOptions.RunContinuationsAsynchronously);
+            this._mockClient.Setup(x => x.GetLatestAsync(It.IsAny<CancellationToken>())).Returns(release.Task);
+            var service = this.CreateService(353);
+            var showingLatest = service.ShowLatestAsync();
+
+            await service.ShowFirstAsync();
+            release.SetResult(Comic(Latest));
+            await showingLatest;
+
+            Assert.Equal(ComicNumbers.First, service.View.Num);
+        }
+
+        [Fact]
         public async Task ShowRandomAsync_ShowsTheDrawnComicAndPreloadsOnlyTheNextDraw()
         {
             var service = this.CreateService(null, Draws(100, 200));

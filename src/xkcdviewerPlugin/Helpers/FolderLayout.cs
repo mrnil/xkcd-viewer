@@ -13,7 +13,7 @@ namespace Loupedeck.xkcdviewerPlugin
         // The latest comic. Prev / Next as in Browse.
         Latest,
 
-        // A random comic. Both top-row keys show another random comic.
+        // A random comic. The Next key shows another random comic; the Prev key is blank.
         Random,
     }
 

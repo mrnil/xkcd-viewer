@@ -9,7 +9,7 @@ xkcdviewerPlugin/
 │       ├── Actions/                  # Loupedeck SDK command/adjustment/folder classes
 │       │   ├── ComicFolder.cs        # The Comic Browser folder: layout, key images, presses. Users place it by this name
 │       │   ├── LatestComicFolder.cs  # ComicFolder opened at the latest comic
-│       │   └── RandomComicFolder.cs  # ComicFolder opened at a random comic; top-row keys show another
+│       │   └── RandomComicFolder.cs  # ComicFolder opened at a random comic; one "show another" key
 │       ├── Helpers/
 │       │   ├── BrowserLauncher.cs    # Opens a comic page (only https://xkcd.com/{num}/) in the default browser
 │       │   ├── ComicFit.cs           # Comic image → letterboxed picture or title card, and where it goes
@@ -17,12 +17,13 @@ xkcdviewerPlugin/
 │       │   ├── DeviceGrid.cs         # DeviceType → grid columns, as observed on hardware; 3 for anything else
 │       │   ├── FolderLayout.cs       # The folder's keys (Prev, Next, padding, comic tiles), their action names, ComicFolderMode
 │       │   ├── KeyContent.cs         # What each key shows, decided from the ComicView
+│       │   ├── KeyHold.cs            # Tells a tap on Prev / Next from a 2 s hold (pure state; the folder runs the delay)
 │       │   ├── KeyRenderer.cs        # Draws keys with BitmapBuilder (SDK-bound, thin; decisions live in tested helpers)
 │       │   ├── LruCache.cs           # Generic count-limited LRU; the folder caches comic areas in it
 │       │   ├── PluginLog.cs          # SDK-provided static logging facade
 │       │   ├── PluginLogAdapter.cs   # IPluginLog over PluginLog, for injecting into services
 │       │   ├── PluginResources.cs    # Embedded resource access helper (filename-only lookup)
-│       │   ├── PluginTimings.cs      # Timeouts and intervals: HTTP timeout, failed-load retry delay
+│       │   ├── PluginTimings.cs      # Timeouts and intervals: HTTP timeout, failed-load retry delay, hold-to-jump
 │       │   └── TitleCardLayout.cs    # Splits "#num" and the title across the six tiles, no word crossing a seam
 │       ├── Models/
 │       │   ├── ComicView.cs          # What the folder draws: current comic, Loading/Ready/Failed, image, Prev/Next possible
