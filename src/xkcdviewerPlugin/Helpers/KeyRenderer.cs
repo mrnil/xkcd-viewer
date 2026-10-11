@@ -25,17 +25,27 @@ namespace Loupedeck.xkcdviewerPlugin
 
         // The key that opens a folder: the xkcdviewer logo, pre-scaled by art/make-icons.ps1 to the two key sizes seen on
         // hardware so it's never resampled on the device at those sizes. Any other size scales the nearest one. A label
-        // ("latest", "random") goes in the blank strip under the drawing, so the three folder keys can be told apart.
+        // ("latest", "random") goes in a strip along the bottom, so the three folder keys can be told apart; the logo
+        // fills the key, so it's shrunk into the space above the strip.
         public static BitmapImage Logo(PluginImageSize imageSize, String label = null)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
                 builder.Clear(_paper);
+                var labelTop = builder.Height * 4 / 5;
                 try
                 {
                     using (var logo = PluginResources.ReadImage(builder.Width <= 80 ? "FolderButton80.png" : "FolderButton116.png"))
                     {
-                        builder.DrawImage(logo, 0, 0, builder.Width, builder.Height);
+                        if (String.IsNullOrEmpty(label))
+                        {
+                            builder.DrawImage(logo, 0, 0, builder.Width, builder.Height);
+                        }
+                        else
+                        {
+                            var size = Math.Min(builder.Width, labelTop);
+                            builder.DrawImage(logo, (builder.Width - size) / 2, 0, size, size);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -46,8 +56,7 @@ namespace Loupedeck.xkcdviewerPlugin
 
                 if (!String.IsNullOrEmpty(label))
                 {
-                    var top = builder.Height * 4 / 5;
-                    builder.DrawText(label, 0, top, builder.Width, builder.Height - top, _ink, builder.Height / 7);
+                    builder.DrawText(label, 0, labelTop, builder.Width, builder.Height - labelTop, _ink, builder.Height / 7);
                 }
 
                 return builder.ToImage();

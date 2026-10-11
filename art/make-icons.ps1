@@ -1,10 +1,10 @@
-# Regenerates every icon from art/xkcdviewer-logo.jpg (the owner's own pencil drawing). Run from the repo root on
-# Windows (PowerShell 7):
+# Regenerates every icon from art/xkcdviewerlogo.svg (the owner's own logo: eyes over a hand-lettered "xkcd"). Run
+# from the repo root on Windows (PowerShell 7):
 #   pwsh art/make-icons.ps1
 #
-# The drawing is pencil on paper. The paper's faint texture would show as a grey box against a white key, so the
-# paper is made transparent and the pencil turned into black ink of matching strength, then the logo is put on
-# clean white "paper" again in every output (line art alone vanishes on Options+'s black background).
+# System.Drawing can't read SVG, so headless Microsoft Edge (or Chrome) rasterises it onto white first. The white is
+# then made transparent and the strokes turned into solid black ink, keeping their anti-aliased edges, and the logo is
+# put on clean white "paper" again in every output (line art alone vanishes on Options+'s black background).
 #
 #   src/xkcdviewerPlugin/package/metadata/Icon256x256.png
 #       Package icon. SDK rules: 256x256 PNG, graphic within the centred 192x192, transparent around it, legible on
@@ -18,15 +18,40 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path -Parent $PSScriptRoot
-$source = Join-Path $PSScriptRoot 'xkcdviewer-logo.jpg'
+$source = Join-Path $PSScriptRoot 'xkcdviewerlogo.svg'
 
-# Pencil darkness (0 = paper white, 255 = black) below this is paper texture; at or above $SolidInk it's full ink.
-# Between, the ink fades in, which keeps the pencil's soft edges.
+# Darkness (0 = white, 255 = black) below this is background; at or above $SolidInk it's full ink. Between, the ink
+# fades in, which keeps the strokes' anti-aliased edges.
 $PaperThreshold = 40
 $SolidInk = 150
 
 # Working resolution for the ink conversion: plenty for a 256 px icon, and a quarter of the pixels to process.
 $WorkSize = 512
+
+# Resolution the SVG is rasterised at before it's scaled down to $WorkSize.
+$RenderSize = 1024
+
+function ConvertFrom-Svg([String] $svgPath, [String] $pngPath)
+{
+    $browser = @(
+        "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe",
+        "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
+        "$env:ProgramFiles\Google\Chrome\Application\chrome.exe"
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $browser)
+    {
+        throw 'Microsoft Edge or Google Chrome is needed to rasterise the SVG'
+    }
+
+    $uri = [System.Uri]::new((Resolve-Path $svgPath).Path).AbsoluteUri
+    # The browser is a GUI program, so the call operator wouldn't wait for it to finish.
+    $arguments = @('--headless', '--disable-gpu', '--hide-scrollbars', "--window-size=$RenderSize,$RenderSize", "--screenshot=`"$pngPath`"", $uri)
+    Start-Process -FilePath $browser -ArgumentList $arguments -Wait -WindowStyle Hidden
+    if (-not (Test-Path $pngPath))
+    {
+        throw "$browser didn't write $pngPath"
+    }
+}
 
 function ConvertTo-Ink([String] $path)
 {
@@ -127,7 +152,17 @@ function New-Icon($ink, [String] $path, [Int32] $size, [System.Drawing.Rectangle
     }
 }
 
-$ink = ConvertTo-Ink $source
+$rendered = Join-Path ([System.IO.Path]::GetTempPath()) "xkcdviewer-logo-$PID.png"
+ConvertFrom-Svg $source $rendered
+try
+{
+    $ink = ConvertTo-Ink $rendered
+}
+finally
+{
+    Remove-Item $rendered -ErrorAction SilentlyContinue
+}
+
 try
 {
     New-Icon $ink (Join-Path $root 'src/xkcdviewerPlugin/package/metadata/Icon256x256.png') 256 ([System.Drawing.Rectangle]::new(32, 32, 192, 192)) 28 10

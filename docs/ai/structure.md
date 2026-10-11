@@ -50,8 +50,9 @@ xkcdviewerPlugin/
 │       ├── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
 │       └── TestWait.cs               # Bounded wait for a background condition, instead of sleeping
 ├── art/
-│   ├── xkcdviewer-logo.jpg           # Source logo: the owner's own pencil drawing (1024x1024 JPG, on paper)
-│   └── make-icons.ps1                # Regenerates the package icon and folder key images from it; edit this, not the PNGs
+│   ├── xkcdviewerlogo.svg            # Source logo: the owner's own (eyes over a hand-lettered "xkcd")
+│   ├── xkcdviewer-logo.jpg           # The earlier logo, a pencil drawing; no longer used
+│   └── make-icons.ps1                # Regenerates the package icon and folder key images from the SVG (needs Edge or Chrome); edit this, not the PNGs
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
