@@ -89,20 +89,26 @@ namespace Loupedeck.xkcdviewerPlugin
             }
         }
 
-        // A chevron drawn with lines rather than an arrow glyph, which the device's font may not have.
+        // A chevron, drawn from SVG (Chevron) rather than as an arrow glyph, which the device's font may not have. Its
+        // character fallback only shows if the SVG fails to render.
         public static BitmapImage Arrow(Boolean pointsRight, Boolean enabled, PluginImageSize imageSize)
         {
             using (var builder = new BitmapBuilder(imageSize))
             {
                 builder.Clear(BitmapColor.Black);
-                var color = enabled ? _arrow : _arrowDisabled;
-                var width = builder.Width;
-                var height = builder.Height;
-                var stroke = Math.Max(3, width / 14);
-                var tip = pointsRight ? width * 0.62f : width * 0.38f;
-                var tail = pointsRight ? width * 0.40f : width * 0.60f;
-                builder.DrawLine(tail, height * 0.28f, tip, height * 0.5f, color, stroke);
-                builder.DrawLine(tip, height * 0.5f, tail, height * 0.72f, color, stroke);
+                try
+                {
+                    using (var chevron = RenderSvg(Chevron.Svg(pointsRight, enabled ? Chevron.Enabled : Chevron.Disabled), builder.Width, builder.Height))
+                    {
+                        builder.DrawImage(chevron, 0, 0);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    PluginLog.Error(ex, "Failed to draw a chevron - showing an arrow character instead");
+                    builder.DrawText(pointsRight ? ">" : "<", enabled ? _arrow : _arrowDisabled, builder.Height / 2);
+                }
+
                 return builder.ToImage();
             }
         }

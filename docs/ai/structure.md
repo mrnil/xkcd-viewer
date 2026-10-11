@@ -12,6 +12,7 @@ xkcdviewerPlugin/
 │       │   └── RandomComicFolder.cs  # ComicFolder opened at a random comic; one "show another" key
 │       ├── Helpers/
 │       │   ├── BrowserLauncher.cs    # Opens a comic page (only https://xkcd.com/{num}/) in the default browser
+│       │   ├── Chevron.cs            # The Prev / Next chevron as SVG: one rounded stroke
 │       │   ├── ComicFit.cs           # Comic image → letterboxed picture or title card, and where it goes
 │       │   ├── ComicNumbers.cs       # Prev/Next and random comic numbers (stays within 1..latest)
 │       │   ├── DeviceGrid.cs         # DeviceType → grid columns, as observed on hardware; 3 for anything else
