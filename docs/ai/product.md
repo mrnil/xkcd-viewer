@@ -144,11 +144,11 @@ A green key is a **green background** behind the black logo, not a frame (owner,
 
 **Where it shows** (owner, 2026-10-11, since the folder keys can't change):
 
-- **A new "New Comic" command key** in the xkcd viewer group, placed by the user wherever they like. It's a `PluginDynamicCommand`, so `ActionImageChanged()` can redraw it: normally the plain logo; when a comic is found it flashes between that and the green-background logo with a "new" banner for 30 s, then stays green until nothing is unread. **With nothing unread, pressing it opens the latest comic in a browser tab** (owner, 2026-10-11). What pressing it does while something is unread is still to decide.
+- **A new "New Comic" command key** in the xkcd viewer group, placed by the user wherever they like. It's a `PluginDynamicCommand`, so `ActionImageChanged()` can redraw it: normally the plain logo; when a comic is found it flashes between that and the green-background logo with a "new" banner for 30 s, then stays green until nothing is unread. **With nothing unread, pressing it opens the latest comic in a browser tab** (owner, 2026-10-11). **While something is unread, pressing it opens the first unread comic in a browser tab** (owner, 2026-10-11). That doesn't count as shown, so the key stays green until the comic appears on the keypad.
 - **The Next chevron** inside the folders, as above.
 - The folder keys themselves stay as they are.
 
-Still to decide: what pressing the New Comic key does while something is unread, and whether the Latest Comic folder (which has the same Next key) gets the green chevron too.
+Only the **Comic Browser**'s Next chevron goes green; Latest Comic's stays as it is (owner, 2026-10-11).
 
 ## The folders
 
@@ -196,7 +196,6 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 
 1. **Manifest `supportedDevices`**: lists only `LoupedeckCtFamily`, yet the folder appeared on the MX Creative Keypad during development (loaded through the `.link` file), and the finished plugin still works there loaded the same way (2026-10-11). That says nothing about a packaged install, so before the first release, confirm with `LogiPluginTool verify` and a packaged install that the keypad still gets it, and whether the manifest should also list `LogitechCreativeFamily` / `MxCreativeKeypad`.
 2. **Accidental presses**: every comic tile opens the browser (decided), so watch in use whether stray presses are a nuisance.
-3. **The new-comic signal**: decided (see "The new-comic signal"), apart from the exact green and what the New Comic key does with nothing unread.
 
 ## v1 scope
 
