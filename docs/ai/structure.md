@@ -55,7 +55,7 @@ xkcdviewerPlugin/
 │       ├── StubHttpMessageHandler.cs # Fake network for xkcdClient tests
 │       └── TestWait.cs               # Bounded wait for a background condition, instead of sleeping
 ├── art/
-│   ├── xkcdviewerlogo.svg            # The logo: the owner's own (eyes over a hand-lettered "xkcd"). Embedded in the plugin, which draws the folder keys from it
+│   ├── xkcdviewerlogo.svg            # The logo: the owner's own ("xkcd" over "viewer", hand-lettered, eyes underneath). Embedded in the plugin, which draws the folder keys from it
 │   ├── xkcdviewerlogo-closed.svg     # The same logo with its eyes closed: the New Comic key with nothing new
 │   ├── xkcdviewer-logo.jpg           # The earlier logo, a pencil drawing; no longer used
 │   └── make-icons.ps1                # Regenerates the package icon (a PNG) from the SVG (needs Edge or Chrome); edit the SVG, not the PNG

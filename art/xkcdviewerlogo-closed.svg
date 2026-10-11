@@ -1,39 +1,73 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="84 116 332 332" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="15 110 470 470" width="100%" height="100%">
   <!-- The xkcdviewer logo with its eyes closed: art/xkcdviewerlogo.svg with the eyes swapped for closed lids. The
-       New Comic key shows it while there's nothing new to see (KeyRenderer.Logo). Same viewBox and strokes as the
-       original, so the two line up exactly. -->
+       New Comic key shows it while there's nothing new to see (KeyRenderer.Logo). Same viewBox, lettering and strokes
+       as the original, so the two line up exactly. -->
   <g fill="none" stroke="#111111" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    
-    <!-- Closed eyes: each a lid drawn as a downward curve where the open eye's middle was, with three short lashes.
-         Used on the New Comic key while there's nothing new to see (KeyRenderer.Logo). -->
-    <path d="M 132 186 C 150 222, 212 222, 228 186" />
-    <path d="M 272 186 C 288 222, 350 222, 368 186" />
 
-    <path d="M 152 210 L 144 228" />
-    <path d="M 180 218 L 179 238" />
-    <path d="M 208 210 L 216 228" />
+    <!-- ==================== "xkcd" ==================== -->
+    <g transform="translate(0 -180)">
 
-    <path d="M 292 210 L 284 228" />
-    <path d="M 320 218 L 319 238" />
-    <path d="M 348 210 L 356 228" />
+      <!-- 'x' -->
+      <path d="M 105 348 C 122 378, 140 405, 155 428" />
+      <path d="M 152 350 C 135 378, 118 406, 102 428" />
 
-    <!-- ==================== "xkcd" Typography ==================== -->
-    
-    <!-- 'x' -->
-    <path d="M 105 348 C 122 378, 140 405, 155 428" />
-    <path d="M 152 350 C 135 378, 118 406, 102 428" />
+      <!-- 'k' -->
+      <path d="M 195 305 C 196 345, 194 385, 195 428" />
+      <path d="M 242 352 C 224 376, 206 388, 196 390" />
+      <path d="M 210 384 C 224 402, 238 418, 250 428" />
 
-    <!-- 'k' -->
-    <path d="M 195 305 C 196 345, 194 385, 195 428" />
-    <path d="M 242 352 C 224 376, 206 388, 196 390" />
-    <path d="M 210 384 C 224 402, 238 418, 250 428" />
+      <!-- 'c' -->
+      <path d="M 328 358 C 304 340, 274 350, 272 388 C 270 422, 298 436, 328 420" />
 
-    <!-- 'c' -->
-    <path d="M 328 358 C 304 340, 274 350, 272 388 C 270 422, 298 436, 328 420" />
+      <!-- 'd' -->
+      <path d="M 398 305 C 397 345, 398 385, 398 428" />
+      <path d="M 396 424 C 366 432, 344 412, 344 388 C 344 362, 368 350, 395 356" />
 
-    <!-- 'd' -->
-    <path d="M 398 305 C 397 345, 398 385, 398 428" />
-    <path d="M 396 424 C 366 432, 344 412, 344 388 C 344 362, 368 350, 395 356" />
+    </g>
+
+    <!-- ==================== "viewer" ==================== -->
+    <!-- Hand-lettered to match "xkcd": the same x-height (about y 310-390) and slightly wobbly strokes. -->
+    <g transform="translate(-24 0)">
+
+      <!-- 'v' -->
+      <path d="M 80 312 C 90 340, 98 366, 104 390 C 110 366, 118 340, 128 312" />
+
+      <!-- 'i' -->
+      <path d="M 152 316 C 153 340, 151 366, 152 390" />
+      <circle cx="152" cy="282" r="11" fill="#111111" stroke="none" />
+
+      <!-- 'e' -->
+      <path d="M 178 352 C 196 354, 214 353, 230 350 C 232 322, 210 308, 196 312 C 176 318, 172 352, 178 370 C 186 394, 214 396, 230 380" />
+
+      <!-- 'w' -->
+      <path d="M 254 312 C 260 340, 266 366, 272 390 C 278 368, 286 346, 292 330 C 298 346, 306 368, 312 390 C 318 366, 324 340, 330 312" />
+
+      <!-- 'e' -->
+      <path d="M 356 352 C 374 354, 392 353, 408 350 C 410 322, 388 308, 374 312 C 354 318, 350 352, 356 370 C 364 394, 392 396, 408 380" />
+
+      <!-- 'r' -->
+      <path d="M 434 312 C 435 340, 433 366, 434 390" />
+      <path d="M 435 342 C 444 320, 456 310, 468 314" />
+
+    </g>
+
+    <!-- ==================== Closed eyes ==================== -->
+    <!-- Each a lid drawn as a downward curve where the open eye's middle was, with three short lashes. Same translate
+         as the open eyes, so they sit in the same place. -->
+    <g transform="translate(0 310)">
+
+      <path d="M 132 186 C 150 222, 212 222, 228 186" />
+      <path d="M 272 186 C 288 222, 350 222, 368 186" />
+
+      <path d="M 152 210 L 144 228" />
+      <path d="M 180 218 L 179 238" />
+      <path d="M 208 210 L 216 228" />
+
+      <path d="M 292 210 L 284 228" />
+      <path d="M 320 218 L 319 238" />
+      <path d="M 348 210 L 356 228" />
+
+    </g>
 
   </g>
 </svg>

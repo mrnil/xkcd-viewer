@@ -1,40 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="84 116 332 332" width="100%" height="100%">
-  <!-- Transparent background, scaled for legibility from 80px to 512px. The plugin draws this file on its keys
-       (KeyRenderer.Logo), so the viewBox is cropped to the drawing plus a small margin: the strokes span about
-       x 94-406 and y 127-436 of the original 500 x 500 canvas. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="15 110 470 470" width="100%" height="100%">
+  <!-- Transparent background. The plugin draws this file on its keys (KeyRenderer.Logo), so the viewBox is the drawing
+       plus a small margin, made square: three rows, "xkcd", then "viewer", then the eyes, spanning about x 48-452 and
+       y 117-573 including the strokes. The "xkcd" letters and the eyes are the original drawing's paths, moved into
+       place with a translate so their shapes stay exactly as they were. -->
   <g fill="none" stroke="#111111" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    
-    <!-- Left Eye Contour (organic, slightly asymmetrical hand-drawn oval) -->
-    <path d="M 130 190 
-             C 125 120, 225 115, 230 185 
-             C 235 255, 135 260, 130 190 Z" />
-    
-    <!-- Right Eye Contour -->
-    <path d="M 270 185 
-             C 265 115, 365 120, 370 190 
-             C 375 260, 275 255, 270 185 Z" />
 
-    <!-- Solid Hand-Drawn Inked Pupils (Glancing right/forward) -->
-    <circle cx="195" cy="188" r="22" fill="#111111" stroke="none" />
-    <circle cx="335" cy="188" r="22" fill="#111111" stroke="none" />
+    <!-- ==================== "xkcd" ==================== -->
+    <g transform="translate(0 -180)">
 
-    <!-- ==================== "xkcd" Typography ==================== -->
-    
-    <!-- 'x' -->
-    <path d="M 105 348 C 122 378, 140 405, 155 428" />
-    <path d="M 152 350 C 135 378, 118 406, 102 428" />
+      <!-- 'x' -->
+      <path d="M 105 348 C 122 378, 140 405, 155 428" />
+      <path d="M 152 350 C 135 378, 118 406, 102 428" />
 
-    <!-- 'k' -->
-    <path d="M 195 305 C 196 345, 194 385, 195 428" />
-    <path d="M 242 352 C 224 376, 206 388, 196 390" />
-    <path d="M 210 384 C 224 402, 238 418, 250 428" />
+      <!-- 'k' -->
+      <path d="M 195 305 C 196 345, 194 385, 195 428" />
+      <path d="M 242 352 C 224 376, 206 388, 196 390" />
+      <path d="M 210 384 C 224 402, 238 418, 250 428" />
 
-    <!-- 'c' -->
-    <path d="M 328 358 C 304 340, 274 350, 272 388 C 270 422, 298 436, 328 420" />
+      <!-- 'c' -->
+      <path d="M 328 358 C 304 340, 274 350, 272 388 C 270 422, 298 436, 328 420" />
 
-    <!-- 'd' -->
-    <path d="M 398 305 C 397 345, 398 385, 398 428" />
-    <path d="M 396 424 C 366 432, 344 412, 344 388 C 344 362, 368 350, 395 356" />
+      <!-- 'd' -->
+      <path d="M 398 305 C 397 345, 398 385, 398 428" />
+      <path d="M 396 424 C 366 432, 344 412, 344 388 C 344 362, 368 350, 395 356" />
+
+    </g>
+
+    <!-- ==================== "viewer" ==================== -->
+    <!-- Hand-lettered to match "xkcd": the same x-height (about y 310-390) and slightly wobbly strokes. -->
+    <g transform="translate(-24 0)">
+
+      <!-- 'v' -->
+      <path d="M 80 312 C 90 340, 98 366, 104 390 C 110 366, 118 340, 128 312" />
+
+      <!-- 'i' -->
+      <path d="M 152 316 C 153 340, 151 366, 152 390" />
+      <circle cx="152" cy="282" r="11" fill="#111111" stroke="none" />
+
+      <!-- 'e' -->
+      <path d="M 178 352 C 196 354, 214 353, 230 350 C 232 322, 210 308, 196 312 C 176 318, 172 352, 178 370 C 186 394, 214 396, 230 380" />
+
+      <!-- 'w' -->
+      <path d="M 254 312 C 260 340, 266 366, 272 390 C 278 368, 286 346, 292 330 C 298 346, 306 368, 312 390 C 318 366, 324 340, 330 312" />
+
+      <!-- 'e' -->
+      <path d="M 356 352 C 374 354, 392 353, 408 350 C 410 322, 388 308, 374 312 C 354 318, 350 352, 356 370 C 364 394, 392 396, 408 380" />
+
+      <!-- 'r' -->
+      <path d="M 434 312 C 435 340, 433 366, 434 390" />
+      <path d="M 435 342 C 444 320, 456 310, 468 314" />
+
+    </g>
+
+    <!-- ==================== Eyes ==================== -->
+    <g transform="translate(0 310)">
+
+      <!-- Left eye contour (organic, slightly asymmetrical hand-drawn oval) -->
+      <path d="M 130 190
+               C 125 120, 225 115, 230 185
+               C 235 255, 135 260, 130 190 Z" />
+
+      <!-- Right eye contour -->
+      <path d="M 270 185
+               C 265 115, 365 120, 370 190
+               C 375 260, 275 255, 270 185 Z" />
+
+      <!-- Solid hand-drawn inked pupils (glancing right / forward) -->
+      <circle cx="195" cy="188" r="22" fill="#111111" stroke="none" />
+      <circle cx="335" cy="188" r="22" fill="#111111" stroke="none" />
+
+    </g>
 
   </g>
 </svg>

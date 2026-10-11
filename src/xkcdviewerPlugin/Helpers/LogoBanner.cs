@@ -7,8 +7,8 @@ namespace Loupedeck.xkcdviewerPlugin
     // The diagonal banner drawn across the logo on the Latest and Random folder keys ("latest", "random"). BitmapBuilder
     // can only rotate in 90-degree steps, so the banner is an SVG, rendered by KeyRenderer like the logo itself.
     //
-    // It runs from bottom left to top right at 30 degrees, between the eyes and the "xkcd" lettering, across the whole
-    // key. Chosen by the owner on 2026-10-11 from previews, over a smaller corner ribbon.
+    // It runs from bottom left to top right at 30 degrees, through the middle of the logo (its "viewer" row), across the
+    // whole key. Chosen by the owner on 2026-10-11 from previews, over a smaller corner ribbon.
     internal static class LogoBanner
     {
         // xkcd.com's own header blue-grey, slightly see-through so the logo shows behind it.

@@ -1,5 +1,5 @@
-# Regenerates the package icon from art/xkcdviewerlogo.svg (the owner's own logo: eyes over a hand-lettered "xkcd"). Run
-# from the repo root on Windows (PowerShell 7):
+# Regenerates the package icon from art/xkcdviewerlogo.svg (the owner's own logo: a hand-lettered "xkcd" over
+# "viewer", eyes underneath). Run from the repo root on Windows (PowerShell 7):
 #   pwsh art/make-icons.ps1
 #
 # System.Drawing can't read SVG, so headless Microsoft Edge (or Chrome) rasterises it onto white first. The white is
