@@ -198,6 +198,7 @@ The comic area is 3:2 landscape. Most comics fit it well. For the rest:
 Settled 2026-10-12, by the owner, from the Streaming Assistant plugin (`OBSStudioForLogi`), which installs and works on both the MX Creative Console and Loupedeck devices:
 
 - **`supportedDevices` doesn't decide whether the keypad gets the plugin.** Streaming Assistant lists only `LoupedeckCt` and `LoupedeckLive`, no MX or `LogitechCreativeFamily` entry, and works on the MX keypad. So `LoupedeckCtFamily` (`0xFF00` in `DeviceTypeAliases`) stays as it is. `LogitechCreativeFamily` (`0xFF0000`, which holds `MxCreativeKeypad` `0x10000`) is accepted by `LogiPluginTool` if it's ever wanted, but isn't needed.
+- **The packaged plugin installs on Windows.** `xkcdviewer-v1.0.0.lplug4` installed correctly through both Logi Options+ and the Loupedeck software on Windows (owner, 2026-10-12). macOS is still untested.
 - **`pluginFolderMac` must stay set.** Without it, Logi Options+ and Loupedeck ignore the plugin on macOS when it's installed, so it can't even be tested there. It's set even though the plugin hasn't been run on macOS yet; the README says macOS is untested.
 
 ## Still open
