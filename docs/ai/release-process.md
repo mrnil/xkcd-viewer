@@ -45,16 +45,18 @@ git tag -a v{VERSION} -m "Release v{VERSION}"
 ### 5. Create the .lplug4 Package
 
 ```bash
-LogiPluginTool pack ./bin/Release ./xkcdviewer-v{VERSION}.lplug4
+LogiPluginTool pack ./bin/Release ./xkcdviewer_{FILE_VERSION}.lplug4
 ```
+
+`{FILE_VERSION}` is the version with its dots replaced by underscores: version `1.0.0` makes `xkcdviewer_1_0_0.lplug4`. That's the `pluginName_version.lplug4` pattern the Logitech Marketplace asks for (its example is `SpotifyPremium_1_0.lplug4`). Everything else (the manifest, the changelog, the `v{VERSION}` tag) keeps the dots.
 
 `*.lplug4` is git-ignored. Attach the package to the release rather than committing it. See `tech.md` for which `LogiPluginTool` binary to use.
 
 ### 6. Verify the Package
 
 ```bash
-LogiPluginTool verify ./xkcdviewer-v{VERSION}.lplug4
-LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
+LogiPluginTool verify ./xkcdviewer_{FILE_VERSION}.lplug4
+LogiPluginTool metadata ./xkcdviewer_{FILE_VERSION}.lplug4
 ```
 
 Check the version, display name and supported platforms. The package should be well under 1 MB (about 64 KB at 1.0.0); several MB means `PluginApi.dll` and its dependencies have been bundled again (see `tech.md`).
@@ -62,7 +64,7 @@ Check the version, display name and supported platforms. The package should be w
 ### 7. Test Install
 
 ```bash
-LogiPluginTool install ./xkcdviewer-v{VERSION}.lplug4
+LogiPluginTool install ./xkcdviewer_{FILE_VERSION}.lplug4
 ```
 
 Run `dotnet clean` first so the development `.link` file doesn't shadow the installed package. Check the actions on each target device.

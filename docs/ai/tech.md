@@ -91,10 +91,12 @@ See `test-coverage.md`.
 ## Packaging and Release
 
 ```bash
-LogiPluginTool pack ./bin/Release ./xkcdviewer-v{VERSION}.lplug4
-LogiPluginTool verify ./xkcdviewer-v{VERSION}.lplug4
-LogiPluginTool metadata ./xkcdviewer-v{VERSION}.lplug4
+LogiPluginTool pack ./bin/Release ./xkcdviewer_{FILE_VERSION}.lplug4
+LogiPluginTool verify ./xkcdviewer_{FILE_VERSION}.lplug4
+LogiPluginTool metadata ./xkcdviewer_{FILE_VERSION}.lplug4
 ```
+
+`{FILE_VERSION}` is the version with underscores for dots (`1_0_0`), as the Marketplace asks; see `release-process.md`.
 
 `bin/Release/bin` should hold only `xkcdviewerPlugin.dll`, its `.deps.json` and `.pdb` (the package is about 64 KB). Logi Plugin Service supplies `PluginApi.dll` and its dependencies (SkiaSharp, Svg.Skia, Newtonsoft.Json, …), so `Directory.Build.props` marks the reference `Private=false` for the plugin project. If those DLLs show up in the output again, that setting has been lost.
 
