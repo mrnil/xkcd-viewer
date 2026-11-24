@@ -68,7 +68,8 @@ xkcdviewerPlugin/
 │   │   └── check-package/            # Fails a .lplug4 with PluginApi.dll, other DLLs or the wrong version
 │   └── workflows/
 │       ├── build.yml                 # Build (warnings as errors), test, vulnerability check, pack, verify, upload
-│       └── markdown-lint.yml         # rumdl 0.3.5 over every .md file, using .markdownlint.json
+│       ├── markdown-lint.yml         # rumdl 0.3.5 over every .md file, using .markdownlint.json
+│       └── release.yml               # On a vX.Y.Z tag: wait for CI, check versions and notes, pack, publish the GitHub release
 ├── .config/dotnet-tools.json         # Pins LogiPluginTool for `dotnet logiplugintool`, locally and in CI
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
@@ -76,6 +77,7 @@ xkcdviewerPlugin/
 ├── xkcdviewerPlugin.sln
 ├── README.md                         # For people: what the plugin does, devices, building, credits
 ├── CHANGELOG.md                      # Release history (Keep a Changelog); a new entry for every release
+├── RELEASE_NOTES_v{VERSION}.md       # One per release, for users; its first line is the GitHub release title
 ├── LICENSE                           # MIT for the project's own work; notes that xkcd content is CC BY-NC 2.5
 ├── EULA.md                           # Developer EULA for the Marketplace: licence, xkcd terms, what's sent and stored
 ├── AGENTS.md / CLAUDE.md             # For AI assistants: where to start, non-negotiables

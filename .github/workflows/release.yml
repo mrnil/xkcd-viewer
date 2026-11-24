@@ -1,0 +1,176 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  # Gate: only release a commit that is on main and that every other workflow passed on.
+  # Those workflows run on the push to main, not on the tag, so wait for any still running.
+  ci-passed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      checks: read    # read the check runs on the tagged commit
+      actions: read   # find this workflow's own runs, to leave them out
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
+      # Checks that must be present: a commit without them was never built by CI.
+      # Matches the job id in build.yml. markdown-lint only runs when a .md file changes, so it
+      # is not required, but if it ran on the tagged commit it must have passed.
+      REQUIRED: '["build-and-test"]'
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Tagged commit is on main
+        run: |
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
+          SHA=$(git rev-parse "$TAG^{commit}")
+          echo "SHA=$SHA" >> "$GITHUB_ENV"
+          if ! git merge-base --is-ancestor "$SHA" origin/main; then
+            echo "::error::$TAG points at $SHA, which isn't on main. Push the commit to main and let CI pass before tagging."
+            exit 1
+          fi
+
+      - name: Every check on the tagged commit passed
+        shell: bash   # explicit shell adds -o pipefail, so a failed gh call stops the step instead of polling on
+        run: |
+          deadline=$((SECONDS + 1800))
+          idle=0
+          while :; do
+            # Leave out this workflow's runs. Re-read on every poll: a run just started may not be
+            # listed yet, and missing it means waiting on this job itself until the deadline.
+            own=$(gh api "repos/$REPO/actions/workflows/release.yml/runs?head_sha=$SHA&per_page=100" --jq '[.workflow_runs[].check_suite_id]')
+            runs=$(gh api --paginate "repos/$REPO/commits/$SHA/check-runs?per_page=100" --jq '.check_runs[]' \
+              | jq -s --argjson own "$own" '[.[] | select(.check_suite.id | IN($own[]) | not) | {name, status, conclusion}]')
+            pending=$(jq '[.[] | select(.status != "completed")] | length' <<<"$runs")
+            missing=$(jq -r --argjson req "$REQUIRED" '$req - [.[].name] | join(", ")' <<<"$runs")
+
+            if [ "$pending" -eq 0 ] && [ -z "$missing" ]; then break; fi
+
+            # Nothing running and a required check absent: CI never ran on this commit
+            # (for example it was not the last commit of a push). Allow ~90s for runs to register.
+            if [ "$pending" -eq 0 ]; then idle=$((idle + 1)); else idle=0; fi
+            if [ "$idle" -ge 3 ]; then
+              echo "::error::No $missing check on $SHA. CI only runs on the last commit of a push to main; tag a commit CI has run on."
+              exit 1
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Timed out waiting for checks on $SHA ($pending still running; missing: ${missing:-none})"
+              exit 1
+            fi
+
+            echo "Waiting: $pending check(s) running${missing:+, not started yet: $missing}"
+            sleep 30
+          done
+
+          jq -r '.[] | "\(.name): \(.conclusion)"' <<<"$runs"
+          failed=$(jq -r '[.[] | select(.conclusion | IN("success", "skipped", "neutral") | not) | "\(.name) (\(.conclusion))"] | join(", ")' <<<"$runs")
+          if [ -n "$failed" ]; then
+            echo "::error::Checks on $SHA did not pass: $failed. Fix them on main, then move the tag."
+            exit 1
+          fi
+
+  release:
+    needs: ci-passed
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write   # create the GitHub release and upload the package
+    env:
+      TAG: ${{ github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Fail before building if anything docs/ai/release-process.md asks for is missing
+      - name: Check version, changelog and release notes
+        shell: pwsh
+        run: |
+          # Three parts only: the build rejects anything else in LoupedeckPackage.yaml, so there are no pre-release tags
+          if ($env:TAG -notmatch '^v(\d+\.\d+\.\d+)$') { throw "Tag $env:TAG isn't vMAJOR.MINOR.PATCH" }
+          $v = $Matches[1]
+
+          # The manifest is the only place the version is set; the .csproj reads it from there
+          $yaml = (Select-String -Path src/xkcdviewerPlugin/package/metadata/LoupedeckPackage.yaml -Pattern '^version:\s*(\S+)').Matches[0].Groups[1].Value.Trim('"', "'")
+          if ($yaml -ne $v) { throw "Tag $v doesn't match version: $yaml in LoupedeckPackage.yaml" }
+
+          if (-not (Select-String -Path CHANGELOG.md -Pattern "^## \[$([regex]::Escape($v))\] - \d{4}-\d{2}-\d{2}" -Quiet)) {
+            throw "CHANGELOG.md has no '## [$v] - YYYY-MM-DD' entry"
+          }
+          $notes = "RELEASE_NOTES_v$v.md"
+          if (-not (Test-Path $notes)) { throw "$notes is missing" }
+
+          # The notes' first line is the release title: "# vX.Y.Z - Title"
+          $lines = @(Get-Content $notes -Encoding utf8)
+          if ($lines[0] -notmatch "^#\s+($([regex]::Escape($env:TAG))\s+-\s+(.+?))\s*$") {
+            throw "The first line of $notes should be '# $env:TAG - Title', not '$($lines[0])'"
+          }
+          $title = $Matches[1]
+          if ($Matches[2] -match '[{}]') { throw "The title in $notes still has a placeholder: '$title'" }
+
+          # Release body is the notes without that heading (GitHub shows the title above the body)
+          $body = $lines | Select-Object -Skip 1 | Out-String
+          Set-Content -Path (Join-Path $env:RUNNER_TEMP 'release-body.md') -Value $body.TrimStart() -Encoding utf8
+
+          # The Marketplace's pluginName_version.lplug4 pattern: dots become underscores
+          "VERSION=$v" >> $env:GITHUB_ENV
+          "PACKAGE=xkcdviewer_$($v.Replace('.', '_')).lplug4" >> $env:GITHUB_ENV
+          "TITLE=$title" >> $env:GITHUB_ENV
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install PluginApi.dll
+        uses: ./.github/actions/install-pluginapi
+
+      - name: Build and test (Release, warnings as errors)
+        shell: pwsh
+        run: |
+          $linkDir = Join-Path $env:RUNNER_TEMP 'pluginlink\'
+          New-Item -ItemType Directory -Force $linkDir | Out-Null
+          dotnet build xkcdviewerPlugin.sln -c Release -p:TreatWarningsAsErrors=true "-p:PluginDir=$linkDir"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet test tests/xkcdviewerPlugin.Tests -c Release --no-build
+
+      - name: Package, verify and show metadata
+        shell: pwsh
+        run: |
+          dotnet tool restore   # LogiPluginTool, pinned in .config/dotnet-tools.json
+          dotnet logiplugintool pack bin\Release $env:PACKAGE
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet logiplugintool verify $env:PACKAGE
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet logiplugintool metadata $env:PACKAGE
+
+      - name: Check package
+        uses: ./.github/actions/check-package
+        with:
+          package: ${{ env.PACKAGE }}
+          version: ${{ env.VERSION }}
+          plugin-dll: xkcdviewerPlugin.dll
+
+      # Published straight away: the ci-passed gate and the checks above have already run
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create $env:TAG $env:PACKAGE `
+            --verify-tag --latest `
+            --title $env:TITLE `
+            --notes-file (Join-Path $env:RUNNER_TEMP 'release-body.md')
