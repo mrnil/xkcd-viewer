@@ -26,10 +26,10 @@ No NuGet packages yet. `System.Net.Http` and `System.Text.Json` ship with .NET 1
 | Package | Version | Purpose |
 | --- | --- | --- |
 | `xunit` | 2.9.3 | Test framework |
-| `xunit.runner.visualstudio` | 3.1.4 | Test adapter for `dotnet test` and IDEs |
-| `Microsoft.NET.Test.Sdk` | 17.14.1 | Test host |
-| `Moq` | 4.20.72 | Mocks (`IxkcdClient`, `IPluginLog`) |
-| `coverlet.collector` | 6.0.4 | `dotnet test --collect:"XPlat Code Coverage"` |
+| `xunit.runner.visualstudio` | 4.0.1 | Test adapter for `dotnet test` and IDEs |
+| `Microsoft.NET.Test.Sdk` | 18.12.0 | Test host |
+| `Moq` | 4.21.0 | Mocks (`IxkcdClient`, `IPluginLog`) |
+| `coverlet.collector` | 10.1.1 | `dotnet test --collect:"XPlat Code Coverage"` |
 
 The `PluginApi` reference, `PluginApiDir`, `TargetFramework`, `LangVersion` and `EnforceCodeStyleInBuild` are set once, in the repo-root `Directory.Build.props`, so both projects get them. The test project needs the `PluginApi` reference too: a plain file `<Reference>` doesn't flow through a `ProjectReference` at compile time, so without it the build breaks as soon as test code touches a `PluginApi` type (e.g. `DeviceType`).
 
