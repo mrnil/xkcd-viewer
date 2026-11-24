@@ -17,12 +17,19 @@ This is an unofficial fan project. It isn't made by or affiliated with xkcd or R
   | **Random Comic** | A random comic, with a "show another" key |
 
 - **A New Comic key** (a command action in the same group): the logo with its eyes closed, until a new comic is published. Then it flashes green with "new" for 30 seconds and stays green until you've seen the comic, on the keypad or by pressing the key. Pressing it opens the new comic (or, with nothing new, the latest) on xkcd.com; with several new comics, each press opens the next one.
+
 - **Prev / Next**: tap to step one comic; **hold for 2 seconds** (or until the touch keys' long-press buzz on the Live S / CT) to jump to the first comic (Prev) or the newest (Next). The chevrons dim when there's nowhere further to go. In the Comic Browser, Next turns green while there's a new comic, and a tap on it goes straight to the first one you haven't seen.
+
 - **Notices new comics**: xkcd publishes on Mondays, Wednesdays and Fridays, so on those days the plugin asks xkcd once an hour, in the US afternoon and evening, whether a new comic is out, and stops once it finds one. It also asks each time it starts.
+
 - **Open in the browser**: pressing any comic tile opens `https://xkcd.com/{number}/`.
+
 - **Awkward comics get a title card**: comics that are interactive, very tall or very large, and wouldn't make sense as a six-key thumbnail, show their number and title instead.
+
 - **Fast**: the comics either side of the current one are fetched in advance, so Prev / Next usually change at once.
+
 - **Remembers where you were**: the last comic viewed is saved and reopened next time.
+
 - **Behaves offline**: keys show "loading…" or "offline" rather than freezing, and failed requests aren't retried on every press.
 
 ## Supported devices

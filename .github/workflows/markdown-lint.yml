@@ -1,0 +1,38 @@
+name: Markdown lint
+
+on:
+  push:
+    branches: [main]
+    paths: ['**/*.md', '.markdownlint.json', '.github/workflows/markdown-lint.yml']
+  pull_request:
+    branches: [main]
+    paths: ['**/*.md', '.markdownlint.json', '.github/workflows/markdown-lint.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rumdl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Pin both the action and the rumdl binary: the action installs the latest rumdl by
+      # default, and a new release can add rules that fail CI on files nobody changed.
+      # rumdl reads .markdownlint.json.
+      - name: Run rumdl
+        uses: rvben/rumdl@ba563d6780c6119bd526c869a730b492c1ad54e5 # v0.3.5
+        with:
+          version: 0.3.5
+          command: check
+          path: .
+          fail-on-error: true
