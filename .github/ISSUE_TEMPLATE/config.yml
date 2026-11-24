@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/mrnil/xkcd-viewer/security/advisories/new
+    about: Please report security problems privately, not in a public issue. See SECURITY.md.
+  - name: A problem with a comic itself
+    url: https://xkcd.com/
+    about: This plugin only shows comics from xkcd.com. It isn't made by or affiliated with xkcd.

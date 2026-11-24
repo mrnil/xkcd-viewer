@@ -1,5 +1,9 @@
 # xkcd viewer
 
+[![Build and test](https://github.com/mrnil/xkcd-viewer/actions/workflows/build.yml/badge.svg)](https://github.com/mrnil/xkcd-viewer/actions/workflows/build.yml)
+[![Latest release](https://img.shields.io/github/v/release/mrnil/xkcd-viewer)](https://github.com/mrnil/xkcd-viewer/releases/latest)
+[![MIT License](https://img.shields.io/github/license/mrnil/xkcd-viewer)](LICENSE)
+
 A plugin for Logitech and Loupedeck control surfaces that shows an xkcd comic **across the device's keys**. The comic is split into six tiles over a 3×2 block of keys, with Prev / Next keys above it, so the whole keypad becomes a small picture of the comic. Press any part of the comic to open it on xkcd.com in your browser.
 
 It's an at-a-glance viewer: xkcd is text-heavy, and most speech bubbles are unreadable at key size, so reading a comic properly is one key press away.
@@ -49,9 +53,19 @@ MX Creative Keypad         Loupedeck Live S                  Loupedeck CT
 [ c3 ][ c4 ][ c5 ]         [    ][ c3 ][ c4 ][ c5 ][    ]    [ c3 ][ c4 ][ c5 ][    ]
 ```
 
+## Installing
+
+You'll need Windows, and [Logi Options+](https://www.logitech.com/software/logi-options-plus.html) or the Loupedeck software. macOS hasn't been tried yet.
+
+1. Download the `xkcdviewer_X_Y_Z.lplug4` file from the [latest release](https://github.com/mrnil/xkcd-viewer/releases/latest).
+2. Double-click it. Logi Options+ (or the Loupedeck software) asks you to confirm the install.
+3. Find the **xkcd viewer** group in the actions list and drag **Comic Browser**, **Latest Comic**, **Random Comic** or **New Comic** onto a key.
+
+To remove it, uninstall **xkcd viewer** from the plugins list in Logi Options+ or the Loupedeck software.
+
 ## Status
 
-The v1 features are built and being tested on hardware. There's no published release yet, so for now you install it by building it from source (below), or by packing your own `.lplug4` from a Release build (see [`docs/ai/release-process.md`](docs/ai/release-process.md)). What's left to check before a release is in [`docs/ai/product.md`](docs/ai/product.md), under "Hardware test checklist" and "Still open".
+The v1 features are built and being tested on hardware; the 1.0.0 package installs and runs on Windows. Until the first release is published on the [Releases](https://github.com/mrnil/xkcd-viewer/releases) page, install it by building it from source (below), or download the `.lplug4` from the artifacts of the latest [Build and test](https://github.com/mrnil/xkcd-viewer/actions/workflows/build.yml) run. What's left to check is in [`docs/ai/product.md`](docs/ai/product.md), under "Hardware test checklist" and "Still open".
 
 ## Building and running
 
@@ -73,7 +87,11 @@ Run the tests with:
 dotnet test
 ```
 
-Packaging and release steps are in [`docs/ai/release-process.md`](docs/ai/release-process.md).
+Every push to `main` and every pull request is built, tested and packed by GitHub Actions. Releases are published by pushing a version tag; the steps are in [`docs/ai/release-process.md`](docs/ai/release-process.md).
+
+## Contributing
+
+Bug reports, device test results and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately, as described in [SECURITY.md](SECURITY.md).
 
 ## How it works
 
@@ -92,6 +110,7 @@ src/xkcdviewerPlugin/          The plugin (Logi Actions SDK, C# / .NET 10)
 tests/xkcdviewerPlugin.Tests/  xUnit tests, with real API responses as fixtures
 art/                           The logo (drawn on the keys from SVG), the eyes-only package icon and the script that makes it
 docs/ai/                       Design notes, decisions, hardware findings and coding rules
+.github/                       CI (build, test, pack), Markdown lint, the tag-driven release workflow, issue templates
 ```
 
 [`docs/ai/structure.md`](docs/ai/structure.md) describes every file. If you're contributing, or are an AI assistant, start at [`AGENTS.md`](AGENTS.md).

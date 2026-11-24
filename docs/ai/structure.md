@@ -66,6 +66,7 @@ xkcdviewerPlugin/
 │   ├── actions/
 │   │   ├── install-pluginapi/        # Installs signed Logi Options+ on the runner, for PluginApi.dll
 │   │   └── check-package/            # Fails a .lplug4 with PluginApi.dll, other DLLs or the wrong version
+│   ├── ISSUE_TEMPLATE/               # Bug report and feature request; config.yml points security reports at SECURITY.md
 │   ├── workflows/
 │   │   ├── build.yml                 # Build (warnings as errors), test, vulnerability check, pack, verify, upload
 │   │   ├── markdown-lint.yml         # rumdl 0.3.5 over every .md file, using .markdownlint.json
@@ -81,6 +82,8 @@ xkcdviewerPlugin/
 ├── CHANGELOG.md                      # Release history (Keep a Changelog); a new entry for every release
 ├── RELEASE_NOTES_v{VERSION}.md       # One per release, for users; its first line is the GitHub release title
 ├── LICENSE                           # MIT for the project's own work; notes that xkcd content is CC BY-NC 2.5
+├── CONTRIBUTING.md                   # For contributors: setup, rules in short, commits and pull requests
+├── SECURITY.md                       # How to report a vulnerability privately; what the plugin sends and stores
 ├── EULA.md                           # Developer EULA for the Marketplace: licence, xkcd terms, what's sent and stored
 ├── AGENTS.md / CLAUDE.md             # For AI assistants: where to start, non-negotiables
 ├── .gitattributes                    # Keeps .githooks/ at LF line endings, which sh needs

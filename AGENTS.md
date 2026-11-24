@@ -20,8 +20,8 @@ Read these before making changes:
 | [`docs/ai/guidelines.md`](docs/ai/guidelines.md) | Code style, service/command layer patterns, testing patterns. **Read before writing code** |
 | [`docs/ai/secure-coding.md`](docs/ai/secure-coding.md) | Security principles (input validation, network, files, memory) |
 | [`docs/ai/test-coverage.md`](docs/ai/test-coverage.md) | Test architecture policy, coverage targets, why the SDK layer is exempt |
-| [`docs/ai/commit-conventions.md`](docs/ai/commit-conventions.md) | Commit message rules |
-| [`docs/ai/release-process.md`](docs/ai/release-process.md) | Full release checklist |
+| [`docs/ai/commit-conventions.md`](docs/ai/commit-conventions.md) | Commit message rules, and the git hooks that check them |
+| [`docs/ai/release-process.md`](docs/ai/release-process.md) | Full release checklist: releases are published by CI from a `vX.Y.Z` tag |
 
 SDK reference material (read when the task touches that area):
 
@@ -47,6 +47,7 @@ Comic data comes from xkcd's public JSON endpoints (`https://xkcd.com/info.0.jso
 - "xkcd" is **always lowercase**, in prose, file names, package names and code identifiers alike (`xkcdviewerPlugin`, `IxkcdClient`), never `Xkcd` or `XKCD`. See `docs/ai/guidelines.md` → "The xkcd Name".
 - All new business logic needs tests (see `docs/ai/test-coverage.md`). SDK glue in `src/xkcdviewerPlugin/Actions/` is exempt; the pure logic inside it is not.
 - Commits follow Conventional Commits and explain **why**, not just what (see `docs/ai/commit-conventions.md`).
+- CI (`.github/workflows/build.yml`) builds with **warnings as errors**, runs the tests, checks NuGet packages for vulnerabilities and packs the plugin on every push and pull request; Markdown is linted with rumdl. Run `dotnet build`, `dotnet test` and `rumdl check .` before committing, and keep every workflow action pinned to a commit SHA.
 - Every `.md` file you write or edit uses consistent Markdown: a blank line before and after headings and fenced code blocks, no bare URLs, and ordered lists that actually increment.
 
 ## Keeping this current
