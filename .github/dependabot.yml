@@ -1,0 +1,42 @@
+version: 2
+updates:
+  # Workflows pin actions to commit SHAs with the version in a comment; Dependabot
+  # bumps both. "/" covers .github/workflows; the glob covers the local composite actions.
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # The test project's packages. The plugin project has none: PluginApi.dll comes from
+  # Logi Plugin Service, and .NET 10 supplies HTTP and JSON.
+  - package-ecosystem: "nuget"
+    directory: "/tests/xkcdviewerPlugin.Tests"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      test-packages:
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: "test"
+      include: "scope"
+
+  # LogiPluginTool, pinned in .config/dotnet-tools.json and used by build.yml and release.yml.
+  # "/" also holds the .sln, so allow only the tool: the test project is covered above.
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    allow:
+      - dependency-name: "LogiPluginTool"
+    commit-message:
+      prefix: "build"
+      include: "scope"

@@ -66,10 +66,11 @@ xkcdviewerPlugin/
 │   ├── actions/
 │   │   ├── install-pluginapi/        # Installs signed Logi Options+ on the runner, for PluginApi.dll
 │   │   └── check-package/            # Fails a .lplug4 with PluginApi.dll, other DLLs or the wrong version
-│   └── workflows/
-│       ├── build.yml                 # Build (warnings as errors), test, vulnerability check, pack, verify, upload
-│       ├── markdown-lint.yml         # rumdl 0.3.5 over every .md file, using .markdownlint.json
-│       └── release.yml               # On a vX.Y.Z tag: wait for CI, check versions and notes, pack, publish the GitHub release
+│   ├── workflows/
+│   │   ├── build.yml                 # Build (warnings as errors), test, vulnerability check, pack, verify, upload
+│   │   ├── markdown-lint.yml         # rumdl 0.3.5 over every .md file, using .markdownlint.json
+│   │   └── release.yml               # On a vX.Y.Z tag: wait for CI, check versions and notes, pack, publish the GitHub release
+│   └── dependabot.yml                # Monthly action SHAs and LogiPluginTool, weekly test packages
 ├── .config/dotnet-tools.json         # Pins LogiPluginTool for `dotnet logiplugintool`, locally and in CI
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/

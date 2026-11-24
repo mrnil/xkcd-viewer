@@ -113,7 +113,7 @@ Always three parts (`1.0.0`): the `CheckManifestVersion` target fails the build 
 
 ## CI/CD
 
-GitHub Actions, in `.github/`. Every third-party action is pinned to a commit SHA with its version in a comment; Dependabot bumps both.
+GitHub Actions, in `.github/`. Every third-party action is pinned to a commit SHA with its version in a comment. Dependabot (`.github/dependabot.yml`) opens pull requests for those SHAs and LogiPluginTool monthly, and for the test project's NuGet packages weekly (minor and patch grouped); they go through `build.yml` like any other change.
 
 | Workflow | Runs on | What it does |
 | --- | --- | --- |
