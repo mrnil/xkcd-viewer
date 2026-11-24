@@ -1,0 +1,41 @@
+name: Install PluginApi.dll
+description: >-
+  Installs Logi Options+ (which brings Logi Plugin Service and PluginApi.dll) from
+  Logitech's own download. PluginApi.dll is Logitech's proprietary binary: it isn't on
+  NuGet and must not be committed, so it only ever exists on the throwaway runner.
+
+runs:
+  using: composite
+  steps:
+    - name: Install Logi Options+
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $installer = Join-Path $env:RUNNER_TEMP 'logioptionsplus_installer.exe'
+        $logDir = Join-Path $env:RUNNER_TEMP 'optionsplus-log'
+        New-Item -ItemType Directory -Force $logDir | Out-Null
+        Invoke-WebRequest -Uri 'https://download01.logi.com/web/ftp/pub/techsupport/optionsplus/logioptionsplus_installer.exe' -OutFile $installer
+
+        # No published hash to pin against, so require a valid Logitech Authenticode signature
+        $sig = Get-AuthenticodeSignature $installer
+        if ($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notmatch 'O=Logitech') {
+          throw "Installer signature check failed: $($sig.Status) $($sig.SignerCertificate.Subject)"
+        }
+
+        $p = Start-Process -FilePath $installer -ArgumentList '/quiet','/analytics','no','/sso','no','/update','no','/dfu','no','/log',$logDir -Wait -PassThru
+        Write-Host "Installer exited with $($p.ExitCode)"
+
+        # The installer hands off to a child setup process (the DLL appears about a minute after it exits)
+        $dll = 'C:\Program Files\Logi\LogiPluginService\PluginApi.dll'
+        $deadline = (Get-Date).AddMinutes(10)
+        while (-not (Test-Path $dll) -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 10 }
+        if (-not (Test-Path $dll)) {
+          Get-ChildItem $logDir -Recurse -File | ForEach-Object { Write-Host "== $($_.Name)"; Get-Content $_.FullName -Tail 50 }
+          throw "PluginApi.dll not found after install"
+        }
+
+        $dllSig = Get-AuthenticodeSignature $dll
+        if ($dllSig.Status -ne 'Valid' -or $dllSig.SignerCertificate.Subject -notmatch 'O=Logitech') {
+          throw "PluginApi.dll signature check failed: $($dllSig.Status)"
+        }
+        Write-Host "PluginApi.dll $((Get-Item $dll).VersionInfo.FileVersion)"

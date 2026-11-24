@@ -1,0 +1,76 @@
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The job id is the check name release.yml requires on a tagged commit: rename both together
+  build-and-test:
+    name: build-and-test
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install PluginApi.dll
+        uses: ./.github/actions/install-pluginapi
+
+      # Warnings stay warnings locally so a style slip never blocks the hot-reload build, but the
+      # repo keeps zero warnings (docs/ai/tech.md), so CI fails on any.
+      # PluginDir points the post-build .link file at a scratch folder instead of the Logi plugins folder.
+      - name: Build (Release, warnings as errors)
+        shell: pwsh
+        run: |
+          $linkDir = Join-Path $env:RUNNER_TEMP 'pluginlink\'
+          New-Item -ItemType Directory -Force $linkDir | Out-Null
+          dotnet build xkcdviewerPlugin.sln -c Release -p:TreatWarningsAsErrors=true "-p:PluginDir=$linkDir"
+
+      - name: Test
+        run: dotnet test tests/xkcdviewerPlugin.Tests -c Release --no-build
+
+      - name: Check for vulnerable NuGet packages
+        shell: pwsh
+        run: |
+          $out = dotnet list xkcdviewerPlugin.sln package --vulnerable --include-transitive 2>&1 | Out-String
+          $out
+          if ($LASTEXITCODE) { throw "dotnet list package failed" }
+          if ($out -match 'has the following vulnerable packages') { throw "Vulnerable NuGet packages found" }
+
+      - name: Package and verify
+        shell: pwsh
+        run: |
+          dotnet tool restore   # LogiPluginTool, pinned in .config/dotnet-tools.json
+          dotnet logiplugintool pack bin\Release xkcdviewer.lplug4
+          dotnet logiplugintool verify xkcdviewer.lplug4
+
+      - name: Check package
+        uses: ./.github/actions/check-package
+        with:
+          package: xkcdviewer.lplug4
+          plugin-dll: xkcdviewerPlugin.dll
+
+      - name: Upload package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: xkcdviewer-${{ github.sha }}
+          path: xkcdviewer.lplug4
+          retention-days: 14

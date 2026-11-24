@@ -62,6 +62,13 @@ xkcdviewerPlugin/
 │   ├── xkcdviewer-icon.svg           # The package icon's drawing: the logo's eyes only, no lettering
 │   └── make-icons.ps1                # Regenerates the package icon (a PNG) from xkcdviewer-icon.svg (needs Edge or Chrome); edit the SVG, not the PNG
 ├── docs/ai/                          # AI coding rules and SDK reference (this directory)
+├── .github/
+│   ├── actions/
+│   │   ├── install-pluginapi/        # Installs signed Logi Options+ on the runner, for PluginApi.dll
+│   │   └── check-package/            # Fails a .lplug4 with PluginApi.dll, other DLLs or the wrong version
+│   └── workflows/
+│       └── build.yml                 # Build (warnings as errors), test, vulnerability check, pack, verify, upload
+├── .config/dotnet-tools.json         # Pins LogiPluginTool for `dotnet logiplugintool`, locally and in CI
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
 ├── Directory.Build.props             # Settings shared by both projects: TargetFramework, LangVersion, code style, PluginApi reference

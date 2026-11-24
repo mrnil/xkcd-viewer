@@ -1,0 +1,57 @@
+name: Check plugin package
+description: >-
+  Fails if the .lplug4 doesn't carry the expected version, contains PluginApi.dll
+  (Logitech's proprietary binary, supplied by Logi Plugin Service at runtime), or holds
+  any DLL other than the plugin's own.
+
+inputs:
+  package:
+    description: Path to the .lplug4
+    required: true
+  version:
+    description: Version the packaged LoupedeckPackage.yaml must declare; empty skips the check
+    required: false
+    default: ''
+  plugin-dll:
+    description: >-
+      The only DLL the package may contain (Logi Plugin Service supplies PluginApi.dll and its
+      dependencies, SkiaSharp and the rest); empty skips the check
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Check package contents
+      shell: pwsh
+      env:
+        PACKAGE: ${{ inputs.package }}
+        EXPECTED_VERSION: ${{ inputs.version }}
+        PLUGIN_DLL: ${{ inputs.plugin-dll }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $zip = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path $env:PACKAGE))
+        try {
+          $names = @($zip.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
+          $leaked = @($names | Where-Object { $_ -match '(^|/)PluginApi\.dll$' })
+          if ($leaked) { throw "The package must not contain PluginApi.dll: $($leaked -join ', ')" }
+
+          if ($env:PLUGIN_DLL) {
+            $extra = @($names | Where-Object { $_ -match '\.dll$' -and ($_ -split '/')[-1] -ne $env:PLUGIN_DLL })
+            if ($extra) { throw "The package should hold only $env:PLUGIN_DLL, but also has: $($extra -join ', ')" }
+          }
+
+          $entry = $zip.Entries | Where-Object { $_.FullName.Replace('\', '/') -eq 'metadata/LoupedeckPackage.yaml' }
+          if (-not $entry) { throw "The package has no metadata/LoupedeckPackage.yaml" }
+          $reader = [System.IO.StreamReader]::new($entry.Open())
+          try { $yaml = $reader.ReadToEnd() } finally { $reader.Dispose() }
+          if ($yaml -notmatch '(?m)^version:\s*["'']?([^"''\s]+)') { throw "The packaged LoupedeckPackage.yaml has no version" }
+          $packed = $Matches[1]
+          if ($env:EXPECTED_VERSION -and $packed -ne $env:EXPECTED_VERSION) {
+            throw "The package says version $packed, not $env:EXPECTED_VERSION"
+          }
+          "Package version $packed, $((Get-Item $env:PACKAGE).Length) bytes, $($names.Count) entries:"
+          $names | Sort-Object | ForEach-Object { "  $_" }
+        }
+        finally { $zip.Dispose() }

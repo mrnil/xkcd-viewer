@@ -90,21 +90,20 @@ See `test-coverage.md`.
 
 ## Packaging and Release
 
+Releases are built and packed by CI when a version tag is pushed (see `release-process.md`). To pack locally:
+
 ```bash
-LogiPluginTool pack ./bin/Release ./xkcdviewer_{FILE_VERSION}.lplug4
-LogiPluginTool verify ./xkcdviewer_{FILE_VERSION}.lplug4
-LogiPluginTool metadata ./xkcdviewer_{FILE_VERSION}.lplug4
+dotnet tool restore
+dotnet logiplugintool pack ./bin/Release ./xkcdviewer_{FILE_VERSION}.lplug4
+dotnet logiplugintool verify ./xkcdviewer_{FILE_VERSION}.lplug4
+dotnet logiplugintool metadata ./xkcdviewer_{FILE_VERSION}.lplug4
 ```
 
 `{FILE_VERSION}` is the version with underscores for dots (`1_0_0`), as the Marketplace asks; see `release-process.md`.
 
 `bin/Release/bin` should hold only `xkcdviewerPlugin.dll`, its `.deps.json` and `.pdb` (the package is about 64 KB). Logi Plugin Service supplies `PluginApi.dll` and its dependencies (SkiaSharp, Svg.Skia, Newtonsoft.Json, …), so `Directory.Build.props` marks the reference `Private=false` for the plugin project. If those DLLs show up in the output again, that setting has been lost.
 
-**LogiPluginTool locations on this machine:**
-
-- Preferred: `C:\Users\steph\.dotnet\tools\logiplugintool.exe` (dotnet global tool, callable as `LogiPluginTool`)
-- Alternative: `B:\development\LogitechBeta\LogiPluginSdkTools\LogiPluginTool.exe`
-- ❌ Don't use `C:\Program Files\Logi\LogiPluginService\LogiPluginTool.exe`: it's broken (missing companion DLL)
+**Which LogiPluginTool**: prefer the repo's pinned local tool (`dotnet logiplugintool`, from `.config/dotnet-tools.json`), so you pack with the same version CI does. A global install (`dotnet tool install -g LogiPluginTool`, callable as `LogiPluginTool`) also works. ❌ Don't use `C:\Program Files\Logi\LogiPluginService\LogiPluginTool.exe`: it's broken (missing companion DLL).
 
 ## Version Management
 
@@ -114,4 +113,19 @@ Always three parts (`1.0.0`): the `CheckManifestVersion` target fails the build 
 
 ## CI/CD
 
-None yet. If one is added: build validation plus dependency vulnerability scanning, with tests included once they're deterministic (see `test-coverage.md` → CI Note).
+GitHub Actions, in `.github/`. Every third-party action is pinned to a commit SHA with its version in a comment; Dependabot bumps both.
+
+| Workflow | Runs on | What it does |
+| --- | --- | --- |
+| `build.yml` (job `build-and-test`) | Push to `main`, pull requests, manual | Release build with warnings as errors, tests, NuGet vulnerability check, pack, `logiplugintool verify`, package check; uploads `xkcdviewer.lplug4` as a 14-day artifact |
+| `markdown-lint.yml` | Pushes and pull requests that change a `.md` file | `rumdl check .`, pinned to 0.3.5, reading `.markdownlint.json` |
+| `release.yml` | Pushing a `v*` tag | Waits for every check on the tagged commit to pass, then builds, tests, packs `xkcdviewer_{FILE_VERSION}.lplug4` and publishes the GitHub release. See `release-process.md` |
+
+Two local composite actions are shared by `build.yml` and `release.yml`:
+
+- `install-pluginapi`: CI has no `PluginApi.dll` (it's Logitech's proprietary binary, not on NuGet and never committed), so this silently installs Logi Options+ from Logitech's download, after checking that the installer, and then `PluginApi.dll`, carry a valid Logitech Authenticode signature. The DLL only exists on the throwaway runner.
+- `check-package`: fails if the `.lplug4` contains `PluginApi.dll` or any DLL other than `xkcdviewerPlugin.dll` (the `Private=false` regression above), or if its manifest's version isn't the expected one.
+
+The tests run in CI because they don't depend on real time or the network: the services that schedule anything take a `TimeProvider`, and `xkcdClient` runs against a stubbed handler (see `test-coverage.md` → CI Note).
+
+`LogiPluginTool` is pinned in `.config/dotnet-tools.json` (6.4.2.3599). `dotnet tool restore` installs it, and `dotnet logiplugintool ...` runs it, locally as in CI.

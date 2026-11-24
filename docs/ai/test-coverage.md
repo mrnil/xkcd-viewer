@@ -103,4 +103,6 @@ dotnet test --filter "FullyQualifiedName~xkcdClientTests"
 
 ## CI Note
 
-Timing-based tests are flaky under CI's variable scheduling. Don't add a flaky suite to CI and normalize failures; fix the timing first (inject the clock or scheduler).
+The whole suite runs in CI on every push and pull request (`.github/workflows/build.yml`), and a release can't be published unless it passed. That works because nothing tested waits on real time: `ComicService`, `NewComicPoller` and `NewComicTracker` take a `TimeProvider` (tests move `ManualTimeProvider` by hand), and the only real timers left are in the untested SDK glue (`ComicFolder`'s hold delay, the plugin's flash timer). `TestWait` polls for a background result for at most 5 seconds rather than sleeping a guessed time.
+
+Timing-based tests are flaky under CI's variable scheduling. Don't add a flaky test and rerun until it passes; fix the timing first (inject the clock or scheduler).
