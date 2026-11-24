@@ -5,9 +5,9 @@ namespace Loupedeck.xkcdviewerPlugin
 
     // The New Comic key (see docs/ai/product.md, "The new-comic signal"). With nothing new it shows the logo with its
     // eyes closed. When a new comic is found it flashes between that and the open-eyed logo on green with a "new"
-    // banner, and stays green until the new comic has appeared on the keypad. Pressing it opens a comic in the
-    // browser: the first unread one while something is unread (which doesn't count as seen, so the key stays green),
-    // otherwise the latest.
+    // banner, and stays green until the new comic has been seen, on the keypad or through this key. Pressing it opens a
+    // comic in the browser: the first unread one while something is unread (which counts as seen, so the key goes back
+    // to normal once the last unread one is opened), otherwise the latest.
     //
     // A command rather than a folder because a folder key can't be redrawn once it's shown (hardware spike,
     // 2026-10-11), and this key has to change. Users place this class by name, so don't rename it or its namespace.
@@ -54,7 +54,7 @@ namespace Loupedeck.xkcdviewerPlugin
                 return;
             }
 
-            if ((plugin.NewComics.FirstUnread ?? plugin.NewComics.LatestKnown) is Int32 num)
+            if (plugin.NewComics.TakeComicToOpen() is Int32 num)
             {
                 BrowserLauncher.OpenComicPage(xkcdUrls.Page(num), plugin.ServiceLog);
                 return;

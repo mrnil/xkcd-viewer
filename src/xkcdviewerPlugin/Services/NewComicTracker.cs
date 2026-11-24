@@ -15,7 +15,7 @@ namespace Loupedeck.xkcdviewerPlugin
     // it. See docs/ai/product.md, "The new-comic signal".
     //
     // A comic is unread while the newest published (LatestKnown) is newer than the newest shown on the keypad
-    // (NewestShown). Both are saved across sessions by the plugin. When a check finds a comic newer than any known
+    // (NewestShown), or opened from the New Comic key. Both are saved across sessions by the plugin. When a check finds a comic newer than any known
     // before, including at the last run, the keys flash for FlashDuration and then stay green; after a restart with
     // the same comic still unread they're simply green. On a first run the latest comic counts as shown.
     //
@@ -176,21 +176,57 @@ namespace Loupedeck.xkcdviewerPlugin
         // Call when a comic appears on the keypad, as its picture or its title card.
         public void MarkShown(Int32 num)
         {
+            Boolean changed;
             lock (this._lock)
             {
-                if (num < ComicNumbers.First || this._newestShown >= num)
-                {
-                    return;
-                }
+                changed = this.MarkShownLocked(num);
+            }
 
-                this._newestShown = num;
-                if (!this.HasUnreadLocked())
+            if (changed)
+            {
+                this.RaiseChanged();
+            }
+        }
+
+        // The comic the New Comic key opens in the browser: the first unread one, otherwise the latest. Null when no
+        // comic is known yet. Opening it counts as seeing it (owner, 2026-11-24), so it's marked shown in the same
+        // step: with several unread, each press opens the next, and the key goes back to normal after the last.
+        public Int32? TakeComicToOpen()
+        {
+            Int32? num;
+            var changed = false;
+            lock (this._lock)
+            {
+                num = this.HasUnreadLocked() ? this._newestShown + 1 : this._latestKnown ?? this._latestAtLastRun;
+                if (num.HasValue)
                 {
-                    this._flashStartedAt = null;
+                    changed = this.MarkShownLocked(num.Value);
                 }
             }
 
-            this.RaiseChanged();
+            if (changed)
+            {
+                this.RaiseChanged();
+            }
+
+            return num;
+        }
+
+        // True if the newest shown moved on.
+        private Boolean MarkShownLocked(Int32 num)
+        {
+            if (num < ComicNumbers.First || this._newestShown >= num)
+            {
+                return false;
+            }
+
+            this._newestShown = num;
+            if (!this.HasUnreadLocked())
+            {
+                this._flashStartedAt = null;
+            }
+
+            return true;
         }
 
         private Boolean HasUnreadLocked()

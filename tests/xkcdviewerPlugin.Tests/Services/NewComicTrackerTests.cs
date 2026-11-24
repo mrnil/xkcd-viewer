@@ -135,6 +135,64 @@ namespace Loupedeck.xkcdviewerPlugin.Tests
         }
 
         [Fact]
+        public void TakeComicToOpen_WithOneUnread_GivesIt_AndTheKeyGoesBackToNormal()
+        {
+            var tracker = this.Create(3309, 3309);
+            tracker.OnLatestKnown(3310);
+
+            Assert.Equal(3310, tracker.TakeComicToOpen());
+
+            Assert.False(tracker.HasUnread);
+            Assert.False(tracker.IsFlashing);
+            Assert.Equal(NewComicLook.Normal, tracker.Look);
+            Assert.Equal(3310, tracker.NewestShown);
+        }
+
+        [Fact]
+        public void TakeComicToOpen_WithSeveralUnread_GivesEachInTurn_StayingGreenUntilTheLast()
+        {
+            var tracker = this.Create(3309, 3309);
+            tracker.OnLatestKnown(3311);
+
+            Assert.Equal(3310, tracker.TakeComicToOpen());
+            Assert.True(tracker.HasUnread);
+
+            Assert.Equal(3311, tracker.TakeComicToOpen());
+            Assert.False(tracker.HasUnread);
+        }
+
+        [Fact]
+        public void TakeComicToOpen_WithNothingUnread_GivesTheLatest_WithoutAChange()
+        {
+            var tracker = this.Create(3310, 3310);
+            var raised = 0;
+            tracker.Changed += (_, _) => raised++;
+
+            Assert.Equal(3310, tracker.TakeComicToOpen());
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
+        public void TakeComicToOpen_WithNothingKnown_GivesNull()
+        {
+            var tracker = this.Create(null, null);
+
+            Assert.Null(tracker.TakeComicToOpen());
+        }
+
+        [Fact]
+        public void TakeComicToOpen_RaisesChanged_SoTheNumbersAreSavedAndTheKeysRedrawn()
+        {
+            var tracker = this.Create(3309, 3310);
+            var raised = 0;
+            tracker.Changed += (_, _) => raised++;
+
+            tracker.TakeComicToOpen();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void AnOlderLatest_IsIgnored()
         {
             var tracker = this.Create(3309, 3309);
