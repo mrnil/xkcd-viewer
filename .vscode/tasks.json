@@ -18,21 +18,21 @@
     {
       "label": "Package Plugin",
       "type": "shell",
-      "command": "logiplugintool pack ./bin/Release ./xkcdviewer.lplug4",
+      "command": "dotnet logiplugintool pack ./bin/Release ./xkcdviewer.lplug4",
       "group": "none",
       "problemMatcher": []
     },
     {
       "label": "Install Plugin",
       "type": "shell",
-      "command": "logiplugintool install ./xkcdviewer.lplug4",
+      "command": "dotnet logiplugintool install ./xkcdviewer.lplug4",
       "group": "none",
       "problemMatcher": []
     },
     {
       "label": "Uninstall Plugin",
       "type": "shell",
-      "command": "logiplugintool uninstall xkcdviewer",
+      "command": "dotnet logiplugintool uninstall xkcdviewer",
       "group": "none",
       "problemMatcher": []
     }
