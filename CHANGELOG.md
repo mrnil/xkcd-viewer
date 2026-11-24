@@ -4,7 +4,7 @@ All notable changes to xkcd viewer are recorded here. The format follows [Keep a
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-10-11
+## [1.0.0] - 2026-11-24
 
 The first release: an xkcd comic split across a 3×2 block of keys, with Prev / Next above it.
 

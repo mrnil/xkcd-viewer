@@ -65,7 +65,7 @@ To remove it, uninstall **xkcd viewer** from the plugins list in Logi Options+ o
 
 ## Status
 
-The v1 features are built and being tested on hardware; the 1.0.0 package installs and runs on Windows. Until the first release is published on the [Releases](https://github.com/mrnil/xkcd-viewer/releases) page, install it by building it from source (below), or download the `.lplug4` from the artifacts of the latest [Build and test](https://github.com/mrnil/xkcd-viewer/actions/workflows/build.yml) run. What's left to check is in [`docs/ai/product.md`](docs/ai/product.md), under "Hardware test checklist" and "Still open".
+Version 1.0.0 is the first release, tested on the MX Creative Console keypad on Windows. Install it from the [Releases](https://github.com/mrnil/xkcd-viewer/releases) page (above). To try unreleased changes, build from source (below) or download the `.lplug4` from the artifacts of the latest [Build and test](https://github.com/mrnil/xkcd-viewer/actions/workflows/build.yml) run. What's left to check on other devices is in [`docs/ai/product.md`](docs/ai/product.md), under "Hardware test checklist" and "Still open".
 
 ## Building and running
 
