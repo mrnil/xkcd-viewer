@@ -71,6 +71,7 @@ xkcdviewerPlugin/
 │   │   ├── markdown-lint.yml         # rumdl 0.3.5 over every .md file, using .markdownlint.json
 │   │   └── release.yml               # On a vX.Y.Z tag: wait for CI, check versions and notes, pack, publish the GitHub release
 │   └── dependabot.yml                # Monthly action SHAs and LogiPluginTool, weekly test packages
+├── .githooks/                        # commit-msg (Conventional Commits) and pre-commit (gitleaks); `git config core.hooksPath .githooks`
 ├── .config/dotnet-tools.json         # Pins LogiPluginTool for `dotnet logiplugintool`, locally and in CI
 ├── .vscode/                          # Attach-to-LogiPluginService debug config, build/pack tasks, default solution
 ├── .editorconfig                     # Enforces the code style in docs/ai/guidelines.md, for src/ and tests/
@@ -82,6 +83,7 @@ xkcdviewerPlugin/
 ├── LICENSE                           # MIT for the project's own work; notes that xkcd content is CC BY-NC 2.5
 ├── EULA.md                           # Developer EULA for the Marketplace: licence, xkcd terms, what's sent and stored
 ├── AGENTS.md / CLAUDE.md             # For AI assistants: where to start, non-negotiables
+├── .gitattributes                    # Keeps .githooks/ at LF line endings, which sh needs
 └── .gitignore
 ```
 

@@ -1,0 +1,7 @@
+#!/bin/sh
+# Enforce Conventional Commits on the subject line: type(scope)!: description
+head -n 1 "$1" | grep -qE '^(feat|fix|refactor|test|docs|chore|build|ci)(\([a-z0-9._/-]+\))?!?: .+' || {
+  echo "commit-msg: subject must follow Conventional Commits, e.g. 'fix(new-comic): count a key press as seen'" >&2
+  echo "  allowed types: feat fix refactor test docs chore build ci" >&2
+  exit 1
+}
